@@ -1,3 +1,5 @@
+# QuantFinLib
+
 QuantFinLib is a comprehensive Python library designed for quantitative finance. It offers a wide range
 of tools and algorithms that cater to various domains within quantitative finance, including machine learning,
 asset management, portfolio optimization, time series transformations, indicators, labeling, feature engineering,
