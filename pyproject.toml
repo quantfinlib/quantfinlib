@@ -3,7 +3,7 @@ name = "quantfinlib"
 version = "0.0.2"
 description = "Fundamental package for quantitative finance with Python."
 
-authors = [{name = "Thijs van den Berg, Andrejs Fedjajevs, Mohammadjavad Vakili, Nathan de Vries"}]
+authors = ["Thijs van den Berg, Andrejs Fedjajevs, Mohammadjavad Vakili, Nathan de Vries"]
 
 maintainers = [
     "Thijs van den Berg <thijs@sitmo.com>", 
