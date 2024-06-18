@@ -5,3 +5,7 @@ of tools and algorithms that cater to various domains within quantitative financ
 asset management, portfolio optimization, time series transformations, indicators, labeling, feature engineering,
 stochastic simulation, randomization tests, and backtesting. This library aims to provide robust and efficient
 solutions for financial data analysis, modeling, and trading strategy development.
+
+
+.. image:: http://img.shields.io/badge/license-MIT-blue.svg?style=flat
+    :target: https://github.com/quantfinlib/quantfinlib/blob/main/LICENSE
