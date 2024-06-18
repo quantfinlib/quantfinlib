@@ -9,6 +9,7 @@ def _as_row(x):
 
 
 class BrownianMotion(BaseEstimator):
+    """Brownian Motion simulation"""
 
     def __init__(self, x0=0.0, mean=0.0, std=0.01, cor=None, num_samples=252):
         # Parameters

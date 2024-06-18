@@ -20,11 +20,24 @@ extensions = [
     "sphinx_exec_code",  # executing python code snippets in the docs and showing result
 ]
 
+# Extension Settings
+# autosummary_generate = True  # Turn on sphinx.ext.autosummary
+html_show_sourcelink = False  # Remove 'view source code' from top of page
+autodoc_inherit_docstrings = False  # If no docstring, inherit from base class
+# set_type_checking_flag = True  # Enable 'expensive' imports for sphinx_autodoc_typehints
+# nbsphinx_allow_errors = True  # Continue through Jupyter errors
+# autodoc_typehints = "description" # Sphinx-native method. Not as good as sphinx_autodoc_typehints
+# add_module_names = False # Remove namespaces from class/method signatures
+# napoleon_google_docstring = False
+# napoleon_use_param = False
+# napoleon_use_ivar = True
+
 # The suffix of source filenames.
 master_doc = "index"
 source_suffix = [".rst", ".md"]
 
 templates_path = ["_templates"]
+
 exclude_patterns = [
     "_build",
     "Thumbs.db",
@@ -87,13 +100,13 @@ autoapi_add_toctree_entry = False
 autoapi_options = [
     "members",
     "undoc-members",
-    "private-members",
-    # "show-inheritance",
-    "special-members",
-    "imported-members",
 ]
 # more options:
 # 'show-module-summary',
+# "show-inheritance",
+# "imported-members",
+# "private-members",
+# "special-members",
 
 autoapi_root = "_autoapi_root"
 autoapi_keep_files = True

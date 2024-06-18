@@ -1,5 +1,9 @@
 # QuantFinLib
 
+<h1 align="center">
+<img src="./_static/quantfinlib_logo.png" alt="QuantFinLib Logo" width="120"/>
+</h1><br>
+
 
 QuantFinLib is a comprehensive Python library designed for quantitative finance. It offers a wide range
 of tools and algorithms that cater to various domains within quantitative finance, including machine learning,
@@ -7,16 +11,3 @@ asset management, portfolio optimization, time series transformations, indicator
 stochastic simulation, randomization tests, and backtesting. This library aims to provide robust and efficient
 solutions for financial data analysis, modeling, and trading strategy development.
 
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
