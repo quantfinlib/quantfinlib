@@ -88,7 +88,7 @@ autoapi_options = [
     "members",
     "undoc-members",
     "private-members",
-    "show-inheritance",
+    # "show-inheritance",
     "special-members",
     "imported-members",
 ]
