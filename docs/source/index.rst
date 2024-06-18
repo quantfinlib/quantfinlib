@@ -1,4 +1,5 @@
-.. include:: ../README.md
+.. include:: ../../README.md
+
     :parser: myst_parser.sphinx_
 
 .. toctree::
@@ -16,6 +17,7 @@
     :maxdepth: 2
     :caption: Modules:
 
+    .. Home <_autoapi_root/quantfinlib/index.rst>
     .. Sim <_autoapi_root/quantfinlib/sim/index.rst>
 
 

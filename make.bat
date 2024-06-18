@@ -53,5 +53,5 @@ exit /b
 
 :docs
 echo building docs
-poetry run sphinx-build -v -v -b html docs docs
+poetry run sphinx-build -M html docs/source docs/build
 exit /b

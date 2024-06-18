@@ -1,7 +1,7 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("../"))
+sys.path.insert(0, os.path.abspath("../../"))
 
 project = "QuantFinLib"
 author = "Thijs van den Berg, Andrejs Fedjajevs, Mohammadjavad Vakili, Nathan de Vries"
@@ -43,6 +43,7 @@ suppress_warnings = [
     "nbsphinx.thumbnail",
     "nbsphinx.notebooktitle",
     "nbsphinx.ipywidgets",
+    "config.cache",
 ]
 
 html_theme = "sphinx_rtd_theme"
@@ -79,7 +80,7 @@ automodule_default_flags = ["members", "imported-members"]
 
 # Auto API
 # extensions = ['autoapi.extension',]
-autoapi_dirs = ["../quantfinlib"]
+autoapi_dirs = ["../../quantfinlib"]
 autoapi_member_order = "alphabetical"
 autoapi_template_dir = "_autoapi_templates"
 autoapi_add_toctree_entry = False
