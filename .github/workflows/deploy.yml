@@ -38,16 +38,15 @@ jobs:
       # Run tests
       - name: test with pytest
         run: |
-           poetry run pytest --cov=quantfinlib --cov-branch --cov-report=term-missing --cov-report=xml:coverage.xml -v tests
-      - name: Coveralls Python
-        uses: AndreMiras/coveralls-python-action@v20201129
-      # Upload coverage report to Codecov
-      # Uncomment the following lines if you want to upload coverage report to Codecov
-      # - name: Upload coverage report to Codecov
-      #   uses: codecov/codecov-action@v2
-      #   with:
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-      #     files: coverage.xml
+          poetry run pytest --cov=quantfinlib --cov-branch --cov-report=term-missing,xml:coverage.xml -vv tests
+        # Publish test coverage with coveralls
+      - name: Code coverage with coveralls
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.9'
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.COVERALL_TOKEN }}
+          path-to-lcov: coverage.xml
+  
 
   # build wheel and deploy to pypi
   deploy:
