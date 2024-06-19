@@ -5,6 +5,8 @@
 </h1><br>
 
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/quantfinlib/quantfinlib/blob/main/LICENSE)
+
 QuantFinLib is a comprehensive Python library designed for quantitative finance. It offers a wide range
 of tools and algorithms that cater to various domains within quantitative finance, including machine learning,
 asset management, portfolio optimization, time series transformations, indicators, labeling, feature engineering,
@@ -34,3 +36,5 @@ go below zero.
 | Markov Chains |  Discrete state transitioning model   | 
 | Phase Randomisation  | Randomization that preserves return distributions and autocorrelations   |
 | Fractal Brownian Motion | Brownian motion with trends or mean reversion | 
+
+
