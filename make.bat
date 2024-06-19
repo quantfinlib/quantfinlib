@@ -10,7 +10,7 @@ if "%1"=="patch" goto patch
 if "%1"=="build" goto build
 if "%1"=="publish" goto publish
 if "%1"=="docs" goto docs
-
+if "%1"=="test" goto test
 
 echo Usage:
 echo make [format, lint, patch, major, minor, patch, build, publish, docs]
@@ -54,4 +54,9 @@ exit /b
 :docs
 echo building docs
 poetry run sphinx-build -M html docs/source docs/build
+exit /b
+
+:test
+echo running tests
+poetry run pytest --cov=quantfinlib --cov-branch --cov-report=term-missing --cov-report=xml:coverage.xml -v tests
 exit /b

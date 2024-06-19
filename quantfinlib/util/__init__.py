@@ -1,3 +1,3 @@
 """Utility module."""
 
-from quantfinlib.util.timeseries import check_time_series_resolution
+from quantfinlib.util.timeseries import infer_time_series_resolution
