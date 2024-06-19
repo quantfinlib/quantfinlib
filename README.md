@@ -8,6 +8,8 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/quantfinlib/quantfinlib/blob/main/LICENSE)
 
+[![Coverage Status](https://coveralls.io/repos/github/quantfinlib/quantfinlib/badge.svg?branch=main)](https://coveralls.io/github/quantfinlib/quantfinlib?branch=main)
+
 QuantFinLib is a comprehensive Python library designed for quantitative finance. It offers a wide range
 of tools and algorithms that cater to various domains within quantitative finance, including machine learning,
 asset management, portfolio optimization, time series transformations, indicators, labeling, feature engineering,
