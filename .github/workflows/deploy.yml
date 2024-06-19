@@ -39,6 +39,8 @@ jobs:
       - name: test with pytest
         run: |
            poetry run pytest --cov=quantfinlib --cov-branch --cov-report=term-missing --cov-report=xml:coverage.xml -v tests
+      - name: Coveralls Python
+        uses: AndreMiras/coveralls-python-action@v20201129
       # Upload coverage report to Codecov
       # Uncomment the following lines if you want to upload coverage report to Codecov
       # - name: Upload coverage report to Codecov
@@ -72,4 +74,3 @@ jobs:
           poetry config pypi-token.pypi $PYPI_API_TOKEN
           poetry build
           poetry publish
-          
