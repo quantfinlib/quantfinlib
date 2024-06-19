@@ -47,6 +47,7 @@ matplotlib = "^3.9.0"
 scikit-learn = "^1.5.0"
 
 
+
 [tool.poetry.group.dev]
 optional = true
 
@@ -58,7 +59,8 @@ pytest = "^8.2.2"
 pytest-cov = "^5.0.0"
 
 
-[tool.poetry.group.doc]
+
+[tool.poetry.group.docs]
 optional = true
 
 [tool.poetry.group.docs.dependencies]
@@ -72,12 +74,14 @@ sphinx-exec-code = "^0.12"
 ipython = "8.14"
 
 
+
 [tool.poetry.group.test]
 optional = true
 
 [tool.poetry.group.test.dependencies]
 pytest  = "^8.2.2"
 pytest-cov  = "^5.0.0"
+
 
 
 [build-system]
