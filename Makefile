@@ -1,20 +1,41 @@
-# Minimal makefile for Sphinx documentation
-#
+.PHONY: format lint major minor patch build publish docs test
 
-# You can set these variables from the command line, and also
-# from the environment for the first two.
-SPHINXOPTS    ?=
-SPHINXBUILD   ?= sphinx-build
-SOURCEDIR     = .
-BUILDDIR      = _build
-
-# Put it first so that "make" without argument is like "make help".
 help:
-	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	@echo "Usage:"
+	@echo "  make [format, lint, major, minor, patch, build, publish, docs, test]"
 
-.PHONY: help Makefile
+format:
+	@echo "Formatting code with isort"
+	poetry run isort .
+	@echo "Formatting code with black"
+	poetry run python -m black mlops
 
-# Catch-all target: route all unknown targets to Sphinx using the new
-# "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
-%: Makefile
-	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+lint:
+	@echo "Running flake8"
+	poetry run flake8 mlops --per-file-ignores="__init__.py:F401" --ignore="D205" --docstring-convention="numpy" --max-line-length=120
+
+major:
+	poetry run bump2version major --allow-dirty --verbose
+	git push --atomic origin main --tags
+
+minor:
+	poetry run bump2version minor --allow-dirty --verbose
+	git push --atomic origin main --tags
+
+patch:
+	poetry run bump2version patch --allow-dirty --verbose
+	git push --atomic origin main --tags
+
+build:
+	poetry build
+
+publish:
+	poetry publish
+
+docs:
+	@echo "Building docs"
+	poetry run sphinx-build -M html docs/source docs/build
+
+test:
+	@echo "Running tests"
+	poetry run pytest --cov=quantfinlib --cov-branch --cov-report=term-missing --cov-report=xml:coverage.xml -v tests
