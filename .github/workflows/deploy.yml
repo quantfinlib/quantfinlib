@@ -38,7 +38,7 @@ jobs:
       # Run tests
       - name: test with pytest
         run: |
-          poetry run pytest --cov=quantfinlib --cov-branch --cov-report=term-missing,xml:coverage.xml -vv tests
+          poetry run pytest --cov=quantfinlib --cov-branch --cov-report=term-missing --cov-report=xml:coverage.xml -vv tests
         # Publish test coverage with coveralls
       - name: Code coverage with coveralls
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.9'
