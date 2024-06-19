@@ -27,10 +27,11 @@ autodoc_inherit_docstrings = False  # If no docstring, inherit from base class
 # set_type_checking_flag = True  # Enable 'expensive' imports for sphinx_autodoc_typehints
 # nbsphinx_allow_errors = True  # Continue through Jupyter errors
 # autodoc_typehints = "description" # Sphinx-native method. Not as good as sphinx_autodoc_typehints
-# add_module_names = False # Remove namespaces from class/method signatures
+add_module_names = False  # Remove namespaces from class/method signatures
 # napoleon_google_docstring = False
 # napoleon_use_param = False
 # napoleon_use_ivar = True
+
 
 # The suffix of source filenames.
 master_doc = "index"
@@ -81,7 +82,23 @@ nbsphinx_execute_arguments = [
 nbsphinx_input_prompt = "In [%s]:"
 nbsphinx_output_prompt = "Out[%s]:"
 
-myst_enable_extensions = ["dollarmath", "amsmath"]
+
+myst_enable_extensions = [
+    "amsmath",
+    "attrs_inline",
+    "colon_fence",
+    "deflist",
+    "dollarmath",
+    "fieldlist",
+    "html_admonition",
+    "html_image",
+    # "linkify",
+    "replacements",
+    "smartquotes",
+    "strikethrough",
+    "substitution",
+    "tasklist",
+]
 
 autodoc_default_flags = ["members", "imported-members"]
 automodule_default_flags = ["members", "imported-members"]
