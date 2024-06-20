@@ -126,3 +126,63 @@ def infer_time_series_resolution(ts_obj) -> Optional[str]:
 
     return None
 
+# Private dictionary mapping time series resolutions to their respective durations in years
+_time_series_resolution_duration_map = {
+    'D': 1.0 / 365.0,
+    'B': 1.0 / 252.0,
+    'W': 7.0 / 365.0,
+    'ME': 1.0 / 12.0,
+    'MS': 1.0 / 12.0,
+    'QE': 1.0 / 4.0,
+    'QS': 1.0 / 4.0,
+    'YE': 1.0,
+    'YS': 1.0
+}
+
+def time_series_resolution_duration(freq: str) -> Optional[float]:
+    """
+    Get the duration of a time series resolution in years.
+
+    This function takes a frequency code representing the time series resolution
+    and returns the corresponding duration in years. The mapping is based on the
+    private dictionary `_time_series_resolution_duration_map`.
+
+    Parameters
+    ----------
+    freq : str
+        The frequency code of the time series resolution. Supported codes are:
+
+        * 'D'  : Daily resolution (7 days a week) = 1/365
+        * 'B'  : Working-day resolution (roughly 5 days a week) = 1/252
+        * 'W'  : Weekly resolution = 7/365
+        * 'ME' : Month-end resolution = 1/12
+        * 'MS' : Month-start resolution = 1/12
+        * 'QE' : Quarter-end resolution = 1/4
+        * 'QS' : Quarter-start resolution = 1/4
+        * 'YE' : Year-end resolution = 1
+        * 'YS' : Year-start resolution = 1
+
+    Returns
+    -------
+    Optional[float]
+        The duration of the given frequency in years, or None if the frequency code is not recognized.
+
+    Examples
+    --------
+    >>> time_series_resolution_duration('D')
+    0.0027397260273972603
+
+    >>> time_series_resolution_duration('B')
+    0.003968253968253968
+
+    >>> time_series_resolution_duration('W')
+    0.019178082191780823
+
+    >>> time_series_resolution_duration('ME')
+    0.08333333333333333
+
+    >>> time_series_resolution_duration('XYZ')  # Unrecognized frequency code
+    None
+    """        
+    return _time_series_resolution_duration_map.get(freq, None)
+
