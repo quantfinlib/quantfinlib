@@ -15,11 +15,11 @@ handlers:
   file:
     class: logging.FileHandler
     level: INFO
-    formatter: detailed
+    formatter: quantfinlib
     filename: quantfinlib.log
 
 loggers:
-  quantfinlib_logger:
+  main:
     level: DEBUG
     handlers: [console, file]
     propagate: no
