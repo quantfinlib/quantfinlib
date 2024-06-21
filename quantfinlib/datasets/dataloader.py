@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from quantfinlib.util.utils import get_project_root
+from quantfinlib.util.fs_utils import get_project_root
 
 
 def load_VIX(load_latest: bool = False) -> pd.DataFrame:
