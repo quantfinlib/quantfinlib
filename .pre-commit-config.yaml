@@ -3,11 +3,11 @@ repos:
     hooks:
       - id: black
         name: black
-        entry: poetry run black
+        entry: poetry run black quantfinlib
         language: python
         types: [python]
         stages: [commit]
-        args: [quantfinlib/**/*.py]
+
       - id: auto-add-commit-push
         name: auto-add-commit-push
         entry: bash
