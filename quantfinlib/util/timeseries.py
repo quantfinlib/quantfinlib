@@ -8,8 +8,8 @@ def infer_time_series_resolution(ts_obj) -> Optional[str]:
 
     This function analyzes the index of a pandas DataFrame or Series to determine
     if the time series has a daily resolution of 7 days a week, a working-day
-    resolution of roughly 5 days a week, weekly, monthly, quarterly, or yearly 
-    resolution. Additionally, it can distinguish month-end, month-start, quarter-end, 
+    resolution of roughly 5 days a week, weekly, monthly, quarterly, or yearly
+    resolution. Additionally, it can distinguish month-end, month-start, quarter-end,
     quarter-start, year-end, and year-start resolutions.
 
     Parameters
@@ -36,7 +36,7 @@ def infer_time_series_resolution(ts_obj) -> Optional[str]:
     Notes
     -----
     The function requires at least three time points to determine the resolution.
-    It checks the frequency of time deltas and specific characteristics of the 
+    It checks the frequency of time deltas and specific characteristics of the
     time series index to classify its resolution.
 
     Examples
@@ -73,39 +73,37 @@ def infer_time_series_resolution(ts_obj) -> Optional[str]:
     # Count the occurrences of each time delta
     delta_counts = time_deltas.value_counts()
 
-      
     # Check if timestamps are year-ends
     year_ends = ts_obj.index.is_year_end.sum()
     if (year_ends >= 2) and (len(ts_obj.index) - year_ends <= 2):
         return "YE"
-    
+
     # Check if timestamps are year-starts
     year_starts = ts_obj.index.is_year_start.sum()
     if (year_starts >= 2) and (len(ts_obj.index) - year_starts <= 2):
         return "YS"
 
-
     # Check if timestamps are quarter-ends
     quarter_ends = ts_obj.index.is_quarter_end.sum()
     if (quarter_ends >= 2) and (len(ts_obj.index) - quarter_ends <= 2):
         return "QE"
-    
+
     # Check if timestamps are quarter-starts
     quarter_starts = ts_obj.index.is_quarter_start.sum()
     if (quarter_starts >= 2) and (len(ts_obj.index) - quarter_starts <= 2):
         return "QS"
 
     # Check if timestamps are month-ends
-    print('is_month_end', ts_obj.index.is_month_end)
+    print("is_month_end", ts_obj.index.is_month_end)
     month_ends = ts_obj.index.is_month_end.sum()
     if (month_ends >= 2) and (len(ts_obj.index) - month_ends <= 2):
         return "ME"
-    
+
     # Check if timestamps are month-starts
     month_starts = ts_obj.index.is_month_start.sum()
     if (month_starts >= 2) and (len(ts_obj.index) - month_starts <= 2):
         return "MS"
-    
+
     # Check for daily resolution (7 days a week)
     daily_count = delta_counts.get(pd.Timedelta(days=1), 0)
     daily_resolution = len(time_deltas) - daily_count <= 2
@@ -122,22 +120,23 @@ def infer_time_series_resolution(ts_obj) -> Optional[str]:
     weekly_count = delta_counts.get(pd.Timedelta(days=7), 0)
     if (weekly_count >= 2) and (len(time_deltas) - weekly_count <= 2):
         return "W"
-    
 
     return None
 
+
 # Private dictionary mapping time series resolutions to their respective durations in years
 _time_series_resolution_duration_map = {
-    'D': 1.0 / 365.0,
-    'B': 1.0 / 252.0,
-    'W': 7.0 / 365.0,
-    'ME': 1.0 / 12.0,
-    'MS': 1.0 / 12.0,
-    'QE': 1.0 / 4.0,
-    'QS': 1.0 / 4.0,
-    'YE': 1.0,
-    'YS': 1.0
+    "D": 1.0 / 365.0,
+    "B": 1.0 / 252.0,
+    "W": 7.0 / 365.0,
+    "ME": 1.0 / 12.0,
+    "MS": 1.0 / 12.0,
+    "QE": 1.0 / 4.0,
+    "QS": 1.0 / 4.0,
+    "YE": 1.0,
+    "YS": 1.0,
 }
+
 
 def time_series_resolution_duration(freq: str) -> Optional[float]:
     """
@@ -183,6 +182,5 @@ def time_series_resolution_duration(freq: str) -> Optional[float]:
 
     >>> time_series_resolution_duration('XYZ')  # Unrecognized frequency code
     None
-    """        
+    """
     return _time_series_resolution_duration_map.get(freq, None)
-
