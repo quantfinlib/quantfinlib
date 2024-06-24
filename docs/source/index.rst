@@ -13,12 +13,11 @@
     contributing.md
 
 .. toctree::
-    :hidden:
+    :titlesonly:
     :maxdepth: 2
     :caption: Modules:
 
-    .. Home <_autoapi_root/quantfinlib/index.rst>
-    .. Sim <_autoapi_root/quantfinlib/sim/index.rst>
+    Simulation <autoapi/quantfinlib/sim/index.rst>
 
 
 .. toctree::
@@ -26,7 +25,5 @@
     :caption: Examples:
     :maxdepth: 2
     
-    notebook_links/markov_chain.nblink
     notebook_links/random_walk.nblink
-    notebook_links/scanning_label.nblink
 

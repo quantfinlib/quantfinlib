@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytest
-from quantfinlib.util.fs_utils import get_project_root
+from quantfinlib.util._fs_utils import get_project_root
 
 
 @pytest.fixture

@@ -21,7 +21,7 @@ extensions = [
 ]
 
 # Extension Settings
-# autosummary_generate = True  # Turn on sphinx.ext.autosummary
+autosummary_generate = True  # Turn on sphinx.ext.autosummary
 html_show_sourcelink = False  # Remove 'view source code' from top of page
 autodoc_inherit_docstrings = False  # If no docstring, inherit from base class
 # set_type_checking_flag = True  # Enable 'expensive' imports for sphinx_autodoc_typehints
@@ -51,23 +51,20 @@ exclude_patterns = [
 
 
 suppress_warnings = [
-    "toc",
-    "nbsphinx.localfile",
-    "nbsphinx.gallery",
-    "nbsphinx.thumbnail",
-    "nbsphinx.notebooktitle",
-    "nbsphinx.ipywidgets",
-    "config.cache",
+    # "toc",
+    # "nbsphinx.localfile",
+    # "nbsphinx.gallery",
+    # "nbsphinx.thumbnail",
+    # "nbsphinx.notebooktitle",
+    # "nbsphinx.ipywidgets",
+    # "config.cache",
 ]
 
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
-
-
 html_show_copyright = False
 html_show_sphinx = False
 html_sourcelink_suffix = ""
-
 html_theme_options = {
     "logo_only": False,
     "display_version": True,
@@ -101,6 +98,7 @@ myst_enable_extensions = [
 ]
 
 autodoc_default_flags = ["members", "imported-members"]
+
 automodule_default_flags = ["members", "imported-members"]
 
 
@@ -108,28 +106,32 @@ automodule_default_flags = ["members", "imported-members"]
 # and to generate stub pages for each. It is enabled by default.
 # autosummary_generate = True
 
+# -----------------------------------------------------
 # Auto API
-# extensions = ['autoapi.extension',]
+# -----------------------------------------------------
 autoapi_dirs = ["../../quantfinlib"]
+autoapi_options = [
+    "members",
+]
+
+"""
 autoapi_member_order = "alphabetical"
 autoapi_template_dir = "_autoapi_templates"
 autoapi_add_toctree_entry = False
+autoapi_generate_api_docs = True
 autoapi_options = [
     "members",
-    "undoc-members",
+    # "undoc-members",
+    "show-module-summary",
+    # "show-inheritance",
+    # "imported-members",
+    # "private-members",
+    # "special-members",
 ]
-# more options:
-# 'show-module-summary',
-# "show-inheritance",
-# "imported-members",
-# "private-members",
-# "special-members",
-
 autoapi_root = "_autoapi_root"
 autoapi_keep_files = True
-autoapi_ignore = [  # fnmatch.fnmatch patterns
-    "*/___*",  # files that start with a 3 underscore
-]
+autoapi_ignore = ["*/___*"]
+"""
 
 mathjax3_config = {
     "jax": ["input/TeX", "output/SVG"],

@@ -3,7 +3,7 @@ import logging.config
 
 import yaml
 
-from quantfinlib.util.fs_utils import get_project_root
+from quantfinlib.util._fs_utils import get_project_root
 
 __version__ = "0.0.4"
 

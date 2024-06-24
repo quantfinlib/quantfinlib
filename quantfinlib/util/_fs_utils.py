@@ -5,11 +5,13 @@ from typing import Union
 def get_project_root(relative_filepath: Union[Path, str, None] = None) -> Path:
     """Returns the project's root directory: '../quantfinlib/'.
 
-    Parameters:
+    Parameters
+    ----------
     dependent_file_path (Union[Path, str, None], optional):
         additional filepath relative to the root, by default None
 
-    Returns:
+    Returns
+    -------
     Path: The project's root directory with optional dependent file path.
     """
     root_path = Path(__file__).parent.parent.parent
