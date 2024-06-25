@@ -8,6 +8,7 @@
    :hidden:
 
    toc_examples_sim
+   toc_example_datasets
 
 
 
@@ -18,6 +19,7 @@
     :caption: Modules
 
     sim <_autoapi_root/quantfinlib/sim/index.rst>
+    dataloader <_autoapi_root/quantfinlib/datasets/index.rst>
 
 
 .. toctree::
@@ -28,3 +30,4 @@
 
     contributing.md
     changelog.md
+

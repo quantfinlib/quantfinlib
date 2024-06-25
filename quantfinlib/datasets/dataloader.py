@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from quantfinlib.util.fs_utils import get_project_root
+from quantfinlib.util._fs_utils import get_project_root
 from quantfinlib.util.logger_config import get_logger
 
 logger = get_logger()

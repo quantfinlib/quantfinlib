@@ -5,7 +5,7 @@ from typing import Optional, Union
 
 import yaml
 
-from quantfinlib.util.fs_utils import get_project_root
+from quantfinlib.util._fs_utils import get_project_root
 
 logger: Optional[logging.Logger] = None
 

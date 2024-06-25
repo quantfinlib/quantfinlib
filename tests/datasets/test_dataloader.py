@@ -20,7 +20,8 @@ def vix_data():  # Fixture to provide a sample DataFrame for testing
 
 def test_load_VIX_local(monkeypatch):
     monkeypatch.setattr(
-        "quantfinlib.util.fs_utils.get_project_root", lambda: Path("/non/existent/path")
+        "quantfinlib.util._fs_utils.get_project_root",
+        lambda: Path("/non/existent/path"),
     )
     # monkeypatch.setattr(pd, "read_pickle", lambda path, **kwargs: vix_data)
     df = load_VIX()
