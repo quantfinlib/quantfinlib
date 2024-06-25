@@ -1,6 +1,6 @@
 .. include:: ../../README.md
     :parser: myst_parser.sphinx_
-     
+
 
 .. toctree::
     :maxdepth: 2
@@ -19,14 +19,16 @@
 
     .. Home <_autoapi_root/quantfinlib/index.rst>
     .. Sim <_autoapi_root/quantfinlib/sim/index.rst>
+    .. Datasets <_autoapi_root/quantfinlib/datasets/index.rst>
 
 
 .. toctree::
     :hidden:
     :caption: Examples:
     :maxdepth: 2
-    
-    notebook_links/markov_chain.nblink
+
+    notebook_links/example_datasets.nblink
     notebook_links/random_walk.nblink
+    notebook_links/markov_chain.nblink
     notebook_links/scanning_label.nblink
 

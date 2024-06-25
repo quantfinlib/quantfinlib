@@ -7,7 +7,7 @@ def get_project_root(relative_filepath: Union[Path, str, None] = None) -> Path:
 
     Parameters:
     dependent_file_path (Union[Path, str, None], optional):
-        additional filepath relative to the root, by default None
+    additional filepath relative to the root, by default None
 
     Returns:
     Path: The project's root directory with optional dependent file path.
