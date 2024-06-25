@@ -3,32 +3,28 @@
 
 
 .. toctree::
+   :caption: Examples
+   :maxdepth: 2
+   :hidden:
+
+   toc_examples_sim
+
+
+
+
+.. toctree::
+    :titlesonly:
     :maxdepth: 2
-    :caption: Table of Contents:
+    :caption: Modules
+
+    sim <_autoapi_root/quantfinlib/sim/index.rst>
+
+
+.. toctree::
+    :maxdepth: 2
+    :caption: Pages
     :hidden:
     :glob:
 
-    installation.md
-    changelog.md
     contributing.md
-
-.. toctree::
-    :hidden:
-    :maxdepth: 2
-    :caption: Modules:
-
-    .. Home <_autoapi_root/quantfinlib/index.rst>
-    .. Sim <_autoapi_root/quantfinlib/sim/index.rst>
-    .. Datasets <_autoapi_root/quantfinlib/datasets/index.rst>
-
-
-.. toctree::
-    :hidden:
-    :caption: Examples:
-    :maxdepth: 2
-
-    notebook_links/example_datasets.nblink
-    notebook_links/random_walk.nblink
-    notebook_links/markov_chain.nblink
-    notebook_links/scanning_label.nblink
-
+    changelog.md
