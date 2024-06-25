@@ -4,19 +4,41 @@ from pathlib import Path
 import pandas as pd
 
 from quantfinlib.util.fs_utils import get_project_root
+from quantfinlib.util.logger_config import get_logger
 
-logger = logging.getLogger("main")
+logger = get_logger()
 
 VIX_ONLINE_URL = (
     "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
 )
-VIX_LOCAL_PATH = (
-    get_project_root() / "quantfinlib" / "datasets" / "data" / "VIX_History.pkl"
+VIX_LOCAL_PATH = get_project_root("quantfinlib/datasets/data/VIX_ochl.pkl")
+
+
+MULTI_INDEX_LOCAL_PATH = get_project_root(
+    "quantfinlib/datasets/data/multi_index_close.pkl"
 )
 
 
+def load_multi_index() -> pd.DataFrame:
+    """Load the multi-index dataset with daily Close prices for various indices.
+    Source: https://www.kaggle.com/datasets/mukhazarahmad/worldwide-stock-market-indices-data
+
+    Returns
+    -------
+    pd.DataFrame N x 11
+        The multi-index dataset, 1 row per day, with columns: DATE, %INDEX_NAME%
+    """
+    df = pd.read_pickle(MULTI_INDEX_LOCAL_PATH, compression="gzip")
+    logger.info(
+        f"Loaded multi-index dataset with {df.shape[0]} rows and {df.shape[1]} columns. Latest date: {df['DATE'].max()}"
+    )
+    df["DATE"] = pd.to_datetime(df["DATE"])
+    df.reset_index(drop=True, inplace=True)
+    return df
+
+
 def load_VIX(load_latest: bool = False) -> pd.DataFrame:
-    """Load the VIX dataset with Open, Close,High, and Low prices.
+    """Load the VIX Index daily dataset with Open, Close,High, and Low prices.
     Source: https://www.cboe.com/tradable_products/vix/vix_historical_data/ (updated daily)
 
     Parameters
@@ -26,12 +48,13 @@ def load_VIX(load_latest: bool = False) -> pd.DataFrame:
 
     Returns
     -------
-    pd.DataFrame
-        The VIX dataset.
+    pd.DataFrame N x 5
+        The VIX dataset, 1 row per day, with columns: DATE, OPEN, HIGH, LOW, CLOSE
 
     Examples
     --------
-    >>> df = load_vix()
+    >>> df_vix = load_vix()
+    >>> df_vix_latest = load_vix(load_latest=True)
     """
     LOAD_LATEST_SUCCESS = False
     if load_latest:
@@ -52,6 +75,7 @@ def load_VIX(load_latest: bool = False) -> pd.DataFrame:
         df = pd.read_pickle(VIX_LOCAL_PATH, compression="gzip")
 
     df["DATE"] = pd.to_datetime(df["DATE"])
+    df.reset_index(drop=True, inplace=True)
     logger.info(
         f"Loaded VIX dataset with {df.shape[0]} rows and {df.shape[1]} columns. Latest date: {df['DATE'].max()}"
     )
@@ -61,3 +85,7 @@ def load_VIX(load_latest: bool = False) -> pd.DataFrame:
 if __name__ == "__main__":
     print(load_VIX().head())
     print(load_VIX(load_latest=True).head())
+    logger.info("VIX dataset loaded successfully.")
+
+    print(load_multi_index().head())
+    logger.info("Multi-index dataset loaded successfully.")

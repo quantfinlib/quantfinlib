@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from quantfinlib.datasets.dataloader import load_VIX
+from quantfinlib.datasets.dataloader import load_multi_index, load_VIX
 
 
 @pytest.fixture
@@ -34,7 +34,7 @@ def test_load_VIX_local(monkeypatch):
 
 
 # write test_load_VIX_online
-def test_load_VIX_online(monkeypatch):
+def test_load_VIX_online():
 
     try:
         df = load_VIX(load_latest=True)
@@ -47,3 +47,13 @@ def test_load_VIX_online(monkeypatch):
     assert all(column in df.columns for column in required_columns)
 
     assert set(df.columns) == set(required_columns)
+
+
+def test_load_multi_index():
+    df = load_multi_index()
+    assert isinstance(df, pd.DataFrame)
+    assert "DATE" in df.columns
+
+
+if __name__ == "__main__":
+    pytest.main([__file__])
