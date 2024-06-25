@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+
 from quantfinlib.util._fs_utils import get_project_root
 
 
