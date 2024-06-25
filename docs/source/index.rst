@@ -1,29 +1,30 @@
 .. include:: ../../README.md
     :parser: myst_parser.sphinx_
-     
+
 
 .. toctree::
-    :maxdepth: 2
-    :caption: Table of Contents:
-    :hidden:
-    :glob:
+   :caption: Examples
+   :maxdepth: 2
+   :hidden:
 
-    installation.md
-    changelog.md
-    contributing.md
+   toc_examples_sim
+
+
+
 
 .. toctree::
     :titlesonly:
     :maxdepth: 2
-    :caption: Modules:
+    :caption: Modules
 
-    Simulation <autoapi/quantfinlib/sim/index.rst>
+    sim <_autoapi_root/quantfinlib/sim/index.rst>
 
 
 .. toctree::
-    :hidden:
-    :caption: Examples:
     :maxdepth: 2
-    
-    notebook_links/random_walk.nblink
+    :caption: Pages
+    :hidden:
+    :glob:
 
+    contributing.md
+    changelog.md

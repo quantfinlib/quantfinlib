@@ -112,8 +112,14 @@ automodule_default_flags = ["members", "imported-members"]
 autoapi_dirs = ["../../quantfinlib"]
 autoapi_options = [
     "members",
+    "undoc-members",  # https://github.com/readthedocs/sphinx-autoapi/issues/448#issuecomment-2166095130
 ]
-
+autoapi_root = "_autoapi_root"
+autoapi_keep_files = True
+autoapi_template_dir = "_autoapi_templates"
+suppress_warnings += [
+    "config.cache",  # https://github.com/sphinx-doc/sphinx/issues/12300#issuecomment-2061022198
+]
 """
 autoapi_member_order = "alphabetical"
 autoapi_template_dir = "_autoapi_templates"
