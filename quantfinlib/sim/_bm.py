@@ -1,3 +1,13 @@
+"""
+Brownian Motion simulation
+
+Classes in this module:
+
+BrownianMotion()
+"""
+
+__all__ = ["BrownianMotion"]
+
 from typing import Union, Optional
 from sklearn.base import BaseEstimator
 import pandas as pd
