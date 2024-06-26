@@ -1,0 +1,15 @@
+[flake8]
+ignore = D205, W293
+max-line-length = 120
+docstring-convention=numpy
+per-file-ignores =
+    */__init__.py:F401,
+exclude =
+    .git/,
+    __pycache__/,
+    docs/,
+    tests/,
+    build/,
+    .eggs/,
+    conf.py,
+    config/,

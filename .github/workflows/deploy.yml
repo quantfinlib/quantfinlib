@@ -2,7 +2,9 @@ name: test workflow
 
 on:
   push:
-    branches: [main]
+    branches: 
+      - main
+      - 'feature/**'
   pull_request:
     branches: [main]
   release:
@@ -47,11 +49,23 @@ jobs:
           github-token: ${{ secrets.COVERALL_TOKEN }}
           path-to-lcov: coverage.xml
   
-
+  # Run flake8
+  flake8:
+    runs-on: ubuntu-latest
+    steps:
+      # Clone the repository
+      - name: Checkout the quantfinlib repository
+        uses: actions/checkout@v4
+      # Run flake8
+      - name: Lint
+        uses: py-actions/flake8@v2
+        with:
+          args: "--config .flake8"
+      
   # build wheel and deploy to pypi
   deploy:
     # Needs tests to be run successfully before deploying
-    needs: [tests]
+    needs: [tests, flake8]
     runs-on: ubuntu-latest
     # Run only if there is a published release
     if: github.event_name == 'release' && github.event.action == 'published'
@@ -60,7 +74,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
-          python-version: '3.x'
+          python-version: '3.9'
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip

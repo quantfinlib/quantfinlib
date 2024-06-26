@@ -1,5 +1,5 @@
 """
-Brownian Motion simulation
+Brownian Motion simulation.
 
 Classes in this module:
 
@@ -15,7 +15,7 @@ import numpy as np
 
 
 class BrownianMotion(BaseEstimator):
-    """Brownian Motion simulation"""
+    """Brownian Motion simulation."""
 
     def __init__(self, drift=0.0, vol=0.1, cor=None):
         # Parameters
@@ -39,7 +39,20 @@ class BrownianMotion(BaseEstimator):
         dt: Optional[float],
         **kwargs
     ):
+        """Estimate volatility and drift from a time series.
 
+        Parameters
+        ----------
+        x : Union[np.ndarray, pd.DataFrame, pd.Series]
+            The time series to estimate drift and volatility from.
+        dt : Optional[float]
+            The time step between two observations.
+        
+        Returns
+        -------
+        BrownianMotion
+            The fitted model.
+        """
         # Make sure that x is a 2d array
         x_ = np.asarray(x)
         if x_.ndim == 1:
@@ -75,7 +88,27 @@ class BrownianMotion(BaseEstimator):
         random_state: Optional[int] = None,
         include_x0: bool = True,
     ) -> np.array:
+        """
+        Generate a Brownian Motion path.
 
+        Parameters
+        ----------
+        x0 : Union[float, np.ndarray, pd.DataFrame, pd.Series, None]
+            The initial value of the path.
+        dt : Optional[float]
+            The time step between two observations.
+        num_steps : Optional[int]
+            The number of steps to simulate.
+        random_state : Optional[int], optional
+            The seed for the random number generator, by default None.
+        include_x0 : bool, optional
+            Include the initial value in the path, by default True.
+        
+        Returns
+        -------
+        np.array
+            The simulated path.
+        """
         # Handle default values
         if x0 is None:
             x0 = self.x0_
@@ -94,15 +127,15 @@ class BrownianMotion(BaseEstimator):
         rng = np.random.default_rng(random_state)
 
         # fill in Normal noise
-        ans[1 : num_steps + 1, :] = rng.normal(size=(num_steps, self.drift.shape[1]))
+        ans[1:num_steps + 1, :] = rng.normal(size=(num_steps, self.drift.shape[1]))
 
         # Optionally correlate the noise
         if self.L_ is not None:
-            ans[1 : num_steps + 1, :] = ans[1 : num_steps + 1, :] @ self.L_.T
+            ans[1:num_steps + 1, :] = ans[1:num_steps + 1, :] @ self.L_.T
 
         # Translate the noise with mean and variance
-        ans[1 : num_steps + 1, :] = (
-            ans[1 : num_steps + 1, :] * self.vol * dt**0.5 + self.drift * dt
+        ans[1:num_steps + 1, :] = (
+            ans[1:num_steps + 1, :] * self.vol * dt**0.5 + self.drift * dt
         )
 
         # compound
@@ -112,5 +145,3 @@ class BrownianMotion(BaseEstimator):
             return ans
         else:
             return ans[1:, :]
-
-        return ans

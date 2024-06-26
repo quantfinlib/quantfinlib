@@ -3,7 +3,7 @@ from typing import Union
 
 
 def get_project_root(relative_filepath: Union[Path, str, None] = None) -> Path:
-    """Returns the project's root directory: '../quantfinlib/'.
+    """Return the project's root directory: '../quantfinlib/'.
 
     Parameters
     ----------
