@@ -20,12 +20,12 @@ exit /b
 echo formatting code with isort
 poetry run isort .
 echo formatting code with black
-poetry run python -m black mlops
+poetry run python -m black quantfinlib
 exit /b
 
 :lint
 echo run flake8
-poetry run flake8 mlops --per-file-ignores="__init__.py:F401" --ignore="D205" --docstring-convention="numpy" --max-line-length=120
+poetry run flake8 quantfinlib --per-file-ignores="__init__.py:F401" --ignore="D205" --docstring-convention="numpy" --max-line-length=120
 exit /b
 
 :major
