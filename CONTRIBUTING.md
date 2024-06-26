@@ -146,7 +146,8 @@ precommit, black, and isort libraries belong to the dev dependencies. So in orde
 poetry install --with dev
 ```
 
-Then runing `poetry run pre-commit install` will initialize a file named `pre-commit` in the following path `.git/hooks/`. Remove the content from that file and write the following content in that file:
+Runing `poetry run pre-commit install` will create a file named `pre-commit` in the following path `.git/hooks/`. 
+Remove the content of that file and write following in that file:
 
 ```
 #!/bin/sh

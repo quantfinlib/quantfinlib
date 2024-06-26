@@ -1,32 +1,33 @@
 .. include:: ../../README.md
     :parser: myst_parser.sphinx_
-     
+
+
+.. toctree::
+   :caption: Examples
+   :maxdepth: 2
+   :hidden:
+
+   toc_examples_sim
+   toc_example_datasets
+
+
+
+
+.. toctree::
+    :titlesonly:
+    :maxdepth: 2
+    :caption: Modules
+
+    sim <_autoapi_root/quantfinlib/sim/index.rst>
+    dataloader <_autoapi_root/quantfinlib/datasets/index.rst>
+
 
 .. toctree::
     :maxdepth: 2
-    :caption: Table of Contents:
+    :caption: Pages
     :hidden:
     :glob:
 
-    installation.md
-    changelog.md
     contributing.md
-
-.. toctree::
-    :hidden:
-    :maxdepth: 2
-    :caption: Modules:
-
-    .. Home <_autoapi_root/quantfinlib/index.rst>
-    .. Sim <_autoapi_root/quantfinlib/sim/index.rst>
-
-
-.. toctree::
-    :hidden:
-    :caption: Examples:
-    :maxdepth: 2
-    
-    notebook_links/markov_chain.nblink
-    notebook_links/random_walk.nblink
-    notebook_links/scanning_label.nblink
+    changelog.md
 
