@@ -155,13 +155,5 @@ Remove the content of that file and write following in that file:
 poetry run isort .
 # Run black on all files
 poetry run python -m black quantfinlib
-
-# Check if there are any changes
-if ! git diff --quiet; then
-  # Stage all changes
-  git add .
-  # Commit the changes with a message
-  git commit -ammend -m "reformatted files with black"
-fi
 ```
 
