@@ -1,5 +1,4 @@
-import logging
-from pathlib import Path
+"""Functions to load example datasets in quantfinlib."""
 
 import pandas as pd
 

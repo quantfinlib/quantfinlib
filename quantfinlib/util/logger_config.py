@@ -1,7 +1,8 @@
+"""Utility module to configure the logger."""
+
 import logging
 import logging.config
-from pathlib import Path
-from typing import Optional, Union
+from typing import Optional
 
 import yaml
 
@@ -11,7 +12,7 @@ logger: Optional[logging.Logger] = None
 
 
 def configure_logger():
-    """Configures the logger using the base.yaml configuration file.
+    """Configure the logger using the base.yaml configuration file.
 
     Returns
     -------
@@ -36,7 +37,7 @@ def configure_logger():
 
 
 def get_logger() -> logging.Logger:
-    """Returns a configured logger object.
+    """Return a configured logger object.
     Ensures that the logger is configured only once.
 
     Returns
