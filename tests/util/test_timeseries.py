@@ -1,8 +1,10 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 import pytest
 
-from quantfinlib.util.timeseries import infer_time_series_resolution, time_series_resolution_duration
+from quantfinlib.util.timeseries import (infer_time_series_resolution,
+                                         time_series_resolution_duration)
+
 
 def _make_df(freq):  
     date_rng = pd.date_range(start='2020-01-12', end='2024-12-31', freq=freq)

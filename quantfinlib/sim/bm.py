@@ -1,7 +1,8 @@
-from typing import Union, Optional
-from sklearn.base import BaseEstimator
-import pandas as pd
+from typing import Optional, Union
+
 import numpy as np
+import pandas as pd
+from sklearn.base import BaseEstimator
 
 
 class BrownianMotion(BaseEstimator):
