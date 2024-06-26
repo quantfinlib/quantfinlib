@@ -46,7 +46,19 @@ jobs:
         with:
           github-token: ${{ secrets.COVERALL_TOKEN }}
           path-to-lcov: coverage.xml
-  
+  # Run flake8
+  flake8:
+    runs-on: ubuntu-latest
+    steps:
+      # Clone the repository
+      - name: Checkout the quantfinlib repository
+        uses: actions/checkout@v4
+      # Run flake8
+      - name: Lint
+        uses: py-actions/flake8@v2
+        with:
+          args: "--config .flake8"
+
 
   # build wheel and deploy to pypi
   deploy:

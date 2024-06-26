@@ -1,11 +1,9 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 import pytest
 
-from quantfinlib.util._timeseries import (
-    infer_time_series_resolution,
-    time_series_resolution_duration,
-)
+from quantfinlib.util._timeseries import (infer_time_series_resolution,
+                                          time_series_resolution_duration)
 
 
 def _make_df(freq):

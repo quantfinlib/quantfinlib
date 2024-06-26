@@ -133,3 +133,27 @@ $ git push --tags
 ```
 
 GitHub Actions will then deploy to PyPI if tests pass.
+
+
+## Formatting the code
+
+black is code formatter that helps you reformat the code such that it follows the PEP8 rules (see https://peps.python.org/pep-0008/). isort is a library that sorts your import statements in a consistent and logical order. 
+
+We use precommit to automatically run black and isort on the quantfinlib library and reformat the source code if necessary. 
+precommit, black, and isort libraries belong to the dev dependencies. So in order to have them installed in your poetry environment, make sure to run the following.
+
+```
+poetry install --with dev
+```
+
+Runing `poetry run pre-commit install` will create a file named `pre-commit` in the following path `.git/hooks/`. 
+Remove the content of that file and write following in that file:
+
+```
+#!/bin/sh
+# Run isort on all files
+poetry run isort .
+# Run black on all files
+poetry run python -m black quantfinlib
+```
+
