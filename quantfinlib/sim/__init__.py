@@ -22,4 +22,3 @@ from ._ou import *
 __all__ = _bm.__all__.copy()
 __all__ += _gbm.__all__
 __all__ += _ou.__all__
-print("sim __all__ = ", __all__)

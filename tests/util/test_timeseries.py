@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import pytest
 
-from quantfinlib.util._timeseries import (
+from quantfinlib._datatypes.timeseries import (
     infer_time_series_resolution,
     time_series_resolution_duration,
 )

@@ -1,16 +1,15 @@
 from typing import Optional
 import pandas as pd
 
-
-def infer_time_series_resolution(ts_obj) -> Optional[str]:
+def time_series_freq(ts_obj) -> Optional[str]:
     """
-    Determine the resolution of a time series.
+    Determine the frequency of a time series.
 
     This function analyzes the index of a pandas DataFrame or Series to determine
-    if the time series has a daily resolution of 7 days a week, a working-day
-    resolution of roughly 5 days a week, weekly, monthly, quarterly, or yearly
-    resolution. Additionally, it can distinguish month-end, month-start, quarter-end,
-    quarter-start, year-end, and year-start resolutions.
+    if the time series has a daily frequency of 7 days a week, a working-day
+    frequency of roughly 5 days a week, weekly, monthly, quarterly, or yearly
+    frequency. Additionally, it can distinguish month-end, month-start, quarter-end,
+    quarter-start, year-end, and year-start alignment.
 
     Parameters
     ----------
@@ -35,7 +34,7 @@ def infer_time_series_resolution(ts_obj) -> Optional[str]:
 
     Notes
     -----
-    The function requires at least three time points to determine the resolution.
+    The function requires at least three time points to determine the frequency.
     It checks the frequency of time deltas and specific characteristics of the
     time series index to classify its resolution.
 
@@ -47,28 +46,32 @@ def infer_time_series_resolution(ts_obj) -> Optional[str]:
     >>> df = pd.DataFrame(date_rng, columns=['date'])
     >>> df['data'] = np.random.randn(len(date_rng))
     >>> df = df.set_index('date')
-    >>> infer_time_series_resolution(df)
+    >>> time_series_freq(df)
     'D'
 
     >>> date_rng = pd.bdate_range(start='2022-01-01', end='2022-01-15')
     >>> df = pd.DataFrame(date_rng, columns=['date'])
     >>> df['data'] = np.random.randn(len(date_rng))
     >>> df = df.set_index('date')
-    >>> infer_time_series_resolution(df)
+    >>> time_series_freq(df)
     'B'
     """
-    if not isinstance(ts_obj, (pd.DataFrame, pd.Series)):
-        return None  # "The provided object is not a pandas DataFrame or Series."
+    if not isinstance(ts_obj, (pd.DataFrame, pd.Series, pd.DatetimeIndex)):
+        return None  # "The provided object is not a pandas DataFrame, Series or DatetimeIndex."
 
-    if not isinstance(ts_obj.index, pd.DatetimeIndex):
-        return None  # "The provided object does not have a DateTimeIndex."
+    if isinstance(ts_obj, (pd.DataFrame, pd.Series)):
+        if not isinstance(ts_obj.index, pd.DatetimeIndex):
+            return None  # "The provided object does not have a DateTimeIndex."
+        dt_ndx = ts_obj.index
+    else:
+        dt_ndx = ts_obj
 
     # Calculate the time deltas between consecutive time points
-    time_deltas = ts_obj.index.to_series().diff().dropna()
+    time_deltas = dt_ndx.to_series().diff().dropna()
 
     # Ensure there are enough data points to make a determination
     if len(time_deltas) < 2:
-        return None  # "The time series index must contain more than one unique time point to determine resolution."
+        return None  # "The time series index must contain more than two time point to determine its frequency."
 
     # Count the occurrences of each time delta
     delta_counts = time_deltas.value_counts()
@@ -104,19 +107,19 @@ def infer_time_series_resolution(ts_obj) -> Optional[str]:
     if (month_starts >= 2) and (len(ts_obj.index) - month_starts <= 2):
         return "MS"
 
-    # Check for daily resolution (7 days a week)
+    # Check for daily frequency (7 days a week)
     daily_count = delta_counts.get(pd.Timedelta(days=1), 0)
     daily_resolution = len(time_deltas) - daily_count <= 2
     if daily_resolution:
         return "D"
 
-    # Check for working-day resolution (5 days a week)
+    # Check for working-day frequency (5 days a week)
     weekday_deltas = time_deltas[time_deltas.dt.days.isin([1, 3])]
     weekday_resolution = (len(weekday_deltas) / len(time_deltas)) >= 0.9
     if weekday_resolution:
         return "B"
 
-    # Check for weekly resolution (timesteps of 7 days)
+    # Check for weekly frequency (timesteps of 7 days)
     weekly_count = delta_counts.get(pd.Timedelta(days=7), 0)
     if (weekly_count >= 2) and (len(time_deltas) - weekly_count <= 2):
         return "W"
@@ -124,8 +127,8 @@ def infer_time_series_resolution(ts_obj) -> Optional[str]:
     return None
 
 
-# Private dictionary mapping time series resolutions to their respective durations in years
-_time_series_resolution_duration_map = {
+# Private dictionary mapping time series frequency to their respective durations in years
+_time_series_freq_to_duration_map = {
     "D": 1.0 / 365.0,
     "B": 1.0 / 252.0,
     "W": 7.0 / 365.0,
@@ -138,13 +141,13 @@ _time_series_resolution_duration_map = {
 }
 
 
-def time_series_resolution_duration(freq: str) -> Optional[float]:
+def time_series_freq_to_duration(freq: str) -> Optional[float]:
     """
     Get the duration of a time series resolution in years.
 
     This function takes a frequency code representing the time series resolution
     and returns the corresponding duration in years. The mapping is based on the
-    private dictionary `_time_series_resolution_duration_map`.
+    private dictionary `_time_series_freq_to_duration_map`.
 
     Parameters
     ----------
@@ -168,19 +171,22 @@ def time_series_resolution_duration(freq: str) -> Optional[float]:
 
     Examples
     --------
-    >>> time_series_resolution_duration('D')
+    >>> time_series_freq_to_duration('D')
     0.0027397260273972603
 
-    >>> time_series_resolution_duration('B')
+    >>> time_series_freq_to_duration('B')
     0.003968253968253968
 
-    >>> time_series_resolution_duration('W')
+    >>> time_series_freq_to_duration('W')
     0.019178082191780823
 
-    >>> time_series_resolution_duration('ME')
+    >>> time_series_freq_to_duration('ME')
     0.08333333333333333
 
-    >>> time_series_resolution_duration('XYZ')  # Unrecognized frequency code
+    >>> time_series_freq_to_duration('XYZ')  # Unrecognized frequency code
     None
     """
-    return _time_series_resolution_duration_map.get(freq, None)
+
+    #  secs = pd.to_timedelta(pd.tseries.frequencies.to_offset("H")).total_seconds()
+
+    return _time_series_freq_to_duration_map.get(freq, None)
