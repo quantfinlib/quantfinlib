@@ -132,10 +132,13 @@ _time_series_freq_to_duration_map = {
     "D": 1.0 / 365.0,
     "B": 1.0 / 252.0,
     "W": 7.0 / 365.0,
+    "M": 1.0 / 12.0,
     "ME": 1.0 / 12.0,
     "MS": 1.0 / 12.0,
+    "Q": 1.0 / 4.0,
     "QE": 1.0 / 4.0,
     "QS": 1.0 / 4.0,
+    "Y": 1.0,
     "YE": 1.0,
     "YS": 1.0,
 }
@@ -157,10 +160,13 @@ def time_series_freq_to_duration(freq: str) -> Optional[float]:
         * 'D'  : Daily resolution (7 days a week) = 1/365
         * 'B'  : Working-day resolution (roughly 5 days a week) = 1/252
         * 'W'  : Weekly resolution = 7/365
+        * 'M'  : Monthly resolution = 1/12
         * 'ME' : Month-end resolution = 1/12
         * 'MS' : Month-start resolution = 1/12
+        * 'Q' : Quarterly resolution = 1/4
         * 'QE' : Quarter-end resolution = 1/4
         * 'QS' : Quarter-start resolution = 1/4
+        * 'Y' : Yearly resolution = 1
         * 'YE' : Year-end resolution = 1
         * 'YS' : Year-start resolution = 1
 

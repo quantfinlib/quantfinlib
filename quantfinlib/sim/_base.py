@@ -6,7 +6,7 @@ from quantfinlib._datatypes.timeseries import time_series_freq_to_duration
 
 
 class SimHelperBase:
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         # Info about the data used for fitting        
         self.fit_container_dtype_ = None
 
@@ -27,8 +27,8 @@ class SimHelperBase:
 
     def inspect_and_normalize_fit_args(
         self,
-        x: Union[np.ndarray, pd.DataFrame, pd.Series],
-        dt: Optional[float]):
+        x: Union[list, np.ndarray, pd.DataFrame, pd.Series],
+        dt: Optional[Union[float, int]]):
 
         self.fit_container_dtype_ = type(x)
 
@@ -44,6 +44,8 @@ class SimHelperBase:
                 self.fit_index_min_ = x.index.min()
                 self.fit_index_max_ = x.index.max()
                 self.fit_index_freq_ = pd.infer_freq(x.index)
+        elif isinstance(x, list):
+            values = np.array(x)
         else: # np.ndarray
             values = x
 
@@ -54,8 +56,10 @@ class SimHelperBase:
         if dt is None:
             if self.fit_index_freq_ is not None:
                 dt = time_series_freq_to_duration(self.fit_index_freq_)
+                if dt is None:
+                    raise ValueError("Unable to determine dt based on freq", self.fit_index_freq_)
             else:
-                raise ValueError("Unable to determine dt")
+                raise ValueError("Unable to infer dt")
 
         # validation
         assert values.ndim == 2
@@ -73,8 +77,8 @@ class SimHelperBase:
 
     def normalize_sim_path_args(
         self,
-        x0: Optional[Union[float, np.ndarray, pd.DataFrame, pd.Series, str]] = None,
-        dt: Optional[float] = None,
+        x0: Optional[Union[float, int, list, np.ndarray, pd.DataFrame, pd.Series, str]] = None,
+        dt: Optional[Union[float, int]] = None,
         label_start = None,
         label_freq: Optional[str] = None):
 
@@ -109,9 +113,11 @@ class SimHelperBase:
         elif isinstance(x0, str):
             raise ValueError(f'x0: Unknown string value "{x0}", valid string values are "first" or "last".')
         elif isinstance(x0, float):
-            x0 = np.ndarray([[x0]])
-        elif isinstance(xp0, list):
-            x0 = np.ndarray(x0)
+            x0 = np.array([[x0]])
+        elif isinstance(x0, int):
+            x0 = np.array([[x0]], dtype=float)
+        elif isinstance(x0, list):
+            x0 = np.array(x0)
         elif isinstance(x0, (pd.DataFrame, pd.Series)):
             x0 = x0.to_numpy()
         assert isinstance(x0, np.ndarray)
@@ -137,7 +143,8 @@ class SimHelperBase:
         self,
         ans: np.ndarray,
         label_start: Optional[str],
-        label_end: Optional[str]
+        label_freq: Optional[str],
+        include_x0: bool = True
         ):
 
         need_labels = (

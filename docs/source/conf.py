@@ -17,6 +17,7 @@ extensions = [
     "nbsphinx",  # Include Jupyter notebooks (examples)
     "nbsphinx_link",  # Link to Jupyternotebook that are outside the /docs tree
     "matplotlib.sphinxext.plot_directive",  # A directive for including a matplotlib plot in a Sphinx document.
+    "sphinx_plotly_directive",  # A directive for including plotly plots in a Sphinx document.
     "sphinx_exec_code",  # executing python code snippets in the docs and showing result
 ]
 
@@ -120,6 +121,7 @@ autoapi_template_dir = "_autoapi_templates"
 suppress_warnings += [
     "config.cache",  # https://github.com/sphinx-doc/sphinx/issues/12300#issuecomment-2061022198
 ]
+
 """
 autoapi_member_order = "alphabetical"
 autoapi_template_dir = "_autoapi_templates"
