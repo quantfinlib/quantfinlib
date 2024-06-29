@@ -39,3 +39,4 @@ class GeometricBrownianMotion:
 
         """
         return self.a*self.b*p
+

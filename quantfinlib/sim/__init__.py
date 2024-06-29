@@ -1,11 +1,11 @@
 """
-Simulation models
+Simulation models.
 =================
 
 This module contains routines for generating random price scenarions.
 
 
-.. currentmodule:: quantfinlib.sim 
+.. currentmodule:: quantfinlib.sim
 
 .. autosummary::
    :toctree: _autosummary
@@ -15,10 +15,12 @@ This module contains routines for generating random price scenarions.
    OrnsteinUhlenbeck       Mean reverting noise model.
 """
 
-from ._bm import *
-from ._gbm import *
-from ._ou import *
+from ._bm import *  # noqa: F403
+from ._gbm import *  # noqa: F403
+from ._ou import *  # noqa: F403
+
 
 __all__ = _bm.__all__.copy()
 __all__ += _gbm.__all__
 __all__ += _ou.__all__
+

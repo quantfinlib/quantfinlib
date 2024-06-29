@@ -1,5 +1,5 @@
 """
-Brownian Motion simulation
+Brownian Motion simulation.
 
 Classes in this module:
 
@@ -33,7 +33,6 @@ class BrownianMotionBase(BaseEstimator, SimHelperBase):
         else:
             self.cor = np.asarray(cor)
             self.L_ = np.linalg.cholesky(self.cor)
-
         
     def fit(self, x: np.ndarray, dt: float):
 
@@ -58,6 +57,7 @@ class BrownianMotionBase(BaseEstimator, SimHelperBase):
 
     def path_sample(
         self,
+
         x0: Union[float, np.ndarray],
         dt: float,
         num_steps: int,
@@ -71,7 +71,7 @@ class BrownianMotionBase(BaseEstimator, SimHelperBase):
 
         # set the initial value of the simulation
         SimHelperBase.set_x0(ans, x0)
-        
+
         # Create a Generator instance with the seed
         rng = np.random.default_rng(random_state)
 
@@ -91,11 +91,11 @@ class BrownianMotionBase(BaseEstimator, SimHelperBase):
         # reshape back
         ans[1 : num_steps + 1, :] = tmp.reshape(-1, num_paths * num_cols)
 
+
         # compound
         ans = np.cumsum(ans, axis=0)
         
         return ans
-
 
 class BrownianMotion(BrownianMotionBase):
     r"""A class for simulating Brownian motion paths with given drift and volatility.
@@ -250,3 +250,4 @@ class BrownianMotion(BrownianMotionBase):
         ans = self.format_ans(ans, label_start, label_freq, include_x0, num_paths)
 
         return ans
+
