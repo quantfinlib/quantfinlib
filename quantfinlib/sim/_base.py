@@ -145,7 +145,6 @@ class SimHelperBase:
 
     def _make_columns_names(self, num_target_columns: int = 1, num_paths: int = 1):
         num_base_columns = int(num_target_columns // num_paths)
-        print('_make_columns_names: num_target_columns=',num_target_columns,' num_paths=', num_paths, ' num_base_columns=',num_base_columns)
 
         assert num_target_columns == (num_paths * num_base_columns)
 
@@ -236,3 +235,8 @@ class SimHelperBase:
                 return ans.iloc[1:, :]
             else:
                 return ans[1:, :]
+    
+    @staticmethod
+    def set_x0(ans: np.ndarray, x0: np.ndarray):
+        x0 = np.asarray(x0).reshape(1, -1)
+        ans[0, :] = np.tile(x0, ans.shape[1] // x0.shape[1])

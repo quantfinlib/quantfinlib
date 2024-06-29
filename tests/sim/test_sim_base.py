@@ -409,3 +409,16 @@ def test_format_ans_ndarray_2D_to_array_exclude_x0():
     y = b.format_ans(x,None, None, num_paths=2, include_x0=False)
     assert isinstance(y, np.ndarray)
     assert y.shape[0] == 2
+
+def test_set_x0():
+    ans = np.zeros(shape=(4,12))
+    SimHelperBase.set_x0(ans, [10,20,30])
+    assert ans[0,0] == 10
+    assert ans[0,1] == 20
+    assert ans[0,2] == 30
+
+    assert ans[0,3] == 10
+    assert ans[0,4] == 20
+    assert ans[0,5] == 30
+    
+    assert ans[0,6] == 10

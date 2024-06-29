@@ -19,8 +19,8 @@ from quantfinlib.sim._base import SimHelperBase
 class BrownianMotionBase(BaseEstimator, SimHelperBase):
     """Brownian Motion base class"""
 
-    def __init__(self, drift=0.0, vol=0.1, cor=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, drift=0.0, vol=0.1, cor=None):
+        super().__init__()
 
         # Parameters
         self.drift = np.asarray(drift).reshape(1, -1)
@@ -36,8 +36,8 @@ class BrownianMotionBase(BaseEstimator, SimHelperBase):
 
         
     def fit(self, x: np.ndarray, dt: float):
-        
-        x = SimHelperBase.inspect_and_normalize_fit_args(x, dt)
+
+        x, dt = self.inspect_and_normalize_fit_args(x, dt)
         
         # changes from one row to the next
         dx = np.diff(x, axis=0)
