@@ -56,7 +56,7 @@ class BrownianMotionBase(BaseEstimator, SimHelperBase):
 
         return self
 
-    def sim_path(
+    def path_sample(
         self,
         x0: Union[float, np.ndarray],
         dt: float,
@@ -98,8 +98,7 @@ class BrownianMotionBase(BaseEstimator, SimHelperBase):
 
 
 class BrownianMotion(BrownianMotionBase):
-    r"""
-    A class for simulating Brownian motion paths with given drift and volatility.
+    r"""A class for simulating Brownian motion paths with given drift and volatility.
 
     Brownian motion is a continuous-time stochastic process used to model various random phenomena. In finance, it is commonly used to model the random behavior of asset prices.
 
@@ -109,7 +108,6 @@ class BrownianMotion(BrownianMotionBase):
 
         dX_t = \mu * dt +  \sigma * dW_t
     
-
     where:
 
     * :math:`dX_t` is the change in the process X at time t,
@@ -119,18 +117,22 @@ class BrownianMotion(BrownianMotionBase):
 
     Below an example of 10 Brownian motion paths:
 
+    Examples
+    --------
+
+    >>> bm = BrownianMotion(drift=0.05, vol=0.2)
+    >>> bm.path_sample(x0=100, dt=1/252, num_steps=252, num_paths=10)
+
     .. plotly::
 
         import plotly.express as px
         from quantfinlib.sim import BrownianMotion
 
         bm = BrownianMotion(drift=0.05, vol=0.2)
-        paths = bm.sim_path(x0=100, dt=1/252, num_steps=252, num_paths=10)
+        paths = bm.path_sample(x0=100, dt=1/252, num_steps=252, num_paths=10)
 
         fig = px.line(paths)
         fig.show()
-
-
 
 
     Properties and Limitations
@@ -151,29 +153,9 @@ class BrownianMotion(BrownianMotionBase):
     * Risk management: Brownian motion can be used to assess the risk and uncertainty in asset price movements over short time intervals.
 
 
-    Methods
-    -------
-
-    __init__(drift=0.0, vol=0.1, cor=None)
-        Initializes the BrownianMotion instance with specified drift and volatility.
-    
-    fit(x, dt, **kwargs)
-        Calibrates the Brownian motion model to the given paths.
-    
-    sim_path(x0=None, dt=None, num_steps=252, num_paths=1, label_start=None, label_freq=None, random_state=None, include_x0=True)
-        Simulates Brownian motion paths.
-    
-
-
-
-    Examples
-    --------
-
-    >>> bm = BrownianMotion(drift=0.05, vol=0.2)
-    >>> bm.sim_path(x0=100, dt=1/252, num_steps=252, num_paths=10)
-
+    Member functions
+    ----------------
     """
-
 
     def __init__(self, drift=0.0, vol=0.1, cor=None):
         r"""Initializes the BrownianMotion instance with specified drift and volatility.
@@ -186,8 +168,9 @@ class BrownianMotion(BrownianMotionBase):
             The annualized volatility rate (default is 0.1).
         cor : optional
             Correlation matrix for multivariate Brownian motion (default is None).
+        
         """        
-        super().__init__(drift, vol, cor)
+        super().__init__(drift=drift, vol=vol, cor=cor)
 
     def fit(
         self,
@@ -195,8 +178,7 @@ class BrownianMotion(BrownianMotionBase):
         dt: Optional[float],
         **kwargs
     ):
-        """
-        Calibrates the Brownian motion model to the given path(s).
+        r"""Calibrates the Brownian motion model to the given path(s).
 
         Parameters
         ----------
@@ -211,12 +193,13 @@ class BrownianMotion(BrownianMotionBase):
         -------
         self : BrownianMotion
             The fitted model instance.
+        
         """
         values, dt = self.inspect_and_normalize_fit_args(x, dt)
         super().fit(values, dt)
         return self
 
-    def sim_path(
+    def path_sample(
         self,
         x0: Optional[Union[float, np.ndarray, pd.DataFrame, pd.Series, str]] = None,
         dt: Optional[float] = None,
@@ -227,8 +210,7 @@ class BrownianMotion(BrownianMotionBase):
         random_state: Optional[int] = None,
         include_x0: bool = True
     ) -> Union[np.ndarray, pd.DataFrame, pd.Series]:
-        """
-        Simulates Brownian motion paths.
+        r"""Simulates Brownian motion paths.
 
         Parameters
         ----------
@@ -253,12 +235,13 @@ class BrownianMotion(BrownianMotionBase):
         -------
         Union[np.ndarray, pd.DataFrame, pd.Series]
             The simulated Brownian motion paths.
+        
         """
         # handle arg defaults
         x0, dt, label_start, label_freq = self.normalize_sim_path_args(x0, dt, label_start, label_freq)
                 
         # do the sims using the actual implementation in the base class
-        ans = super().sim_path(x0, dt, num_steps, num_paths, random_state)
+        ans = super().path_sample(x0, dt, num_steps, num_paths, random_state)
 
         # format the ans
         ans = self.format_ans(ans, label_start, label_freq, include_x0)
