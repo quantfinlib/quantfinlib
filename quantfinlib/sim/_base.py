@@ -35,10 +35,10 @@ class SimHelperBase:
         # Collect and remember DatetimeIndex data if available
         if isinstance(x, (pd.DataFrame, pd.Series)):
             values = x.to_numpy()
-            if isinstance(x, pd.DataFrame):
-                self.fit_column_names_ = x.columns.values.tolist()
-            elif isinstance(x, pd.Series):
+            if isinstance(x, pd.Series):
                 self.fit_column_names_ = [x.name]
+            else: # isinstance(x, pd.DataFrame)
+                self.fit_column_names_ = x.columns.values.tolist()
             if isinstance(x.index, pd.DatetimeIndex):
                 self.fit_index_name_ = x.index.name
                 self.fit_index_min_ = x.index.min()
@@ -80,7 +80,9 @@ class SimHelperBase:
         x0: Optional[Union[float, int, list, np.ndarray, pd.DataFrame, pd.Series, str]] = None,
         dt: Optional[Union[float, int]] = None,
         label_start = None,
-        label_freq: Optional[str] = None):
+        label_freq: Optional[str] = None,
+        x0_default: float = 0.0 
+        ):
 
         need_labels = (
             (self.fit_index_min_ is not None) 
@@ -97,21 +99,22 @@ class SimHelperBase:
                 if need_labels and (label_start is None):
                     label_start = self.fit_index_min_
             else:
-                x0 = np.array([[0.0]])
-        elif x0 == "first":
-            if not is_fitted:
-                raise ValueError('x0: "first" can not be used because the model is not fitted.')
-            x0 = self.fit_x0_
-            if need_labels and (label_start is None):
-                label_start = self.fit_index_min_
-        elif x0 == "last":
-            if not is_fitted:
-                raise ValueError('x0: "last" can not be used because the model is not fitted.')            
-            x0 = self.fit_xn_
-            if need_labels and (label_start is None):
-                label_start = self.fit_index_max_
+                x0 = np.array([[x0_default]])
         elif isinstance(x0, str):
-            raise ValueError(f'x0: Unknown string value "{x0}", valid string values are "first" or "last".')
+            if x0 == "first":
+                if not is_fitted:
+                    raise ValueError('x0: "first" can not be used because the model is not fitted.')
+                x0 = self.fit_x0_
+                if need_labels and (label_start is None):
+                    label_start = self.fit_index_min_
+            elif x0 == "last":
+                if not is_fitted:
+                    raise ValueError('x0: "last" can not be used because the model is not fitted.')            
+                x0 = self.fit_xn_
+                if need_labels and (label_start is None):
+                    label_start = self.fit_index_max_
+            else:
+                raise ValueError(f'x0: Unknown string value "{x0}", valid string values are "first" or "last".')
         elif isinstance(x0, float):
             x0 = np.array([[x0]])
         elif isinstance(x0, int):

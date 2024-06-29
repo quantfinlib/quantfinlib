@@ -68,7 +68,7 @@ def time_series_freq(ts_obj) -> Optional[str]:
 
     # Calculate the time deltas between consecutive time points
     time_deltas = dt_ndx.to_series().diff().dropna()
-
+    
     # Ensure there are enough data points to make a determination
     if len(time_deltas) < 2:
         return None  # "The time series index must contain more than two time point to determine its frequency."
@@ -77,34 +77,33 @@ def time_series_freq(ts_obj) -> Optional[str]:
     delta_counts = time_deltas.value_counts()
 
     # Check if timestamps are year-ends
-    year_ends = ts_obj.index.is_year_end.sum()
-    if (year_ends >= 2) and (len(ts_obj.index) - year_ends <= 2):
+    year_ends = dt_ndx.is_year_end.sum()
+    if (year_ends >= 2) and (len(dt_ndx) - year_ends <= 2):
         return "YE"
 
     # Check if timestamps are year-starts
-    year_starts = ts_obj.index.is_year_start.sum()
-    if (year_starts >= 2) and (len(ts_obj.index) - year_starts <= 2):
+    year_starts = dt_ndx.is_year_start.sum()
+    if (year_starts >= 2) and (len(dt_ndx) - year_starts <= 2):
         return "YS"
 
     # Check if timestamps are quarter-ends
-    quarter_ends = ts_obj.index.is_quarter_end.sum()
-    if (quarter_ends >= 2) and (len(ts_obj.index) - quarter_ends <= 2):
+    quarter_ends =  dt_ndx.is_quarter_end.sum()
+    if (quarter_ends >= 2) and (len(dt_ndx) - quarter_ends <= 2):
         return "QE"
 
     # Check if timestamps are quarter-starts
-    quarter_starts = ts_obj.index.is_quarter_start.sum()
-    if (quarter_starts >= 2) and (len(ts_obj.index) - quarter_starts <= 2):
+    quarter_starts = dt_ndx.is_quarter_start.sum()
+    if (quarter_starts >= 2) and (len(dt_ndx) - quarter_starts <= 2):
         return "QS"
 
     # Check if timestamps are month-ends
-    print("is_month_end", ts_obj.index.is_month_end)
-    month_ends = ts_obj.index.is_month_end.sum()
-    if (month_ends >= 2) and (len(ts_obj.index) - month_ends <= 2):
+    month_ends = dt_ndx.is_month_end.sum()
+    if (month_ends >= 2) and (len(dt_ndx) - month_ends <= 2):
         return "ME"
 
     # Check if timestamps are month-starts
-    month_starts = ts_obj.index.is_month_start.sum()
-    if (month_starts >= 2) and (len(ts_obj.index) - month_starts <= 2):
+    month_starts = dt_ndx.is_month_start.sum()
+    if (month_starts >= 2) and (len(dt_ndx) - month_starts <= 2):
         return "MS"
 
     # Check for daily frequency (7 days a week)

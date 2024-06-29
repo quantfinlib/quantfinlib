@@ -215,15 +215,18 @@ class BrownianMotion(BrownianMotionBase):
         Parameters
         ----------
         x0 : Optional[Union[float, np.ndarray, pd.DataFrame, pd.Series, str]], optional
-            The initial value(s) of the paths (default is None).
+            The initial value(s) of the paths (default is None). The strings "first" and "last"
+            will set x0 to the first or last value of the datasets used in a `fit()` call.
         dt : Optional[float], optional
-            The time step between observations (default is None).
+            The time step between observations (default is None). If None we first fall-back to
+            a dt value using/derived during fitting `fit()`. If that's unavailable we default to 1/252.   
         num_steps : Optional[int], optional
             The number of time steps to simulate (default is 252).
         num_paths : Optional[int], optional
             The number of paths to simulate (default is 1).
-        label_start : optional
-            The start label for the simulated paths (default is None).
+        label_start : optional, date-time like.
+            The date-time start label for the simulated paths (default is None). When set this
+            function will return Pandas DataFrame with a DateTime index.
         label_freq : Optional[str], optional
             The frequency for labeling the time steps (default is None).
         random_state : Optional[int], optional

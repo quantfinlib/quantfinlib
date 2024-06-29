@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import pytest
+from numpy.testing import assert_allclose
 
 from quantfinlib.sim._base import SimHelperBase
 
@@ -11,7 +12,11 @@ def index_d():
     return pd.date_range('2020-9-12', periods=3, freq='B')
 
 def index_m():
-    return pd.date_range('2020-9-12', periods=3, freq='M')
+    return pd.date_range('2020-9-12', periods=3, freq='ME')
+
+def index_2d():
+    return pd.date_range('2020-9-12', periods=3, freq='2D')
+
 
 def x_list():
     return [0.5, -0.4, 1.0]
@@ -42,6 +47,10 @@ def x_dataframe1_b():
 
 def x_dataframe1_d():
     return pd.DataFrame(data=x_list(), columns=['a'], index=index_d())
+
+def x_dataframe1_2d():
+    return pd.DataFrame(data=x_list(), columns=['a'], index=index_2d())
+
 
 def x_dataframe1_m():
     return pd.DataFrame(data=x_list(), columns=['a'], index=index_m())
@@ -79,7 +88,7 @@ def test_sim_base_fit_x_types(x):
     b = SimHelperBase()
     dt = 0.1
     b.inspect_and_normalize_fit_args(x, dt)
-    
+
     assert b.fit_num_rows_ == 3
 
     if isinstance(x, np.ndarray):
@@ -120,3 +129,216 @@ def test_sim_base_fit_dt_inference_m(x):
     dt = None
     _, dt = b.inspect_and_normalize_fit_args(x, dt)
     assert dt == 1/12
+
+
+def test_sim_base_value_error_dt_1():
+    with pytest.raises(ValueError):
+        b = SimHelperBase()
+        _, dt = b.inspect_and_normalize_fit_args(x_dataframe1(), None)
+
+def test_sim_base_value_error_dt_2():
+    with pytest.raises(ValueError):
+        b = SimHelperBase()
+        _, dt = b.inspect_and_normalize_fit_args(x_dataframe1_2d(), None)
+
+
+def test_normalize_sim_path_args_1():
+    b = SimHelperBase()
+    x0 = None
+    dt = None
+    label_start = None
+    label_freq = None
+    x0, dt, label_start, label_freq = b.normalize_sim_path_args(x0, dt, label_start, label_freq, 3.12)
+    assert_allclose(x0, np.array([[3.12]]), rtol=1e-5, atol=1e-8)
+    assert dt == 1/252
+    assert label_start is None
+    assert label_freq is None
+
+
+def test_normalize_sim_path_args_1e1():
+    b = SimHelperBase()
+    x0 = "first"
+    dt = None
+    label_start = None
+    label_freq = None
+    with pytest.raises(ValueError):
+        x0, dt, label_start, label_freq = b.normalize_sim_path_args(x0, dt, label_start, label_freq, 3.12)
+
+def test_normalize_sim_path_args_1e2():
+    b = SimHelperBase()
+    x0 = "last"
+    dt = None
+    label_start = None
+    label_freq = None
+    with pytest.raises(ValueError):
+        x0, dt, label_start, label_freq = b.normalize_sim_path_args(x0, dt, label_start, label_freq, 3.12)
+
+
+def test_normalize_sim_path_args_2():
+    b = SimHelperBase()
+    x = x_dataframe1()
+    b.inspect_and_normalize_fit_args(x, 1/252)
+    x0 = None
+    dt = None
+    label_start = None
+    label_freq = None
+    x0, dt, label_start, label_freq = b.normalize_sim_path_args(x0, dt, label_start, label_freq)
+    assert_allclose(x0, x.values[0,:].reshape(1,-1), rtol=1e-5, atol=1e-8)
+    assert dt == 1/252
+    assert label_start is None
+    assert label_freq is None    
+
+def test_normalize_sim_path_args_3():
+    b = SimHelperBase()
+    x = x_dataframe1_d()
+    b.inspect_and_normalize_fit_args(x, None)
+    x0 = None
+    dt = None
+    label_start = None
+    label_freq = None
+    x0, dt, label_start, label_freq = b.normalize_sim_path_args(x0, dt, label_start, label_freq)
+    assert_allclose(x0, x.values[0,:].reshape(1,-1), rtol=1e-5, atol=1e-8)
+    assert dt == 1/365
+    assert label_start == x.index[0]
+    assert label_freq == "D"  
+
+def test_normalize_sim_path_args_4():
+    b = SimHelperBase()
+    x = x_dataframe1()
+    b.inspect_and_normalize_fit_args(x, 1/252)
+    x0 = "first"
+    dt = None
+    label_start = None
+    label_freq = None
+    x0, dt, label_start, label_freq = b.normalize_sim_path_args(x0, dt, label_start, label_freq)
+    assert_allclose(x0, x.values[0,:].reshape(1,-1), rtol=1e-5, atol=1e-8)
+    assert dt == 1/252
+    assert label_start is None
+    assert label_freq  is None    
+
+
+def test_normalize_sim_path_args_5():
+    b = SimHelperBase()
+    x = x_dataframe1()
+    b.inspect_and_normalize_fit_args(x, 1/252)
+    x0 = "last"
+    dt = None
+    label_start = None
+    label_freq = None
+    x0, dt, label_start, label_freq = b.normalize_sim_path_args(x0, dt, label_start, label_freq)
+    assert_allclose(x0, x.values[-1,:].reshape(1,-1), rtol=1e-5, atol=1e-8)
+    assert dt == 1/252
+    assert label_start is None
+    assert label_freq  is None    
+
+def test_normalize_sim_path_args_4t():
+    b = SimHelperBase()
+    x = x_dataframe1_d()
+    b.inspect_and_normalize_fit_args(x, None)
+    x0 = "first"
+    dt = None
+    label_start = None
+    label_freq = None
+    x0, dt, label_start, label_freq = b.normalize_sim_path_args(x0, dt, label_start, label_freq)
+    assert_allclose(x0, x.values[0,:].reshape(1,-1), rtol=1e-5, atol=1e-8)
+    assert dt == 1/365
+    assert label_start == x.index[0]
+    assert label_freq == "D"      
+
+
+def test_normalize_sim_path_args_5t():
+    b = SimHelperBase()
+    x = x_dataframe1_d()
+    b.inspect_and_normalize_fit_args(x, None)
+    x0 = "last"
+    dt = None
+    label_start = None
+    label_freq = None
+    x0, dt, label_start, label_freq = b.normalize_sim_path_args(x0, dt, label_start, label_freq)
+    assert_allclose(x0, x.values[-1,:].reshape(1,-1), rtol=1e-5, atol=1e-8)
+    assert dt == 1/365
+    assert label_start == x.index[-1]
+    assert label_freq == "D"
+
+
+def test_normalize_sim_path_args_value_error_1():
+    b = SimHelperBase()
+    x0 = "first"
+    dt = None
+    label_start = None
+    label_freq = None
+    with pytest.raises(ValueError):
+        x0, dt, label_start, label_freq = b.normalize_sim_path_args(x0, dt, label_start, label_freq)
+
+def test_normalize_sim_path_args_value_error_2():
+    b = SimHelperBase()
+    x0 = "lAST"
+    dt = None
+    label_start = None
+    label_freq = None
+    with pytest.raises(ValueError):
+        x0, dt, label_start, label_freq = b.normalize_sim_path_args(x0, dt, label_start, label_freq)
+
+
+def test_normalize_sim_path_args_x0_default():
+    b = SimHelperBase()
+    x0 = None
+    dt = None
+    label_start = None
+    label_freq = None
+    x0, dt, label_start, label_freq = b.normalize_sim_path_args(x0, dt, label_start, label_freq, 3.12)
+    assert_allclose(x0, np.array([[3.12]]), rtol=1e-5, atol=1e-8)
+
+def test_normalize_sim_path_args_x0_float():
+    b = SimHelperBase()
+    x0 = 3.14
+    dt = None
+    label_start = None
+    label_freq = None
+    x0, dt, label_start, label_freq = b.normalize_sim_path_args(x0, dt, label_start, label_freq, 3.12)
+    assert_allclose(x0, np.array([[3.14]]), rtol=1e-5, atol=1e-8)
+
+def test_normalize_sim_path_args_x0_int():
+    b = SimHelperBase()
+    x0 = 42
+    dt = None
+    label_start = None
+    label_freq = None
+    x0, dt, label_start, label_freq = b.normalize_sim_path_args(x0, dt, label_start, label_freq, 3.12)
+    assert_allclose(x0, np.array([[42]]), rtol=1e-5, atol=1e-8)
+
+def test_normalize_sim_path_args_x0_list():
+    b = SimHelperBase()
+    x0 = [13]
+    dt = None
+    label_start = None
+    label_freq = None
+    x0, dt, label_start, label_freq = b.normalize_sim_path_args(x0, dt, label_start, label_freq, 3.12)
+    assert_allclose(x0, np.array([[13]]), rtol=1e-5, atol=1e-8)
+
+def test_normalize_sim_path_args_x0_ndarray():
+    b = SimHelperBase()
+    x0 = np.array([2])
+    dt = None
+    label_start = None
+    label_freq = None
+    x0, dt, label_start, label_freq = b.normalize_sim_path_args(x0, dt, label_start, label_freq, 3.12)
+    assert_allclose(x0, np.array([[2]]), rtol=1e-5, atol=1e-8)    
+
+def test_normalize_sim_path_args_x0_series():
+    b = SimHelperBase()
+    x0 = pd.Series([5])
+    dt = None
+    label_start = None
+    label_freq = None
+    x0, dt, label_start, label_freq = b.normalize_sim_path_args(x0, dt, label_start, label_freq, 3.12)
+    assert_allclose(x0, np.array([[5]]), rtol=1e-5, atol=1e-8)    
+
+
+def test_normalize_sim_path_args_dt_set():
+    b = SimHelperBase()
+    x0 = pd.Series([5])
+    dt = 1/100
+    label_start = None
+    label_freq = None
+    x0, dt, label_start, label_freq = b.normalize_sim_path_args(x0, dt, label_start, label_freq, 3.12)

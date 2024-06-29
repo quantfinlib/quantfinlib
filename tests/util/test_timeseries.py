@@ -49,3 +49,7 @@ def test_time_series_resolution_duration():
     assert time_series_freq_to_duration("YS") == 1.0
     assert time_series_freq_to_duration("Banana") is None
     assert time_series_freq_to_duration(None) is None
+
+def test_time_series_freq_from_index():
+    df = _make_df('D')
+    assert time_series_freq(df.index) == 'D'
