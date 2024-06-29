@@ -142,48 +142,90 @@ class SimHelperBase:
 
         return x0, dt, label_start, label_freq
     
+
+    def _make_columns_names(self, num_target_columns: int = 1, num_paths: int = 1):
+        num_base_columns = int(num_target_columns // num_paths)
+        print('_make_columns_names: num_target_columns=',num_target_columns,' num_paths=', num_paths, ' num_base_columns=',num_base_columns)
+
+        assert num_target_columns == (num_paths * num_base_columns)
+
+        if self.fit_column_names_:
+            assert len(self.fit_column_names_) == num_base_columns
+            base_columns = self.fit_column_names_
+        else:
+            if num_base_columns > 1:
+                base_columns = [f'S{i}' for i in range(num_base_columns)]
+            else:
+                base_columns = ['S']
+
+        if num_paths == 1:
+            return base_columns
+
+        return [f"{c}_{i}" for i in range(num_paths) for c in base_columns]
+
+
+    def _make_date_time_index(self, num_rows: int, label_start: Optional[str], label_freq: Optional[str]):
+        if label_start is None:
+            label_start = self.fit_index_min_
+
+        if label_freq is None:
+            label_freq = self.fit_index_freq_
+
+        assert label_start is not None
+        assert label_freq is not None
+
+        return pd.date_range(
+            start=label_start, 
+            freq=label_freq, 
+            periods=num_rows,
+            name=self.fit_index_name_
+        )
+
     def format_ans(
         self,
         ans: np.ndarray,
         label_start: Optional[str],
         label_freq: Optional[str],
-        include_x0: bool = True
-        ):
+        include_x0: bool = True,
+        num_paths: int = 1
+        ) -> Union[np.ndarray, pd.Series, pd.DataFrame]:
 
-        need_labels = (
+        need_date_time_index = (
             (self.fit_index_min_ is not None) 
             or (label_start is not None)
             or (label_freq is not None)
         )
 
-        is_fitted = (self.fit_x0_ is not None)
+        need_columns = (
+            need_date_time_index or 
+            (self.fit_container_dtype_ is pd.Series) or
+            (self.fit_container_dtype_ is pd.DataFrame)
+        )
 
-        
-        # configure the return container
-        if need_labels:
-            assert label_start is not None
-            assert label_freq is not None
-            index = pd.date_range(
-                start=label_start, 
-                freq=label_freq, 
-                periods=num_num_steps + 1,
-                name=self.fit_index_name_
-            )
+        if need_date_time_index:
+            index = self._make_date_time_index(ans.shape[0], label_start, label_freq)
 
-            # Return a series if we fitted with a series, and if we only have 1 scenario
-            if isinstance(self.fit_container_dtype_, pd.Series) and (ans.shape[1] == 1):
+        if need_columns:
+            columns = self._make_columns_names(ans.shape[1], num_paths)
+
+        if need_date_time_index or need_columns:
+            # Return a Series is we have 1 column and didn't fit() 
+            # or, if we fitted with a Series
+            if (len(columns) == 1) and (
+                    (self.fit_container_dtype_ is pd.Series) or
+                    (self.fit_container_dtype_ is None)
+                    ):
                 ans = pd.Series(
-                    data = ans,
+                    data = ans.flatten(),
                     index = index,
-                    name = self.fit_column_names_[0] + '_0'
+                    name = columns[0]
                 )
+            # in all other cases return a pandas DataFrame
             else:
-                columns = [f"{c}_{i}" for i in range(num_paths) for c in self.fit_column_names_]
-
                 ans = pd.DataFrame(
                     data = ans,
-                    index= index,
-                    columns = columns
+                    columns = columns,
+                    index = index
                 )
 
         # Return ans, potentially strip away the first
@@ -194,8 +236,3 @@ class SimHelperBase:
                 return ans.iloc[1:, :]
             else:
                 return ans[1:, :]
-
-    @staticmethod
-    def set_x0(ans: np.ndarray, x0: np.ndarray):
-        x0 = x0.reshape(1, -1)
-        ans[0, :] = np.tile(x0, ans.shape[1] // x0.shape[1])

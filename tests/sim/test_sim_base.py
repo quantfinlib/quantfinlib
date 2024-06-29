@@ -342,3 +342,70 @@ def test_normalize_sim_path_args_dt_set():
     label_start = None
     label_freq = None
     x0, dt, label_start, label_freq = b.normalize_sim_path_args(x0, dt, label_start, label_freq, 3.12)
+
+
+def test_format_ans_ndarray_to_ndarray():
+    b = SimHelperBase()
+    x = np.arange(10).reshape(-1, 1)
+    y = b.format_ans(x, None, None)
+    assert isinstance(y, np.ndarray)
+
+def test_format_ans_ndarray_to_series_fit_labels_1():
+    b = SimHelperBase()
+    x, dt = b.inspect_and_normalize_fit_args(x_series_d(), None)
+    x = np.arange(10).reshape(-1, 1)
+    y = b.format_ans(x, '2000-01-01', None)
+    assert isinstance(y, pd.Series)
+
+def test_format_ans_ndarray_to_series_fit_labels_2():
+    b = SimHelperBase()
+    x, dt = b.inspect_and_normalize_fit_args(x_series_d(), None)
+    x = np.arange(10).reshape(-1, 1)
+    y = b.format_ans(x, None, 'D')
+    assert isinstance(y, pd.Series)
+
+def test_format_ans_ndarray_to_series_labels():
+    b = SimHelperBase()
+    x = np.arange(10).reshape(-1, 1)
+    y = b.format_ans(x, '2000-01-01', 'D')
+    assert isinstance(y, pd.Series)
+
+def test_format_ans_ndarray_to_series_fit():
+    b = SimHelperBase()
+    x, dt = b.inspect_and_normalize_fit_args(x_series_d(), None)
+    x_out = np.arange(10).reshape(-1, 1)
+    y = b.format_ans(x_out, None, None)
+    assert isinstance(y, pd.Series)
+
+# 2d
+def test_format_ans_ndarray_2D_to_series_labels():
+    b = SimHelperBase()
+    x = np.arange(12).reshape(-1, 2)
+    y = b.format_ans(x, '2000-01-01', 'D')
+    assert isinstance(y, pd.DataFrame)
+
+def test_format_ans_ndarray_2D_to_dataframe_labels_2paths():
+    b = SimHelperBase()
+    x = np.arange(12).reshape(-1, 2)
+    y = b.format_ans(x, '2000-01-01', 'D', num_paths=2)
+    assert isinstance(y, pd.DataFrame)
+
+def test_format_ans_ndarray_2D_to_dataframe_2paths_2cols():
+    b = SimHelperBase()
+    x = np.arange(12).reshape(-1, 4)
+    y = b.format_ans(x, '2000-01-01', 'D', num_paths=2)
+    assert isinstance(y, pd.DataFrame)
+
+def test_format_ans_ndarray_2D_to_dataframe_exclude_x0():
+    b = SimHelperBase()
+    x = np.arange(12).reshape(-1, 4)
+    y = b.format_ans(x, '2000-01-01', 'D', num_paths=2, include_x0=False)
+    assert isinstance(y, pd.DataFrame)
+    assert y.shape[0] == 2
+
+def test_format_ans_ndarray_2D_to_array_exclude_x0():
+    b = SimHelperBase()
+    x = np.arange(12).reshape(-1, 4)
+    y = b.format_ans(x,None, None, num_paths=2, include_x0=False)
+    assert isinstance(y, np.ndarray)
+    assert y.shape[0] == 2

@@ -247,6 +247,6 @@ class BrownianMotion(BrownianMotionBase):
         ans = super().path_sample(x0, dt, num_steps, num_paths, random_state)
 
         # format the ans
-        ans = self.format_ans(ans, label_start, label_freq, include_x0)
+        ans = self.format_ans(ans, label_start, label_freq, include_x0, num_paths)
 
         return ans
