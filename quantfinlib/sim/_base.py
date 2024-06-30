@@ -177,7 +177,7 @@ class SimHelperBase:
         ans: np.ndarray,
         label_start: Optional[str],
         label_freq: Optional[str],
-        columns: Optional[List[str]],
+        columns: Optional[List[str]] = None,
         include_x0: bool = True,
         num_paths: int = 1,
     ) -> Union[np.ndarray, pd.Series, pd.DataFrame]:
