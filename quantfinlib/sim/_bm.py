@@ -77,9 +77,9 @@ class BrownianMotionBase(BaseEstimator, SimHelperBase):
         rng = np.random.default_rng(random_state)
 
         # fill in Normal noise
-        ans[1 : num_steps + 1, :] = rng.normal(size=(num_steps, ans.shape[1]))
+        ans[1:num_steps + 1, :] = rng.normal(size=(num_steps, ans.shape[1]))
 
-        tmp = ans[1 : num_steps + 1, :]
+        tmp = ans[1:num_steps + 1, :]
         tmp = tmp.reshape(-1, num_paths, num_cols)
 
         # Optionally correlate the noise
@@ -90,7 +90,7 @@ class BrownianMotionBase(BaseEstimator, SimHelperBase):
         tmp = tmp * self.vol * dt**0.5 + self.drift * dt
 
         # reshape back
-        ans[1 : num_steps + 1, :] = tmp.reshape(-1, num_paths * num_cols)
+        ans[1:num_steps + 1, :] = tmp.reshape(-1, num_paths * num_cols)
 
         # compound
         ans = np.cumsum(ans, axis=0)

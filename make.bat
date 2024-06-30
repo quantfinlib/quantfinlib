@@ -26,7 +26,7 @@ exit /b
 
 :lint
 echo run flake8
-poetry run flake8 quantfinlib
+poetry run flake8 --config .flake8 quantfinlib
 exit /b
 
 :major
