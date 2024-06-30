@@ -1,9 +1,10 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 import pytest
 from numpy.testing import assert_allclose
 
 from quantfinlib.sim._base import SimHelperBase
+
 
 def index_b():
     return pd.bdate_range('2020-9-12', periods=3)

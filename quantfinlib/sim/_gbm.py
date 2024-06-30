@@ -1,4 +1,3 @@
-
 """This is the gmb module documentation
 """
 
@@ -11,7 +10,7 @@ class GeometricBrownianMotion:
     It simulate gbm
     """
 
-    def __init__(self, a: int,  b:int):
+    def __init__(self, a: int, b: int):
         r"""Constructor
 
         Parameters
@@ -31,12 +30,11 @@ class GeometricBrownianMotion:
         ----------
         P
             the p  number
-        
+
         Returns
         -------
         float
             The product of everything
 
         """
-        return self.a*self.b*p
-
+        return self.a * self.b * p

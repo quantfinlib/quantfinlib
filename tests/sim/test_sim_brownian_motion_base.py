@@ -1,9 +1,10 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 import pytest
 from numpy.testing import assert_allclose
 
 from quantfinlib.sim._bm import BrownianMotionBase
+
 
 def test_BrownianMotionBase_init():
     b = BrownianMotionBase()

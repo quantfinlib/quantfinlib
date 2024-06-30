@@ -26,7 +26,7 @@ exit /b
 
 :lint
 echo run flake8
-poetry run flake8 quantfinlib --per-file-ignores="__init__.py:F401" --ignore="D205,W293" --docstring-convention="numpy" --max-line-length=120
+poetry run flake8 quantfinlib
 exit /b
 
 :major
