@@ -120,16 +120,41 @@ class BrownianMotion(BrownianMotionBase):
     Examples
     --------
 
-    >>> bm = BrownianMotion(drift=0.05, vol=0.2)
-    >>> bm.path_sample(x0=100, dt=1/252, num_steps=252, num_paths=10)
+    Generate 3 Brownian motion paths. All paths start at 1, and have 6 steps with
+    a stepsize of dt=1/4. The drift is -2 and volatility is 0.7.
 
+    .. exec_code::
+
+        from quantfinlib.sim import BrownianMotion
+
+        bm = BrownianMotion(drift=-2, vol=0.7)
+        paths = bm.path_sample(x0=1, dt=1/4, num_steps=6, num_paths=3)
+
+        print(paths)
+  
+
+
+    Below is a plot of 10 Brownian motion paths of length 252.
+    
+    .. code-block:: python
+
+
+        import plotly.express as px
+        from quantfinlib.sim import BrownianMotion
+
+        bm = BrownianMotion(drift=-2, vol=0.7)
+        paths = bm.path_sample(x0=1.5, dt=1/252, num_steps=252, num_paths=10)
+
+        fig = px.line(paths)
+        fig.show()
+        
     .. plotly::
 
         import plotly.express as px
         from quantfinlib.sim import BrownianMotion
 
-        bm = BrownianMotion(drift=0.05, vol=0.2)
-        paths = bm.path_sample(x0=100, dt=1/252, num_steps=252, num_paths=10)
+        bm = BrownianMotion(drift=-2, vol=0.7)
+        paths = bm.path_sample(x0=1.5, dt=1/252, num_steps=252, num_paths=10)
 
         fig = px.line(paths)
         fig.show()

@@ -100,6 +100,29 @@ html_theme_options = {
     "logo_only": False,
     "display_version": True,
 }
+html_css_files = [('quantfinlib.css', {'priority': 999})]
+
+# -------------------------------------------------------------------------------
+# Source code snippets code highlighting in docstrings
+# .. code-block:: python
+# .. exec_code::
+# 
+# For galery of styles see: https://pygments.org/styles/
+# high contrast dark: monokai, lightbulb, github-dark, rrt
+# less contrast dark: zenburn, nord, material, one-dark, dracula, nord-darker
+#    gruvbox-dark, stata-dark, paraiso-dark, coffee, solarized-dark, native,
+#    inkpot, fruity, vim
+# -------------------------------------------------------------------------------
+pygments_style = 'material'
+
+
+# -------------------------------------------------------------------------------
+# Execute code snippets in docstrings
+# -------------------------------------------------------------------------------
+exec_code_working_dir = "."
+exec_code_source_folders = ["../.."]
+
+
 
 # -------------------------------------------------------------------------------
 # General
@@ -207,12 +230,6 @@ mathjax3_config = {
     "jax": ["input/TeX", "output/SVG"],
 }
 
-
-# -----------------------------------------------------
-# Execure coe snippets
-# -----------------------------------------------------
-exec_code_working_dir = "."
-exec_code_folders = [".."]
 
 
 suppress_warnings += [
