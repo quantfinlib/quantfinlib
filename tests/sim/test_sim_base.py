@@ -411,6 +411,18 @@ def test_format_ans_ndarray_2D_to_array_exclude_x0():
     assert isinstance(y, np.ndarray)
     assert y.shape[0] == 2
 
+def test_make_columns_namest():
+    b = SimHelperBase()
+    c = b._make_columns_names( num_target_columns=6, num_paths=3)
+    assert c[0] == 'S0_0'
+    assert c[5] == 'S1_2'
+
+def test_make_columns_names_set():
+    b = SimHelperBase()
+    c = b._make_columns_names( num_target_columns=6, num_paths=3, columns=['AA', 'BB'])
+    assert c[0] == 'AA_0'
+    assert c[5] == 'BB_2'
+
 def test_set_x0():
     ans = np.zeros(shape=(4,12))
     SimHelperBase.set_x0(ans, [10,20,30])
