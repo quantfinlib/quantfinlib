@@ -113,7 +113,7 @@ html_css_files = [('quantfinlib.css', {'priority': 999})]
 #    gruvbox-dark, stata-dark, paraiso-dark, coffee, solarized-dark, native,
 #    inkpot, fruity, vim
 # -------------------------------------------------------------------------------
-pygments_style = 'material'
+pygments_style = 'default'
 
 
 # -------------------------------------------------------------------------------

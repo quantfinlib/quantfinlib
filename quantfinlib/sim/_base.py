@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -138,12 +138,15 @@ class SimHelperBase:
 
         return x0, dt, label_start, label_freq
 
-    def _make_columns_names(self, num_target_columns: int = 1, num_paths: int = 1):
+    def _make_columns_names(self, num_target_columns: int = 1, num_paths: int = 1, columns: Optional[List[str]] = None):
         num_base_columns = int(num_target_columns // num_paths)
 
         assert num_target_columns == (num_paths * num_base_columns)
 
-        if self.fit_column_names_:
+        if columns is not None:
+            assert len(columns) == num_base_columns
+            base_columns = columns
+        elif self.fit_column_names_:
             assert len(self.fit_column_names_) == num_base_columns
             base_columns = self.fit_column_names_
         else:
@@ -174,6 +177,7 @@ class SimHelperBase:
         ans: np.ndarray,
         label_start: Optional[str],
         label_freq: Optional[str],
+        columns: Optional[List[str]],
         include_x0: bool = True,
         num_paths: int = 1,
     ) -> Union[np.ndarray, pd.Series, pd.DataFrame]:
@@ -186,13 +190,14 @@ class SimHelperBase:
             need_date_time_index
             or (self.fit_container_dtype_ is pd.Series)
             or (self.fit_container_dtype_ is pd.DataFrame)
+            or (columns is not None)
         )
 
         if need_date_time_index:
             index = self._make_date_time_index(ans.shape[0], label_start, label_freq)
 
         if need_columns:
-            columns = self._make_columns_names(ans.shape[1], num_paths)
+            columns = self._make_columns_names(ans.shape[1], num_paths, columns)
 
         if need_date_time_index or need_columns:
             # Return a Series is we have 1 column and didn't fit()

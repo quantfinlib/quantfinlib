@@ -17,13 +17,13 @@ Python code snippets dark background.
 Same color as the left ReadTheDocs nav-menu 
 */
 div.highlight-python > div.highlight {
-    background: #343131;
+    /* background: #343131; */
 }
 
 /* 
 Python executed code output dark background.
 */
 div.highlight-none > div.highlight {
-    background: #808080;
+    /* background: #808080; */
 }
 

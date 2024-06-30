@@ -9,7 +9,7 @@ BrownianMotion()
 __all__ = ["BrownianMotion"]
 
 
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -234,6 +234,7 @@ class BrownianMotion(BrownianMotionBase):
         num_paths: Optional[int] = 1,
         label_start=None,
         label_freq: Optional[str] = None,
+        columns: Optional[List[str]] = None,
         random_state: Optional[int] = None,
         include_x0: bool = True,
     ) -> Union[np.ndarray, pd.DataFrame, pd.Series]:
@@ -256,6 +257,8 @@ class BrownianMotion(BrownianMotionBase):
             function will return Pandas DataFrame with a DateTime index.
         label_freq : Optional[str], optional
             The frequency for labeling the time steps (default is None).
+        columns : Optional[List[str]], optional
+            A list of column names.
         random_state : Optional[int], optional
             The seed for the random number generator (default is None).
         include_x0 : bool, optional
@@ -274,6 +277,6 @@ class BrownianMotion(BrownianMotionBase):
         ans = super().path_sample(x0, dt, num_steps, num_paths, random_state)
 
         # format the ans
-        ans = self.format_ans(ans, label_start, label_freq, include_x0, num_paths)
+        ans = self.format_ans(ans, label_start, label_freq, columns, include_x0, num_paths)
 
         return ans
