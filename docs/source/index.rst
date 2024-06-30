@@ -13,9 +13,9 @@
 
 .. toctree::
     :maxdepth: 2
-    :caption: Contents
+    :caption: Modules
 
-    sim/index
+    sim<sim/index>
 
 .. toctree::
     :maxdepth: 2

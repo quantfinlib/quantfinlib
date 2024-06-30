@@ -7,15 +7,11 @@ from quantfinlib.util.logger_config import get_logger
 
 logger = get_logger()
 
-VIX_ONLINE_URL = (
-    "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
-)
+VIX_ONLINE_URL = "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
 VIX_LOCAL_PATH = get_project_root("quantfinlib/datasets/data/VIX_ochl.pkl")
 
 
-MULTI_INDEX_LOCAL_PATH = get_project_root(
-    "quantfinlib/datasets/data/multi_index_close.pkl"
-)
+MULTI_INDEX_LOCAL_PATH = get_project_root("quantfinlib/datasets/data/multi_index_close.pkl")
 
 
 def load_multi_index() -> pd.DataFrame:
@@ -61,9 +57,7 @@ def load_VIX(load_latest: bool = False) -> pd.DataFrame:
             df = pd.read_csv(VIX_ONLINE_URL)
             LOAD_LATEST_SUCCESS = True
         except Exception as e:
-            raise RuntimeError(
-                f"Failed to load the latest VIX data: {e}. Proceed with the local data."
-            )
+            raise RuntimeError(f"Failed to load the latest VIX data: {e}. Proceed with the local data.")
 
     if not load_latest or not LOAD_LATEST_SUCCESS:
         if not VIX_LOCAL_PATH.exists():

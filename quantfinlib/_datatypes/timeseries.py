@@ -1,5 +1,7 @@
 from typing import Optional
+
 import pandas as pd
+
 
 def time_series_freq(ts_obj) -> Optional[str]:
     """
@@ -68,7 +70,7 @@ def time_series_freq(ts_obj) -> Optional[str]:
 
     # Calculate the time deltas between consecutive time points
     time_deltas = dt_ndx.to_series().diff().dropna()
-    
+
     # Ensure there are enough data points to make a determination
     if len(time_deltas) < 2:
         return None  # "The time series index must contain more than two time point to determine its frequency."
@@ -87,7 +89,7 @@ def time_series_freq(ts_obj) -> Optional[str]:
         return "YS"
 
     # Check if timestamps are quarter-ends
-    quarter_ends =  dt_ndx.is_quarter_end.sum()
+    quarter_ends = dt_ndx.is_quarter_end.sum()
     if (quarter_ends >= 2) and (len(dt_ndx) - quarter_ends <= 2):
         return "QE"
 
