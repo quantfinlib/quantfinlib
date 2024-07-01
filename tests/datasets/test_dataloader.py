@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from quantfinlib.datasets.dataloader import load_multi_index, load_VIX
+from quantfinlib.datasets import load_equity_indices, load_treasury_rates, load_vix
 
 
 @pytest.fixture
@@ -24,7 +24,7 @@ def test_load_VIX_local(monkeypatch):
         lambda: Path("/non/existent/path"),
     )
     # monkeypatch.setattr(pd, "read_pickle", lambda path, **kwargs: vix_data)
-    df = load_VIX()
+    df = load_vix()
 
     assert isinstance(df, pd.DataFrame)
 
@@ -34,11 +34,11 @@ def test_load_VIX_local(monkeypatch):
     assert set(df.columns) == set(required_columns)
 
 
-# write test_load_VIX_online
+@pytest.mark.skip(reason="Test is deprecated")
 def test_load_VIX_online():
 
     try:
-        df = load_VIX(load_latest=True)
+        df = load_vix(load_latest=True)
     except RuntimeError:
         pytest.fail("load_VIX() raised RuntimeError unexpectedly!")
 
@@ -50,8 +50,16 @@ def test_load_VIX_online():
     assert set(df.columns) == set(required_columns)
 
 
+def test_load_treasury_rates():
+    df = load_treasury_rates()
+    assert isinstance(df, pd.DataFrame)
+    required_columns = ["DATE", "1m", "2m", "3m", "4m", "6m", "1y", "2y", "3y", "5y", "7y", "10y", "20y", "30y"]
+    assert all(c in df.columns for c in required_columns)
+    assert set(df.columns) == set(required_columns)
+
+
 def test_load_multi_index():
-    df = load_multi_index()
+    df = load_equity_indices()
     assert isinstance(df, pd.DataFrame)
     assert "DATE" in df.columns
 

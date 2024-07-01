@@ -168,4 +168,4 @@ _autoapi_root/*
 _autosummary
 settings.json
 
-quantfinlib/datasets/data/*.csv
+quantfinlib/datasets/resources/*.csv
