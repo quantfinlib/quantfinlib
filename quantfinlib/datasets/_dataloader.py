@@ -73,8 +73,8 @@ def load_treasury_rates() -> pd.DataFrame:
     """
     if not TREASURY_RATES_LOCAL_PATH.exists():
         raise FileNotFoundError(
-            f"Daily Treasury rates dataset file '{TREASURY_RATES_LOCAL_PATH.name}'
-            does not exist at '{TREASURY_RATES_LOCAL_PATH.parent}'"
+            f"Daily Treasury rates dataset file '{TREASURY_RATES_LOCAL_PATH.name} \
+            does not exist at {TREASURY_RATES_LOCAL_PATH.parent}"
         )
     else:
         logger.info(f"Reading daily Treasury rates data from {TREASURY_RATES_LOCAL_PATH.name}...")
