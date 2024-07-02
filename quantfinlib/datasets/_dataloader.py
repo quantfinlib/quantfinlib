@@ -102,7 +102,10 @@ def load_treasury_rates() -> pd.DataFrame:
         df["DATE"] = pd.to_datetime(df["DATE"])
         df.reset_index(drop=True, inplace=True)
         df = df.set_index("DATE").sort_index()
-        logger.debug(f"Loaded dataset with {df.shape[0]} rows and {df.shape[1]} columns. Latest date: {df.index.max()}")
+        logger.debug(
+            f"Loaded dataset with {df.shape[0]} rows and {df.shape[1]} columns. \
+            Latest date: {df.index.max()}"
+        )
         return df
 
 
@@ -155,7 +158,8 @@ def load_equity_indices() -> pd.DataFrame:
     """
     if not MULTI_INDEX_LOCAL_PATH.exists():
         raise FileNotFoundError(
-            f"Multi-index dataset file '{MULTI_INDEX_LOCAL_PATH.name}' does not exist at '{MULTI_INDEX_LOCAL_PATH.parent}'"
+            f"Multi-index dataset file '{MULTI_INDEX_LOCAL_PATH.name}' \
+            does not exist at '{MULTI_INDEX_LOCAL_PATH.parent}'"
         )
     else:
         logger.info(f"Reading multi-index data from {MULTI_INDEX_LOCAL_PATH.name}...")
@@ -165,7 +169,8 @@ def load_equity_indices() -> pd.DataFrame:
         df = df.set_index("DATE").sort_index()
 
         logger.info(
-            f"Loaded multi-index dataset with {df.shape[0]} rows and {df.shape[1]} columns. Latest date: {df.index.max()}"
+            f"Loaded equity indices data with {df.shape[0]} rows and {df.shape[1]} columns. \
+            Latest date: {df.index.max()}"
         )
 
     return df
