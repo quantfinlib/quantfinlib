@@ -28,7 +28,7 @@ def test_load_VIX_local(monkeypatch):
 
     assert isinstance(df, pd.DataFrame)
 
-    required_columns = ["DATE", "HIGH", "LOW", "CLOSE", "OPEN"]
+    required_columns = ["HIGH", "LOW", "CLOSE", "OPEN"]
     assert all(column in df.columns for column in required_columns)
 
     assert set(df.columns) == set(required_columns)
@@ -44,7 +44,7 @@ def test_load_VIX_online():
 
     assert isinstance(df, pd.DataFrame)
 
-    required_columns = ["DATE", "HIGH", "LOW", "CLOSE", "OPEN"]
+    required_columns = ["HIGH", "LOW", "CLOSE", "OPEN"]
     assert all(column in df.columns for column in required_columns)
 
     assert set(df.columns) == set(required_columns)
@@ -53,7 +53,7 @@ def test_load_VIX_online():
 def test_load_treasury_rates():
     df = load_treasury_rates()
     assert isinstance(df, pd.DataFrame)
-    required_columns = ["DATE", "1m", "2m", "3m", "4m", "6m", "1y", "2y", "3y", "5y", "7y", "10y", "20y", "30y"]
+    required_columns = ["1m", "2m", "3m", "4m", "6m", "1y", "2y", "3y", "5y", "7y", "10y", "20y", "30y"]
     assert all(c in df.columns for c in required_columns)
     assert set(df.columns) == set(required_columns)
 
@@ -61,7 +61,6 @@ def test_load_treasury_rates():
 def test_load_multi_index():
     df = load_equity_indices()
     assert isinstance(df, pd.DataFrame)
-    assert "DATE" in df.columns
 
 
 if __name__ == "__main__":
