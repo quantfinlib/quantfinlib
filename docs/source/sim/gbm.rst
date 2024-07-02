@@ -2,4 +2,5 @@ Geometric Brownian Motion
 =========================
 
 .. autoclass:: quantfinlib.sim.GeometricBrownianMotion
-    :no-index:
+    :members: __init__, fit, path_sample
+    :no-index: 
