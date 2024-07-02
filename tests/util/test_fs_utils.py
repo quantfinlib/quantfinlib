@@ -29,3 +29,7 @@ def test_get_project_root_with_path_object_argument(root_dir, relative_path):
     pathlib_obj = Path(relative_path)
     expected_path = root_dir / pathlib_obj
     assert get_project_root(pathlib_obj) == expected_path
+
+
+if __name__ == "__main__":
+    pytest.main([__file__])
