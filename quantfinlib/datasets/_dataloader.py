@@ -1,10 +1,8 @@
 """Functions to load example datasets in quantfinlib."""
 
 from pathlib import Path
-from string import Template
 
 import pandas as pd
-import pkg_resources
 
 from quantfinlib.util._fs_utils import get_project_root
 from quantfinlib.util.logger_config import get_logger
@@ -30,8 +28,8 @@ def load_vix() -> pd.DataFrame:
 
     Returns
     -------
-    pd.DataFrame N x 5
-        The VIX dataset, 1 row per day, with columns: DATE, OPEN, HIGH, LOW, CLOSE
+    pd.DataFrame
+        The VIX index levels, 1 row per day, with columns: OPEN, HIGH, LOW, CLOSE
 
     Examples
     --------
@@ -47,21 +45,22 @@ def load_vix() -> pd.DataFrame:
         df = _load_pickle_to_df(VIX_INDEX_LOCAL_PATH)
         df["DATE"] = pd.to_datetime(df["DATE"])
         df.reset_index(drop=True, inplace=True)
-        # df = df.set_index("DATE").sort_index()
-        logger.debug(
-            f"Loaded dataset with {df.shape[0]} rows and {df.shape[1]} columns. Latest date: {df['DATE'].max()}"
-        )
+        df = df.set_index("DATE").sort_index()
+        logger.debug(f"Loaded dataset with {df.shape[0]} rows and {df.shape[1]} columns. Latest date: {df.index.max()}")
     return df
 
 
 def load_treasury_rates() -> pd.DataFrame:
     """Load the daily Treasury rates dataset with various maturities.
-    Souurce: https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/${year}/all?type=daily_treasury_yield_curve&field_tdr_date_value=${year}&page&_format=csv
+    Source: https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/...
+    ${year}/all?type=daily_treasury_yield_curve&field_tdr_date_value=${year}&page&_format=csv
 
     Returns
     -------
-        pd.DataFrame N x 14
-            The daily Treasury rates dataset, 1 row per day, with columns: DATE, 1m, 2m, 3m, 4m, 6m, 1y, 2y, 3y, 5y, 7y, 10y, 20y, 30y
+        pd.DataFrame
+            The daily Treasury rates dataset, 1 row per day,
+            with columns for different maturities:
+            1m, 2m, 3m, 4m, 6m, 1y, 2y, 3y, 5y, 7y, 10y, 20y, 30y
 
     Example
     -------
@@ -74,7 +73,8 @@ def load_treasury_rates() -> pd.DataFrame:
     """
     if not TREASURY_RATES_LOCAL_PATH.exists():
         raise FileNotFoundError(
-            f"Daily Treasury rates dataset file '{TREASURY_RATES_LOCAL_PATH.name}' does not exist at '{TREASURY_RATES_LOCAL_PATH.parent}'"
+            f"Daily Treasury rates dataset file '{TREASURY_RATES_LOCAL_PATH.name}'
+            does not exist at '{TREASURY_RATES_LOCAL_PATH.parent}'"
         )
     else:
         logger.info(f"Reading daily Treasury rates data from {TREASURY_RATES_LOCAL_PATH.name}...")
@@ -101,10 +101,8 @@ def load_treasury_rates() -> pd.DataFrame:
 
         df["DATE"] = pd.to_datetime(df["DATE"])
         df.reset_index(drop=True, inplace=True)
-        # df = df.set_index("DATE").sort_index()
-        logger.debug(
-            f"Loaded dataset with {df.shape[0]} rows and {df.shape[1]} columns. Latest date: {df['DATE'].max()}"
-        )
+        df = df.set_index("DATE").sort_index()
+        logger.debug(f"Loaded dataset with {df.shape[0]} rows and {df.shape[1]} columns. Latest date: {df.index.max()}")
         return df
 
 
@@ -114,8 +112,42 @@ def load_equity_indices() -> pd.DataFrame:
 
     Returns
     -------
-    pd.DataFrame N x 11
+    pd.DataFrame
         The multi-index dataset, 1 row per day, with columns: DATE, %INDEX_NAME%
+        where %INDEX_NAME% is one of the following:
+        'GSPC': S&P 500 Index (United States)
+        'IXIC': NASDAQ Composite Index (United States)
+        'DJI': Dow Jones Industrial Average (United States)
+        'NYA': NYSE Composite Index (United States)
+        'XAX': NYSE American Composite Index (United States)
+        'BUK100P': Cboe UK 100 Index (United Kingdom)
+        'RUT': Russell 2000 Index (United States)
+        'VIX': CBOE Volatility Index (United States)
+        'GDAXI': DAX Index (Germany)
+        'FCHI': CAC 40 Index (France)
+        'STOXX50E': Euro Stoxx 50 Index (Europe)
+        'N100': Euronext 100 Index (Europe)
+        'BFX': BEL 20 Index (Belgium)
+        'IMOEX.ME': MOEX Russia Index (Russia)
+        'N225': Nikkei 225 Index (Japan)
+        'HSI': Hang Seng Index (Hong Kong)
+        '000001.SS': Shanghai Composite Index (China)
+        '399001.SZ': Shenzhen Component Index (China)
+        'AXJO': S&P/ASX 200 Index (Australia)
+        'AORD': All Ordinaries Index (Australia)
+        'BSESN': S&P BSE Sensex Index (India)
+        'JKSE': Jakarta Composite Index (Indonesia)
+        'NZ50': S&P/NZX 50 Index (New Zealand)
+        'KS11': KOSPI Composite Index (South Korea)
+        'TWII': Taiwan Weighted Index (Taiwan)
+        'GSPTSE': S&P/TSX Composite Index (Canada)
+        'BVSP': Bovespa Index (Brazil)
+        'MXX': IPC Index (Mexico)
+        'IPSA': S&P/CLX IPSA Index (Chile)
+        'MERV': MERVAL Index (Argentina)
+        'TA125.TA': Tel Aviv 125 Index (Israel)
+        'CASE30': EGX30 Index (Egypt)
+        'JN0U.JO': FTSE/JSE Africa Top 40 Index (South Africa)
 
     Example
     -------
@@ -130,10 +162,10 @@ def load_equity_indices() -> pd.DataFrame:
         df = _load_pickle_to_df(MULTI_INDEX_LOCAL_PATH)
         df["DATE"] = pd.to_datetime(df["DATE"])
         df.reset_index(drop=True, inplace=True)
-        # df = df.set_index("DATE").sort_index()
+        df = df.set_index("DATE").sort_index()
 
         logger.info(
-            f"Loaded multi-index dataset with {df.shape[0]} rows and {df.shape[1]} columns. Latest date: {df['DATE'].max()}"
+            f"Loaded multi-index dataset with {df.shape[0]} rows and {df.shape[1]} columns. Latest date: {df.index.max()}"
         )
 
     return df
