@@ -161,7 +161,10 @@ class BrownianMotion(SimBase):
         # Optionally correlations if we have multiple columns
         if x.shape[1] > 1:
             if np.any(self.vol == 0):
-                raise ValueError('Cannot compute a correlation matrix because one or more series has zero variance in their changes.')
+                raise ValueError(
+                    'Cannot compute a correlation matrix because '
+                    'one or more series has zero variance in their changes.'
+                )
             self.cor = np.corrcoef(dx, rowvar=False)
             self.L_ = np.linalg.cholesky(self.cor)
         else:
