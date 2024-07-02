@@ -73,6 +73,9 @@ class SimBase(ABC):
         self.fit_x0_ = None
         self.fit_xn_ = None
 
+        # defaults, sometimes overrules in derived classs
+        self.x0_default = 0.0
+
     def _preprocess_fit_x_and_dt(
         self, x: Union[list, np.ndarray, pd.DataFrame, pd.Series], dt: Optional[Union[float, int]]
     ) -> Tuple[np.ndarray, float]:
@@ -108,7 +111,6 @@ class SimBase(ABC):
         dt: Optional[Union[float, int]] = None,
         label_start=None,
         label_freq: Optional[str] = None,
-        x0_default: float = 0.0,
     ) -> Tuple[np.ndarray, float, Any, str]:
 
         need_datetime_index = (label_start is not None) or (label_freq is not None) or (self.fit_index_.has_index_)
@@ -122,7 +124,7 @@ class SimBase(ABC):
                 if need_datetime_index and (label_start is None):
                     label_start = self.fit_index_.min_
             else:
-                x0 = np.array([[x0_default]])
+                x0 = np.array([[self.x0_default]])
         elif isinstance(x0, str):
             print(x0, is_fitted, need_datetime_index, label_start)
             if x0 == "first":

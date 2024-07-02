@@ -183,78 +183,78 @@ def test_SimBase_fit_preprocess_x_and_dt__dt_set(x):
 # ------------------------------------------------------------------------------
 def test_SimBase_preprocess_sim_path_args_not_fitted():
     b = SimBaseTest()
-    x, x0, dt, label_start, label_freq, x0_default = None, None, None, None, None, 0.0
+    x, x0, dt, label_start, label_freq = None, None, None, None, None
     
     x = x_nparray1d()
 
     x0, dt, label_start, label_freq = b._preprocess_sim_path_args(
-        x0, dt, label_start, label_freq, x0_default)
+        x0, dt, label_start, label_freq)
 
 def test_SimBase_preprocess_sim_path_args_not_fitted_2():
-    x, x0, dt, label_start, label_freq, x0_default = None, None, None, None, None, 0.0
+    x, x0, dt, label_start, label_freq = None, None, None, None, None
     
     x = x_nparray1d()
     for x0 in ["first", "last", "hello"]:
         b = SimBaseTest()
         with pytest.raises(ValueError):
             x0, dt, label_start, label_freq = b._preprocess_sim_path_args(
-                x0, dt, label_start, label_freq, x0_default)
+                x0, dt, label_start, label_freq)
 
 
 def test_SimBase_preprocess_sim_path_args_fitted():
     b = SimBaseTest()
-    x, x0, dt, label_start, label_freq, x0_default = None, None, None, None, None, 0.0
+    x, x0, dt, label_start, label_freq = None, None, None, None, None
     
     x = x_nparray1d()
 
     x, dt = b._preprocess_fit_x_and_dt(x, dt)
     x0, dt, label_start, label_freq = b._preprocess_sim_path_args(
-        x0, dt, label_start, label_freq, x0_default)
+        x0, dt, label_start, label_freq)
 
 
 def test_SimBase_preprocess_sim_path_args_fitted_1():
     b = SimBaseTest()
-    x, x0, dt, label_start, label_freq, x0_default = None, None, None, None, None, 0.0
+    x, x0, dt, label_start, label_freq = None, None, None, None, None
     
     x = x_nparray1d()
 
     x, _ = b._preprocess_fit_x_and_dt(x, dt)
     x0, dt, label_start, label_freq = b._preprocess_sim_path_args(
-        x0, dt, label_start, label_freq, x0_default)
+        x0, dt, label_start, label_freq)
 
 
 def test_SimBase_preprocess_sim_path_args_fitted_2():
     b = SimBaseTest()
-    x, x0, dt, label_start, label_freq, x0_default = None, None, None, None, None, 0.0
+    x, x0, dt, label_start, label_freq = None, None, None, None, None
     
     x = x_nparray1d()
     label_freq = "D"
 
     x, dt = b._preprocess_fit_x_and_dt(x, dt)
     x0, dt, label_start, label_freq = b._preprocess_sim_path_args(
-        x0, dt, label_start, label_freq, x0_default)
+        x0, dt, label_start, label_freq)
 
 
 def test_SimBase_preprocess_sim_path_args_fitted_3():        
     for x0 in ["first", "last"]:
-        x, dt, label_start, label_freq, x0_default = None, None, None, None, 0.0
+        x, dt, label_start, label_freq = None, None, None, None
         b = SimBaseTest()
         x = x_nparray1d()
         x, dt = b._preprocess_fit_x_and_dt(x, dt)
         x0, dt, label_start, label_freq = b._preprocess_sim_path_args(
-            x0, dt, label_start, label_freq, x0_default)
+            x0, dt, label_start, label_freq)
         assert x0 is not None
         assert label_start is None
 
 def test_SimBase_preprocess_sim_path_args_fitted_4():    
     for x0 in ["first", "last"]:
-        x, dt, label_start, label_freq, x0_default = None, None, None, None, 0.0
+        x, dt, label_start, label_freq = None, None, None, None
         b = SimBaseTest()
         x = x_dataframe1_b()
         x, dt = b._preprocess_fit_x_and_dt(x, dt)
         print('case 4', x0)
         x0, dt, label_start, label_freq = b._preprocess_sim_path_args(
-            x0, dt, label_start, label_freq, x0_default)
+            x0, dt, label_start, label_freq)
         assert x0 is not None
         assert label_start is not None
 
