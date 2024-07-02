@@ -37,9 +37,15 @@ def test_BrownianMotion_fit():
     assert_allclose(b.drift, np.array([0.0]).reshape(1, -1))
     assert_allclose(b.vol, np.array([0.0]).reshape(1, -1))
 
-def test_BrownianMotion_fit_mv():
+def test_BrownianMotion_fit_mv_err():
     b = BrownianMotion()
     x = 3.14 * np.ones(shape=(5, 2))
+    with pytest.raises(ValueError):
+        b.fit(x, 0.1)
+
+def test_BrownianMotion_fit_mv_ok():
+    b = BrownianMotion()
+    x = 3.14 * np.random.normal(size=(5, 2))
     b.fit(x, 0.1)
     assert b.L_ is not None
 
