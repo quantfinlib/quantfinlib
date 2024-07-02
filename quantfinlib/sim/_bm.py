@@ -9,113 +9,19 @@ BrownianMotion()
 __all__ = ["BrownianMotion"]
 
 
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 import numpy as np
-import pandas as pd
-from sklearn.base import BaseEstimator
 
-from quantfinlib.sim._base import SimHelperBase
+from quantfinlib.sim._base import SimBase
 
 
-class BrownianMotionBase(BaseEstimator, SimHelperBase):
-    """Brownian Motion base class"""
-
-    def __init__(self, drift=0.0, vol=0.1, cor=None):
-        super().__init__()
-
-        # Parameters
-        self.drift = np.asarray(drift).reshape(1, -1)
-        self.vol = np.asarray(vol).reshape(1, -1)
-
-        # Private attributes
-        if cor is None:
-            self.cor = None
-            self.L_ = None
-        else:
-            self.cor = np.asarray(cor)
-            self.L_ = np.linalg.cholesky(self.cor)
-
-    def fit(self, x: np.ndarray, dt: float):
-
-        x, dt = self.inspect_and_normalize_fit_args(x, dt)
-
-        # changes from one row to the next
-        dx = np.diff(x, axis=0)
-
-        # Mean and standard deviation of the changes
-        self.drift = np.mean(dx, axis=0, keepdims=True) / dt
-        self.vol = np.std(dx, axis=0, ddof=1, keepdims=True) / np.sqrt(dt)
-
-        # Optionally correlations if we have multiple columns
-        if x.shape[1] > 1:
-            self.cor = np.corrcoef(dx, rowvar=False)
-            self.L_ = np.linalg.cholesky(self.cor)
-        else:
-            self.cor = None
-            self.L_ = None
-
-        return self
-
-    def path_sample(
-        self,
-        x0: Union[float, np.ndarray],
-        dt: float,
-        num_steps: int,
-        num_paths: int,
-        random_state: Optional[int] = None,
-    ) -> np.ndarray:
-
-        # Allocate storage for the simulation
-        num_cols = self.drift.shape[1]
-        ans = np.zeros(shape=(num_steps + 1, num_cols * num_paths))
-
-        # set the initial value of the simulation
-        SimHelperBase.set_x0(ans, x0)
-
-        # Create a Generator instance with the seed
-        rng = np.random.default_rng(random_state)
-
-        # fill in Normal noise
-        ans[1:num_steps + 1, :] = rng.normal(size=(num_steps, ans.shape[1]))
-
-        tmp = ans[1:num_steps + 1, :]
-        tmp = tmp.reshape(-1, num_paths, num_cols)
-
-        # Optionally correlate the noise
-        if self.L_ is not None:
-            tmp = tmp @ self.L_.T
-
-        # Translate the noise with drift and variance
-        tmp = tmp * self.vol * dt**0.5 + self.drift * dt
-
-        # reshape back
-        ans[1:num_steps + 1, :] = tmp.reshape(-1, num_paths * num_cols)
-
-        # compound
-        ans = np.cumsum(ans, axis=0)
-
-        return ans
-
-
-class BrownianMotion(BrownianMotionBase):
+class BrownianMotion(SimBase):
     r"""A class for simulating Brownian motion paths with given drift and volatility.
 
     Brownian motion is a continuous-time stochastic process used to model various random phenomena. In finance, it
     is commonly used to model the random behavior of asset prices.
 
-    The stochastic differential equation (SDE) for Brownian motion is:
-
-    .. math::
-
-        dX_t = \mu * dt +  \sigma * dW_t
-
-    where:
-
-    * :math:`dX_t` is the change in the process X at time t,
-    * :math:`\mu` is the drift coefficient (annualized drift rate),
-    * :math:`\sigma` is the volatility coefficient (annualized volatility rate),
-    * :math:`dW_t` is a Wiener process (standard Brownian motion).
 
     Below an example of 10 Brownian motion paths:
 
@@ -139,7 +45,6 @@ class BrownianMotion(BrownianMotionBase):
     Below is a plot of 10 Brownian motion paths of length 252.
 
     .. code-block:: python
-
 
         import plotly.express as px
         from quantfinlib.sim import BrownianMotion
@@ -184,6 +89,34 @@ class BrownianMotion(BrownianMotionBase):
     * Risk management: Brownian motion can be used to assess the risk and uncertainty in asset price movements over
       short time intervals.
 
+    Details
+    -------
+    The stochastic differential equation (SDE) for Brownian motion is:
+
+    .. math::
+
+        dX_t = \mu  dt +  \sigma  dW_t
+
+    where:
+
+    * :math:`dX_t` is the change in the process X at time t,
+    * :math:`\mu` is the drift coefficient (annualized drift rate),
+    * :math:`\sigma` is the volatility coefficient (annualized volatility rate),
+    * :math:`dW_t` is a Wiener process (standard Brownian motion).
+
+    For papth simulations we use the exact solutusiotn
+
+    .. math::
+
+        X[t + dt] = X[t] + \mu * dt + \mathcal{N}(0,1) * \sqrt{dt}
+
+    where:
+
+    * :math:`\mu` is the drift coefficient (annualized drift rate),
+    * :math:`\sigma` is the volatility coefficient (annualized volatility rate),
+    * :math:`\mathcal{N}(0,1)` is standard Normal distributed sample.
+    * :math:`dt` the time-step size.
+
 
     Member functions
     ----------------
@@ -202,81 +135,77 @@ class BrownianMotion(BrownianMotionBase):
             Correlation matrix for multivariate Brownian motion (default is None).
 
         """
-        super().__init__(drift=drift, vol=vol, cor=cor)
+        super().__init__()
 
-    def fit(self, x: Union[np.ndarray, pd.DataFrame, pd.Series], dt: Optional[float], **kwargs):
-        r"""Calibrates the Brownian motion model to the given path(s).
+        # Parameters
+        self.drift = np.asarray(drift).reshape(1, -1)
+        self.vol = np.asarray(vol).reshape(1, -1)
 
-        Parameters
-        ----------
-        x : Union[np.ndarray, pd.DataFrame, pd.Series]
-            The input data for calibration.
-        dt : Optional[float]
-            The time step between observations.
-        **kwargs
-            Additional arguments for the fit process.
+        # Private attributes
+        if cor is None:
+            self.cor = None
+            self.L_ = None
+        else:
+            self.cor = np.asarray(cor)
+            self.L_ = np.linalg.cholesky(self.cor)
 
-        Returns
-        -------
-        self : BrownianMotion
-            The fitted model instance.
+    def _fit_np(self, x: np.ndarray, dt: float):
 
-        """
-        values, dt = self.inspect_and_normalize_fit_args(x, dt)
-        super().fit(values, dt)
+        x, dt = self._preprocess_fit_x_and_dt(x, dt)
+
+        # changes from one row to the next
+        dx = np.diff(x, axis=0)
+
+        # Mean and standard deviation of the changes
+        self.drift = np.mean(dx, axis=0, keepdims=True) / dt
+        self.vol = np.std(dx, axis=0, ddof=1, keepdims=True) / np.sqrt(dt)
+
+        # Optionally correlations if we have multiple columns
+        if x.shape[1] > 1:
+            self.cor = np.corrcoef(dx, rowvar=False)
+            self.L_ = np.linalg.cholesky(self.cor)
+        else:
+            self.cor = None
+            self.L_ = None
+
         return self
 
-    def path_sample(
+    def _path_sample_np(
         self,
-        x0: Optional[Union[float, np.ndarray, pd.DataFrame, pd.Series, str]] = None,
-        dt: Optional[float] = None,
-        num_steps: Optional[int] = 252,
-        num_paths: Optional[int] = 1,
-        label_start=None,
-        label_freq: Optional[str] = None,
-        columns: Optional[List[str]] = None,
+        x0: Union[float, np.ndarray],
+        dt: float,
+        num_steps: int,
+        num_paths: int,
         random_state: Optional[int] = None,
-        include_x0: bool = True,
-    ) -> Union[np.ndarray, pd.DataFrame, pd.Series]:
-        r"""Simulates Brownian motion paths.
+    ) -> np.ndarray:
 
-        Parameters
-        ----------
-        x0 : Optional[Union[float, np.ndarray, pd.DataFrame, pd.Series, str]], optional
-            The initial value(s) of the paths (default is None). The strings "first" and "last"
-            will set x0 to the first or last value of the datasets used in a `fit()` call.
-        dt : Optional[float], optional
-            The time step between observations (default is None). If None we first fall-back to
-            a dt value using/derived during fitting `fit()`. If that's unavailable we default to 1/252.
-        num_steps : Optional[int], optional
-            The number of time steps to simulate (default is 252).
-        num_paths : Optional[int], optional
-            The number of paths to simulate (default is 1).
-        label_start : optional, date-time like.
-            The date-time start label for the simulated paths (default is None). When set this
-            function will return Pandas DataFrame with a DateTime index.
-        label_freq : Optional[str], optional
-            The frequency for labeling the time steps (default is None).
-        columns : Optional[List[str]], optional
-            A list of column names.
-        random_state : Optional[int], optional
-            The seed for the random number generator (default is None).
-        include_x0 : bool, optional
-            Whether to include the initial value in the simulated paths (default is True).
+        # Allocate storage for the simulation
+        num_cols = self.drift.shape[1]
+        ans = np.zeros(shape=(num_steps + 1, num_cols * num_paths))
 
-        Returns
-        -------
-        Union[np.ndarray, pd.DataFrame, pd.Series]
-            The simulated Brownian motion paths.
+        # set the initial value of the simulation
+        SimBase.set_x0(ans, x0)
 
-        """
-        # handle arg defaults
-        x0, dt, label_start, label_freq = self.normalize_sim_path_args(x0, dt, label_start, label_freq)
+        # Create a Generator instance with the seed
+        rng = np.random.default_rng(random_state)
 
-        # do the sims using the actual implementation in the base class
-        ans = super().path_sample(x0, dt, num_steps, num_paths, random_state)
+        # fill in Normal noise
+        ans[1 : num_steps + 1, :] = rng.normal(size=(num_steps, ans.shape[1]))
 
-        # format the ans
-        ans = self.format_ans(ans, label_start, label_freq, columns, include_x0, num_paths)
+        tmp = ans[1 : num_steps + 1, :]
+        tmp = tmp.reshape(-1, num_paths, num_cols)
+
+        # Optionally correlate the noise
+        if self.L_ is not None:
+            tmp = tmp @ self.L_.T
+
+        # Translate the noise with drift and variance
+        tmp = tmp * self.vol * dt**0.5 + self.drift * dt
+
+        # reshape back
+        ans[1 : num_steps + 1, :] = tmp.reshape(-1, num_paths * num_cols)
+
+        # compound
+        ans = np.cumsum(ans, axis=0)
 
         return ans

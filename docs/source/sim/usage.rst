@@ -63,24 +63,25 @@ Freqency string are compatible with the Pandas **date_range** function. More fre
 the Pandas documentation 
 `Pandas Timeseries Offset Aliases <https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases>`_ .
 
-If you specifiy a **freq** in the **path_sim** function then you can ommit the **dt**. The **dt** timstep 
- will then default to the timestep listed in the following table.
+The date time index labels are set independently from the path simulation routines.  
+If you specifiy a **freq** in the **path_sim** function then you can ommit the simulation step size **dt**. The **dt** timstep 
+will then default to the timestep listed in the following table.
 
-====  ========  ===========
-Freq  Timestep  Description
-====  ========  ===========
-D     1 / 365   Daily
-B     1 / 252   Business days Modays till Friday, skipping Saturday and Sunday.
-W     1 / 52    Weekly
-M     1 / 12    Monthly
-MS    1 / 12    Month starts
-ME    1 / 12    Month ends
-Q     1 / 4     Quarterly
-QS    1 / 4     Quater starts
-QE    1 / 4     Quarter ends
-YS    1         Yearly starts
-YE    1         Yearly ends
-====  ========  ===========
+====  =====================  ===========
+Freq  Sim step-size (years)  Description
+====  =====================  ===========
+D     1 / 365                Daily
+B     1 / 252                Business days Modays till Friday, skipping Saturday and Sunday.
+W     1 / 52                 Weekly
+M     1 / 12                 Monthly
+MS    1 / 12                 Month starts
+ME    1 / 12                 Month ends
+Q     1 / 4                  Quarterly
+QS    1 / 4                  Quater starts
+QE    1 / 4                  Quarter ends
+YS    1                      Yearly starts
+YE    1                      Yearly ends
+====  =====================  ===========
 
 
 
