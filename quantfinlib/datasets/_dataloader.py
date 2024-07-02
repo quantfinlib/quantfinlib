@@ -22,7 +22,7 @@ def _load_pickle_to_df(filename: Path) -> pd.DataFrame:
 
 
 def load_vix() -> pd.DataFrame:
-    """Load the VIX Index daily dataset with Open, Close,High, and Low prices.
+    """Load the VIX Index daily dataset with Open, Close,High, and Low index values.
     Source: https://www.cboe.com/tradable_products/vix/vix_historical_data/ (updated daily)
 
     Parameters
@@ -43,7 +43,7 @@ def load_vix() -> pd.DataFrame:
             f"VIX dataset file '{VIX_INDEX_LOCAL_PATH.name}' does not exist at '{VIX_INDEX_LOCAL_PATH.parent}'"
         )
     else:
-        logger.info(f"Reading VIX index data from {VIX_INDEX_LOCAL_PATH}...")
+        logger.info(f"Reading VIX index data from {VIX_INDEX_LOCAL_PATH.name}...")
         df = _load_pickle_to_df(VIX_INDEX_LOCAL_PATH)
         df["DATE"] = pd.to_datetime(df["DATE"])
         df.reset_index(drop=True, inplace=True)
@@ -77,7 +77,7 @@ def load_treasury_rates() -> pd.DataFrame:
             f"Daily Treasury rates dataset file '{TREASURY_RATES_LOCAL_PATH.name}' does not exist at '{TREASURY_RATES_LOCAL_PATH.parent}'"
         )
     else:
-        logger.info(f"Reading daily Treasury rates data from {TREASURY_RATES_LOCAL_PATH}...")
+        logger.info(f"Reading daily Treasury rates data from {TREASURY_RATES_LOCAL_PATH.name}...")
         df = _load_pickle_to_df(TREASURY_RATES_LOCAL_PATH)
 
         df = df.rename(
@@ -99,7 +99,6 @@ def load_treasury_rates() -> pd.DataFrame:
             }
         )
 
-        print(df.columns)
         df["DATE"] = pd.to_datetime(df["DATE"])
         df.reset_index(drop=True, inplace=True)
         # df = df.set_index("DATE").sort_index()
@@ -117,13 +116,17 @@ def load_equity_indices() -> pd.DataFrame:
     -------
     pd.DataFrame N x 11
         The multi-index dataset, 1 row per day, with columns: DATE, %INDEX_NAME%
+
+    Example
+    -------
+    >>> df_indices = load_equity_indices()
     """
     if not MULTI_INDEX_LOCAL_PATH.exists():
         raise FileNotFoundError(
             f"Multi-index dataset file '{MULTI_INDEX_LOCAL_PATH.name}' does not exist at '{MULTI_INDEX_LOCAL_PATH.parent}'"
         )
     else:
-        logger.info(f"Reading multi-index data from {MULTI_INDEX_LOCAL_PATH}...")
+        logger.info(f"Reading multi-index data from {MULTI_INDEX_LOCAL_PATH.name}...")
         df = _load_pickle_to_df(MULTI_INDEX_LOCAL_PATH)
         df["DATE"] = pd.to_datetime(df["DATE"])
         df.reset_index(drop=True, inplace=True)
