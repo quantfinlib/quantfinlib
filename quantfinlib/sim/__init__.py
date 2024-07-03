@@ -20,3 +20,15 @@ from ._gbm import GeometricBrownianMotion
 from ._ou import OrnsteinUhlenbeck
 
 __all__ = [BrownianMotion, GeometricBrownianMotion, OrnsteinUhlenbeck]
+
+"""
+todo:
+HistoricalSampling(..., sync, replace)
+RandomizePhases
+AR
+Heston
+Garch
+DCCGarch
+FractalBrownianMotion
+MarkovChain
+"""

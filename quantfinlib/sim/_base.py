@@ -40,6 +40,54 @@ def _get_date_time_index(x: Optional[Any]) -> Optional[pd.DatetimeIndex]:
         return None
     return x.index
 
+def _fill_with_correlated_noise(
+    ans: np.ndarray, 
+    loc: Optional[np.ndarray] = None,
+    scale: Optional[np.ndarray] = None,
+    L: Optional[np.ndarray] = None,
+    random_state: Optional[int] = None):
+
+    # Create a Generator instance with the seed
+    rng = np.random.default_rng(random_state)
+
+    # fill with standard normal Nose
+    ans[:, :] = rng.normal(size=ans.shape)
+    if L is not None:
+        ans[:, :] = ans[:, :] @ L.T
+    if scale is not None:
+        ans[:, :] *= scale
+    if loc is not None:
+        ans[:, :] += loc
+
+
+def _create_prepared_sim_ans(
+    x0: np.ndarray, num_steps: int, num_cols: int, num_paths: int, random_state: int, L: Optional[np.ndarray] = None
+) -> np.ndarray:
+    """Create an array filled with collelated random sample and x0 on the first row
+    """
+    # Allocate storage for the simulation
+    ans = np.zeros(shape=(num_steps + 1, num_cols * num_paths))
+
+    # set the initial value of the simulation
+    SimBase.set_x0(ans, x0)
+
+    # create a view on ans, skippin the first row x0
+    dx = ans[1 : num_steps + 1, :]
+
+    # fill in Normal noise
+    dx[:, :] = rng.normal(size=dx.shape)
+
+    # Optionally correlate the noise
+    if L is not None:
+        # reshape
+        dx = dx.reshape(-1, num_paths, num_cols)
+        # correlate
+        dx = dx @ L.T
+        # reshape back
+        dx = dx.reshape(-1, num_paths * num_cols)
+
+    return ans
+
 
 class _DateTimeIndexInfo:
     def __init__(self, x: Optional[Any] = None):
