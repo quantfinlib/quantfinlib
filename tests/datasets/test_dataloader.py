@@ -18,7 +18,7 @@ def vix_data():  # Fixture to provide a sample DataFrame for testing
     return pd.DataFrame(data)
 
 
-def test_load_VIX_local(monkeypatch):
+def test_load_vix_local(monkeypatch):
     monkeypatch.setattr(
         "quantfinlib.util._fs_utils.get_project_root",
         lambda: Path("/non/existent/path"),
@@ -35,12 +35,12 @@ def test_load_VIX_local(monkeypatch):
 
 
 @pytest.mark.skip(reason="Test is deprecated")
-def test_load_VIX_online():
+def test_load_vix_online():
 
     try:
         df = load_vix(load_latest=True)
     except RuntimeError:
-        pytest.fail("load_VIX() raised RuntimeError unexpectedly!")
+        pytest.fail("load_vix() raised RuntimeError unexpectedly!")
 
     assert isinstance(df, pd.DataFrame)
 
