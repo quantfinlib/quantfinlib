@@ -1,7 +1,9 @@
 import numpy as np
-from scipy.stats import multivariate_t, multivariate_normal
-from quantfinlib.distance.information import var_info, kl_divergence_xy, mutual_info 
 import pytest
+from scipy.stats import multivariate_normal, multivariate_t
+
+from quantfinlib.distance.information import (kl_divergence_xy, mutual_info,
+                                              var_info)
 
 np.random.seed(123456789)
 

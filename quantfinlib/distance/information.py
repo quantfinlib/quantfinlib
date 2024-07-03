@@ -52,10 +52,7 @@ def _get_optimal_nb_bins(n_obs: int, corr: Optional[float] = None) -> int:
 
 
 def mutual_info(
-    x: Union[pd.Series, np.ndarray], 
-    y: Union[pd.Series, np.ndarray], 
-    bins: Optional[int] = None, 
-    norm: bool = True
+    x: Union[pd.Series, np.ndarray], y: Union[pd.Series, np.ndarray], bins: Optional[int] = None, norm: bool = True
 ) -> float:
     r"""
     Calculate mutual information between two variables.
@@ -65,7 +62,7 @@ def mutual_info(
     .. math::
         I(X;Y) = \sum_{y \in Y} \sum_{x \in X} p(x,y) \log\left(\frac{p(x,y)}{p(x)p(y)}\right)
 
-    where \( p(x,y) \) is the joint probability distribution function of X and Y, 
+    where \( p(x,y) \) is the joint probability distribution function of X and Y,
     and \( p(x) \) and \( p(y) \) are the marginal probability distribution functions of X and Y respectively.
 
     Parameters
@@ -185,7 +182,7 @@ def var_info(
     h_y = entropy(p_y)
     h_xy = entropy(p_xy.flatten())
     # Compute variation of information
-    var_info_xy = 2*h_xy - h_x - h_y
+    var_info_xy = 2 * h_xy - h_x - h_y
     if norm:
         var_info_xy /= h_xy  # Normalized variation of information
     return var_info_xy
@@ -222,9 +219,5 @@ def kl_divergence_xy(x: np.ndarray, y: np.ndarray, bins: Optional[int] = None) -
     p_y = hist_y / hist_y.sum()
 
     # Compute the KL divergence
-    kl_div = np.sum(np.where((p_x!= 0)&(p_y!=0), p_x * np.log(p_x / p_y), 0))
+    kl_div = np.sum(np.where((p_x != 0) & (p_y != 0), p_x * np.log(p_x / p_y), 0))
     return kl_div
-
-
-
-

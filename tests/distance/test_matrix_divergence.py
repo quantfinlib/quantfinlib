@@ -1,8 +1,11 @@
 import unittest
+
 import numpy as np
 from scipy.linalg import logm
 
-from quantfinlib.distance.matrix_divergence import log_det_divergence, von_neuman_divergence, _assert_positive_definite
+from quantfinlib.distance.matrix_divergence import (_assert_positive_definite,
+                                                    log_det_divergence,
+                                                    von_neuman_divergence)
 
 
 class TestDivergences(unittest.TestCase):

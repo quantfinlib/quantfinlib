@@ -23,7 +23,9 @@ def _validate_correlation_matrix(corr: np.ndarray) -> None:
     assert np.all(np.diag(corr) == 1), "Diagonal elements of a correlation matrix must be 1"
 
 
-def _convert_correlation_to_distance(corr: Union[float, np.ndarray], conversion_function: Callable) -> Union[float, np.ndarray]:
+def _convert_correlation_to_distance(
+    corr: Union[float, np.ndarray], conversion_function: Callable
+) -> Union[float, np.ndarray]:
     if isinstance(corr, np.ndarray):
         _validate_correlation_matrix(corr)
     corr = _clip_values(corr, -1.0, 1.0)
@@ -39,7 +41,7 @@ def corr_to_angular_dist(corr: Union[float, np.ndarray]) -> Union[float, np.ndar
 
     .. math::
         \text{angular distance} = \sqrt{\frac{1 - \text{corr}}{2}}
-    
+
     Parameters
     ----------
     corr : np.ndarray or float
@@ -53,12 +55,13 @@ def corr_to_angular_dist(corr: Union[float, np.ndarray]) -> Union[float, np.ndar
     conversion_function = lambda x: np.sqrt((1.0 - x) / 2.0)
     return _convert_correlation_to_distance(corr, conversion_function)
 
+
 def corr_to_abs_angular_dist(corr: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
     r"""Converts correlation to an absolute angular distance.
 
     .. math::
         \text{abs angular distance} = \sqrt{1 - \text{abs}(\text{corr})}
-    
+
     Parameters
     ----------
     corr : np.ndarray or float
@@ -72,12 +75,13 @@ def corr_to_abs_angular_dist(corr: Union[float, np.ndarray]) -> Union[float, np.
     conversion_function = lambda x: np.sqrt(1.0 - np.abs(x))
     return _convert_correlation_to_distance(corr, conversion_function)
 
+
 def corr_to_squared_angular_dist(corr: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
     r"""Converts correlation to squared angular distance
 
     .. math::
         \text{squared angular distance} = \sqrt{1 - \text{corr}^{2}}
-    
+
     Parameters
     ----------
     corr : np.ndarray or float
@@ -94,14 +98,14 @@ def corr_to_squared_angular_dist(corr: Union[float, np.ndarray]) -> Union[float,
 
 def pair_angular_distance(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """Calculates the angular distance between two vectors x and y.
-    
+
     Parameters
     ----------
     x : np.ndarray
         First input vector.
     y : np.ndarray
         Second input vector.
-    
+
     Returns
     -------
     float
@@ -109,6 +113,7 @@ def pair_angular_distance(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """
     corr = np.corrcoef(x, y)[0, 1]
     return corr_to_angular_dist(corr)
+
 
 def pair_abs_angular_distance(x, y):
     """Calculates the absolute angular distance between two vectors x and y.
@@ -119,7 +124,7 @@ def pair_abs_angular_distance(x, y):
         First input vector.
     y : np.ndarray
         Second input vector.
-    
+
     Returns
     -------
     float
@@ -128,16 +133,17 @@ def pair_abs_angular_distance(x, y):
     corr = np.corrcoef(x, y)[0, 1]
     return corr_to_abs_angular_dist(corr)
 
+
 def pair_squared_angular_distance(x, y):
     """Calculates the squared angular distance between two vectors x and y.
-    
+
     Parameters
     ----------
     x : np.ndarray
         First input vector.
     y : np.ndarray
         Second input vector.
-    
+
     Returns
     -------
     float
@@ -145,4 +151,3 @@ def pair_squared_angular_distance(x, y):
     """
     corr = np.corrcoef(x, y)[0, 1]
     return corr_to_squared_angular_dist(corr)
-
