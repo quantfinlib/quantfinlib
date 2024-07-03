@@ -21,11 +21,15 @@ def test_get_project_root_without_argument(root_dir):
 
 
 def test_get_project_root_with_argument(root_dir, relative_path):
+    assert isinstance(root_dir, Path)
+    assert isinstance(relative_path, str) | isinstance(relative_path, Path)
     expected_path = root_dir / relative_path
     assert get_project_root(relative_path) == expected_path
 
 
 def test_get_project_root_with_path_object_argument(root_dir, relative_path):
+    assert isinstance(root_dir, Path)
+    assert isinstance(relative_path, str) | isinstance(relative_path, Path)
     pathlib_obj = Path(relative_path)
     expected_path = root_dir / pathlib_obj
     assert get_project_root(pathlib_obj) == expected_path
