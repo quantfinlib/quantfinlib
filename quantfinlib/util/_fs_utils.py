@@ -21,7 +21,4 @@ def get_project_root(relative_filepath: Union[Path, str, None] = None) -> Path:
 
 
 if __name__ == "__main__":
-    print(get_project_root())
-    print(get_project_root().parent)
     print(get_project_root("quanfinlib"))
-    print(get_project_root(Path("quanfinlib")))
