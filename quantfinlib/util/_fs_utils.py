@@ -18,7 +18,3 @@ def get_project_root(relative_filepath: Union[Path, str, None] = None) -> Path:
     if relative_filepath is not None:
         root_path = root_path / relative_filepath
     return root_path
-
-
-if __name__ == "__main__":
-    print(get_project_root("quanfinlib"))
