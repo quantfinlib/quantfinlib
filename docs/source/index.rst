@@ -4,23 +4,18 @@
 
 .. toctree::
    :caption: Examples
-   :maxdepth: 2
+   :maxdepth: 3
    :hidden:
 
    toc_examples_sim
    toc_example_datasets
 
 
-
-
 .. toctree::
-    :titlesonly:
     :maxdepth: 2
     :caption: Modules
 
-    sim <_autoapi_root/quantfinlib/sim/index.rst>
-    dataloader <_autoapi_root/quantfinlib/datasets/index.rst>
-
+    sim<sim/index>
 
 .. toctree::
     :maxdepth: 2

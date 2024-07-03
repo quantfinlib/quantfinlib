@@ -18,6 +18,10 @@ def configure_logger():
     -------
     logging.Logger
         The logger object with the configuration settings.
+
+    Example
+    -------
+    >>> configure_logger()
     """
     global logger
     if logger is None:
@@ -44,13 +48,13 @@ def get_logger() -> logging.Logger:
     -------
     logging.Logger
         The logger object with the configuration settings.
+
+    Example
+    -------
+    >>> logger = get_logger()
+    >>> logger.info("Logger test 1,2,3...")
     """
     global logger
     if logger is None:
         configure_logger()
     return logger
-
-
-if __name__ == "__main__":
-    logger = get_logger()
-    logger.info("Logger test 1,2,3...")

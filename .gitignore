@@ -165,6 +165,7 @@ cython_debug/
 poetry.lock
 _autoapi_root
 _autoapi_root/*
+_autosummary
+settings.json
 
-
-quantfinlib/datasets/data/*.csv
+quantfinlib/datasets/resources/*.csv

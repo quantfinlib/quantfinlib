@@ -11,6 +11,7 @@ if "%1"=="build" goto build
 if "%1"=="publish" goto publish
 if "%1"=="docs" goto docs
 if "%1"=="test" goto test
+if "%1"=="testp" goto testp
 
 echo Usage:
 echo make [format, lint, patch, major, minor, patch, build, publish, docs]
@@ -25,7 +26,7 @@ exit /b
 
 :lint
 echo run flake8
-poetry run flake8 quantfinlib --per-file-ignores="__init__.py:F401" --ignore="D205,W293" --docstring-convention="numpy" --max-line-length=120
+poetry run flake8 --config .flake8 quantfinlib
 exit /b
 
 :major
@@ -59,4 +60,10 @@ exit /b
 :test
 echo running tests
 poetry run pytest --cov=quantfinlib --cov-branch --cov-report=term-missing --cov-report=xml:coverage.xml -v tests
+exit /b
+
+
+:testp
+echo running tests and showing print statements
+poetry run pytest --cov=quantfinlib --cov-branch --cov-report=term-missing --cov-report=xml:coverage.xml -v -s tests
 exit /b

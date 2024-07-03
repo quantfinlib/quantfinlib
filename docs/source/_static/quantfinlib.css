@@ -1,0 +1,34 @@
+
+
+dl.py.class > dt.sig.sig-object.py,
+dl.py.method > dt.sig.sig-object.py {
+    background: #e7f2fa !important; 
+    color: #2980b9 !important;
+    padding:10px 4px !important;
+    width: 100% !important;
+}
+
+dl.py.method > dt.sig.sig-object.py {
+    border-left: 3px solid #6ab0de !important;
+}
+
+/* 
+Python code snippets dark background.
+Same color as the left ReadTheDocs nav-menu 
+*/
+div.highlight-python > div.highlight {
+    /* background: #343131; */
+}
+
+/* 
+Python executed code output dark background.
+*/
+div.highlight-none > div.highlight {
+    /* background: #808080; */
+}
+
+
+/* override table no-wrap */
+.wy-table-responsive table td, .wy-table-responsive table th {
+    white-space: normal;
+}
