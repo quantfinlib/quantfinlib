@@ -6,13 +6,22 @@
 
 <h3 style='background-color:red; color:white; padding:20px'>This library is pre-alpha, please only use it for development testing</h2>
 
+``$ pip install quantfinlib``
+
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/quantfinlib/quantfinlib/blob/main/LICENSE)
+[![Python Version](https://img.shields.io/pypi/pyversions/quantfinlib.svg)](https://pypi.org/project/quantfinlib/)
+[![PyPI Version](https://img.shields.io/pypi/v/quantfinlib.svg)](https://pypi.org/project/quantfinlib/)
+[![Build Status](https://github.com/quantfinlib/quantfinlib/workflows/run_tests/badge.svg)](https://github.com/quantfinlib/quantfinlib/actions?query=workflow%3Arun_tests)
 [![Coverage Status](https://coveralls.io/repos/github/quantfinlib/quantfinlib/badge.svg?branch=main)](https://coveralls.io/github/quantfinlib/quantfinlib?branch=main)
 [![Docs](https://readthedocs.org/projects/quantfinlib/badge/?version=latest)](https://quantfinlib.readthedocs.io/en/latest/)
 
 
 QuantFinLib is a comprehensive Python library designed for quantitative finance. It offers a wide range
-of tools and algorithms that cater to various domains within quantitative finance, including machine learning,
+of tools with applications in quantitative finance, including machine learning,
 asset management, portfolio optimization, time series transformations, indicators, labeling, feature engineering,
-stochastic simulation, randomization tests, and backtesting. This library aims to provide robust and efficient
+stochastic simulation, randomization tests, and backtesting. 
+
+Quantfinlib provide robust and well-designed
 solutions for financial data analysis, modeling, and trading strategy development.
+
+Quantfinlib is and always will be open source. Everyone is encouraged to add new features and contribute. Quantfinlib is free to use under the MIT license.
