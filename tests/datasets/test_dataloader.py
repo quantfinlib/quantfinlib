@@ -3,7 +3,8 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from quantfinlib.datasets import load_equity_indices, load_treasury_rates, load_vix
+from quantfinlib.datasets import (load_equity_indices, load_treasury_rates,
+                                  load_vix)
 
 
 @pytest.fixture

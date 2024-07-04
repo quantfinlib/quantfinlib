@@ -1,3 +1,15 @@
+"""
+File: quantfinlib/sim/_base.py
+
+Description:
+    Private base classes and functions used in the sim module.
+
+Author:    Thijs van den Berg
+Email:     thijs@sitmo.com
+Copyright: (c) 2024 Thijs van den Berg
+License:   MIT License
+"""
+
 import math
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional, Tuple, Union
@@ -75,16 +87,16 @@ def _triangular_index(T_n: int) -> int:
 
 
 def _make_cor_from_upper_tri(values: _SimFitDataType) -> np.ndarray:
+    print("_make_cor_from_upper_tri", values)
 
     values = _to_numpy(values)
 
     # We support 1 list, or a row/col from a matrix, as long as it's effectively 1d
-    assert values.ndim <= 2
-    if values.ndim == 2:
-        if (values.shape[0] == 1) or (values.shape[1] == 1):
-            values = values.flatten()
-        else:
-            raise ValueError(f"Expected a 1d list of numbers but got {values.shape}")
+    assert values.ndim == 2
+    if (values.shape[0] == 1) or (values.shape[1] == 1):
+        values = values.flatten()
+    else:
+        raise ValueError(f"Expected a 1d list of numbers but got {values.shape}")
 
     # Compute the dimensions of the output matrix
     num_dims = _triangular_index(len(values)) + 1
@@ -138,6 +150,7 @@ class SimBase(ABC):
 
         # defaults, sometimes overrules in derived classs
         self.x0_default = 0.0
+        self.num_parameters_ = 2
 
     def _preprocess_fit_x_and_dt(
         self, x: Union[list, np.ndarray, pd.DataFrame, pd.Series], dt: Optional[Union[float, int]]
@@ -381,7 +394,7 @@ class SimBase(ABC):
     def _fit_np(self, x: np.ndarray, dt: float):
         raise NotImplementedError
 
-    def fit(self, x: Union[np.ndarray, pd.DataFrame, pd.Series], dt: Optional[float], **kwargs):
+    def fit(self, x: Union[np.ndarray, pd.DataFrame, pd.Series], dt: Optional[float] = None, **kwargs):
         r"""Calibrates the model to the given path(s).
 
         Parameters
@@ -402,3 +415,64 @@ class SimBase(ABC):
         values, dt = self._preprocess_fit_x_and_dt(x, dt)
         self._fit_np(values, dt)
         return self
+
+
+class SimNllMixin:
+
+    def nll(self, x: Union[np.ndarray, pd.DataFrame, pd.Series], dt: Optional[float] = None) -> float:
+        r"""Calculate the negative log-likelihood (lower is better) for a given path.
+
+        Parameters
+        ----------
+        x : Union[np.ndarray, pd.DataFrame, pd.Series]
+            The input data for negative log-likelihood calculation.
+        dt : Optional[float]
+            The time step between observations.
+
+        Returns
+        -------
+        nll : float
+            The computed negative log-likelihood.
+
+        """
+        values, dt = self._preprocess_fit_x_and_dt(x, dt)
+        return self._nll(values, dt)
+
+    def aic(self, x: Union[np.ndarray, pd.DataFrame, pd.Series], dt: Optional[float] = None) -> float:
+        r"""Calculate the Akaike Information Criterion (AIC) for a given path.
+
+        Parameters
+        ----------
+        x : Union[np.ndarray, pd.DataFrame, pd.Series]
+            The input data for AIC calculation.
+        dt : Optional[float]
+            The time step between observations.
+
+        Returns
+        -------
+        aic : float
+            The computed Akaike Information Criterion (AIC) value.
+
+        """
+        values, dt = self._preprocess_fit_x_and_dt(x, dt)
+        num_samples = x.shape[0]
+        return 2 * self.num_parameters_ + 2 * self._nll(values, dt) * num_samples
+
+    def bic(self, x: Union[np.ndarray, pd.DataFrame, pd.Series], dt: Optional[float] = None) -> float:
+        r"""Calculate the Bayesian Information Criterion (BIC) for a given path.
+
+        Parameters
+        ----------
+        x : Union[np.ndarray, pd.DataFrame, pd.Series]
+            The input data for BIC calculation.
+        dt : Optional[float]
+            The time step between observations.
+
+        Returns
+        -------
+        bic : float
+            The computed Bayesian Information Criterion (BIC) value.
+        """
+        values, dt = self._preprocess_fit_x_and_dt(x, dt)
+        num_samples = x.shape[0]
+        return 2 * np.log(num_samples) * self.num_parameters_ + 2 * self._nll(values, dt) * num_samples
