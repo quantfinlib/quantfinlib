@@ -1,9 +1,13 @@
 """
-Geometirc Brownian Motion simulation.
+File: quantfinlib/sim/_gbm.py
 
-Classes in this module:
+Description:
+    Geometric Brownian Motion simulation.
 
-GeometricBrownianMotion()
+Author:    Thijs van den Berg
+Email:     thijs@sitmo.com
+Copyright: (c) 2024 Thijs van den Berg
+License:   MIT License
 """
 
 __all__ = ["GeometricBrownianMotion"]
@@ -12,11 +16,12 @@ __all__ = ["GeometricBrownianMotion"]
 from typing import Optional, Union
 
 import numpy as np
+from scipy.stats import multivariate_normal, norm
 
-from quantfinlib.sim._base import SimBase, _fill_with_correlated_noise, _to_numpy
+from quantfinlib.sim._base import SimBase, SimNllMixin, _fill_with_correlated_noise, _to_numpy
 
 
-class GeometricBrownianMotion(SimBase):
+class GeometricBrownianMotion(SimBase, SimNllMixin):
     r"""A class for simulating geometric Brownian motion paths with given drift and volatility.
 
     Geometric Brownian motion is a continuous-time stochastic process used to model various random phenomena.
@@ -157,6 +162,10 @@ class GeometricBrownianMotion(SimBase):
             self.cor = np.asarray(cor)
             self.L_ = np.linalg.cholesky(self.cor)
 
+        self.num_parameters_ = len(self.drift) + len(self.vol)
+        if self.cor is not None:
+            self.num_parameters_ += len(self.drift) * (len(self.drift) - 1) / 2
+
     def _fit_np(self, x: np.ndarray, dt: float):
 
         # changes from one row to the next
@@ -213,3 +222,16 @@ class GeometricBrownianMotion(SimBase):
         ans = np.exp(np.cumsum(ans, axis=0))
 
         return ans
+
+    def _nll(self, x: np.ndarray, dt: float):
+        dx = np.log(x[1:, ...] / x[:-1, ...])
+        mean_ = (self.drift - 0.5 * self.vol**2).flatten()
+        std_ = (self.vol * dt**0.5).flatten()
+
+        if self.cor is not None:
+            D = np.diag(std_)
+            cov_ = D @ self.cor @ D
+            var = multivariate_normal(mean=mean_, cov=cov_)
+        else:
+            var = norm(loc=mean_, scale=std_)
+        return -1 * np.sum(var.logpdf(dx))

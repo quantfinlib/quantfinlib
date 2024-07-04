@@ -1,9 +1,13 @@
 """
-Brownian Motion simulation.
+File: quantfinlib/sim/_bm.py
 
-Classes in this module:
+Description:
+    Brownian Motion simulation.
 
-BrownianMotion()
+Author:    Thijs van den Berg
+Email:     thijs@sitmo.com
+Copyright: (c) 2024 Thijs van den Berg
+License:   MIT License
 """
 
 __all__ = ["BrownianMotion"]
@@ -12,11 +16,12 @@ __all__ = ["BrownianMotion"]
 from typing import Optional, Union
 
 import numpy as np
+from scipy.stats import multivariate_normal, norm
 
-from quantfinlib.sim._base import SimBase, _fill_with_correlated_noise, _to_numpy
+from quantfinlib.sim._base import SimBase, SimNllMixin, _fill_with_correlated_noise, _to_numpy
 
 
-class BrownianMotion(SimBase):
+class BrownianMotion(SimBase, SimNllMixin):
     r"""A class for simulating Brownian motion paths with given drift and volatility.
 
     Brownian motion is a continuous-time stochastic process used to model various random phenomena. In finance, it
@@ -149,6 +154,10 @@ class BrownianMotion(SimBase):
             self.cor = np.asarray(cor)
             self.L_ = np.linalg.cholesky(self.cor)
 
+        self.num_parameters_ = len(self.drift) + len(self.vol)
+        if self.cor is not None:
+            self.num_parameters_ += len(self.drift) * (len(self.drift) - 1) / 2
+
     def _fit_np(self, x: np.ndarray, dt: float):
 
         # changes from one row to the next
@@ -201,3 +210,16 @@ class BrownianMotion(SimBase):
         ans = np.cumsum(ans, axis=0)
 
         return ans
+
+    def _nll(self, x: np.ndarray, dt: float):
+        dx = np.diff(x, axis=0)
+        mean_ = (self.drift * dt).flatten()
+        std_ = (self.vol * dt**0.5).flatten()
+
+        if self.cor is not None:
+            D = np.diag(std_)
+            cov_ = D @ self.cor @ D
+            var = multivariate_normal(mean=mean_, cov=cov_)
+        else:
+            var = norm(loc=mean_, scale=std_)
+        return -1 * np.sum(var.logpdf(dx))

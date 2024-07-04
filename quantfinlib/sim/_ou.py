@@ -1,9 +1,13 @@
 """
-Ornstein-Uhlenbeck process simulation.
+File: quantfinlib/sim/_ou.py
 
-Classes in this module:
+Description:
+    Ornstein-Uhlenbeck process.
 
-OrnsteinUhlenbeck()
+Author:    Thijs van den Berg
+Email:     thijs@sitmo.com
+Copyright: (c) 2024 Thijs van den Berg
+License:   MIT License
 """
 
 __all__ = ["OrnsteinUhlenbeck"]
@@ -13,11 +17,12 @@ import warnings
 from typing import Optional, Union
 
 import numpy as np
+from scipy.stats import multivariate_normal, norm
 
-from quantfinlib.sim._base import SimBase, _fill_with_correlated_noise, _to_numpy
+from quantfinlib.sim._base import SimBase, SimNllMixin, _fill_with_correlated_noise, _to_numpy
 
 
-class OrnsteinUhlenbeck(SimBase):
+class OrnsteinUhlenbeck(SimBase, SimNllMixin):
     r"""A class for simulating the mean-reverting Ornstein-Uhlenbeck process.
 
     The Ornstein-Uhlenbeck process is a continuous-time stochastic mean-reverting process.
@@ -179,6 +184,10 @@ class OrnsteinUhlenbeck(SimBase):
             self.cor = np.asarray(cor)
             self.L_ = np.linalg.cholesky(self.cor)
 
+        self.num_parameters_ = len(self.mean) + len(self.mrr) + len(self.vol)
+        if self.cor is not None:
+            self.num_parameters_ += len(self.mean) * (len(self.mean) - 1) / 2
+
     def _fit_np(self, x: np.ndarray, dt: float):
 
         SLOPE_TOL = 1e-8
@@ -270,3 +279,22 @@ class OrnsteinUhlenbeck(SimBase):
             ans[i + 1, :] += ans[i, :] * mrr_factor
 
         return ans
+
+    def _nll(self, x: np.ndarray, dt: float):
+
+        mrr_factor = np.exp(-self.mrr * dt)
+        mean_ = self.mean * (1 - mrr_factor)
+        std_ = np.sqrt(self.vol**2 / (2 * self.mrr) * (1 - np.exp(-2 * self.mrr * dt)))
+
+        mean_ = mean_.flatten()
+        std_ = std_.flatten()
+
+        dx = x[1:, ...] - mrr_factor * x[:-1, ...]
+
+        if self.cor is not None:
+            D = np.diag(std_)
+            cov_ = D @ self.cor @ D
+            var = multivariate_normal(mean=mean_, cov=cov_)
+        else:
+            var = norm(loc=mean_, scale=std_)
+        return -1 * np.sum(var.logpdf(dx))
