@@ -13,7 +13,7 @@ from typing import Optional, Union
 
 import numpy as np
 
-from quantfinlib.sim._base import SimBase, _to_numpy, _fill_with_correlated_noise
+from quantfinlib.sim._base import SimBase, _fill_with_correlated_noise, _to_numpy
 
 
 class BrownianMotion(SimBase):
@@ -187,18 +187,14 @@ class BrownianMotion(SimBase):
 
         # Allocate storage for the simulation
         ans = np.zeros(shape=(num_steps + 1, num_variates * num_paths))
-        
+
         # set the initial value of the simulation on the first row. Tile vertical if needed
         SimBase.set_x0(ans, x0)
 
         # Fill a view with noise
         dx = ans[1:, :].reshape(-1, num_variates)
         _fill_with_correlated_noise(
-            dx, 
-            loc=self.drift*dt, 
-            scale=self.vol*dt**0.5, 
-            L=self.L_, 
-            random_state=random_state
+            dx, loc=self.drift * dt, scale=self.vol * dt**0.5, L=self.L_, random_state=random_state
         )
 
         # compound

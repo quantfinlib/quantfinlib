@@ -13,7 +13,7 @@ from typing import Optional, Union
 
 import numpy as np
 
-from quantfinlib.sim._base import SimBase, _to_numpy, _fill_with_correlated_noise
+from quantfinlib.sim._base import SimBase, _fill_with_correlated_noise, _to_numpy
 
 
 class GeometricBrownianMotion(SimBase):
@@ -38,10 +38,10 @@ class GeometricBrownianMotion(SimBase):
 
         model = GeometricBrownianMotion(drift=0.05, vol=0.30)
         paths = model.path_sample(
-            x0=100, 
-            label_start='2020-01-01', 
-            label_freq='B', 
-            num_steps=252, 
+            x0=100,
+            label_start='2020-01-01',
+            label_freq='B',
+            num_steps=252,
             num_paths=10
         )
 
@@ -55,10 +55,10 @@ class GeometricBrownianMotion(SimBase):
 
         model = GeometricBrownianMotion(drift=0.05, vol=0.30)
         paths = model.path_sample(
-            x0=100, 
-            label_start='2020-01-01', 
-            label_freq='B', 
-            num_steps=252, 
+            x0=100,
+            label_start='2020-01-01',
+            label_freq='B',
+            num_steps=252,
             num_paths=10
         )
 
@@ -195,18 +195,18 @@ class GeometricBrownianMotion(SimBase):
 
         # Allocate storage for the simulation
         ans = np.zeros(shape=(num_steps + 1, num_variates * num_paths))
-        
+
         # set the initial value of the simulation on the first row. Tile vertical if needed
         SimBase.set_x0(ans, np.log(x0))
 
         # Fill a view with noise
         dx = ans[1:, :].reshape(-1, num_variates)
         _fill_with_correlated_noise(
-            dx, 
-            loc=(self.drift - 0.5 * self.vol**2) * dt, 
-            scale=self.vol*dt**0.5, 
-            L=self.L_, 
-            random_state=random_state
+            dx,
+            loc=(self.drift - 0.5 * self.vol**2) * dt,
+            scale=self.vol * dt**0.5,
+            L=self.L_,
+            random_state=random_state,
         )
 
         # compound

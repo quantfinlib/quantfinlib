@@ -9,11 +9,12 @@ OrnsteinUhlenbeck()
 __all__ = ["OrnsteinUhlenbeck"]
 
 
+import warnings
 from typing import Optional, Union
 
 import numpy as np
 
-from quantfinlib.sim._base import SimBase, _to_numpy, _fill_with_correlated_noise
+from quantfinlib.sim._base import SimBase, _fill_with_correlated_noise, _to_numpy
 
 
 class OrnsteinUhlenbeck(SimBase):
@@ -38,10 +39,10 @@ class OrnsteinUhlenbeck(SimBase):
 
         model = OrnsteinUhlenbeck(mean=4, mrr=2, vol=1)
         paths = model.path_sample(
-            x0=1, 
-            label_start='2020-01-01', 
-            label_freq='B', 
-            num_steps=252, 
+            x0=1,
+            label_start='2020-01-01',
+            label_freq='B',
+            num_steps=252,
             num_paths=10
         )
 
@@ -63,7 +64,7 @@ class OrnsteinUhlenbeck(SimBase):
     Properties and Limitations
     --------------------------
 
-    * The mean (:math:`\mu`), mean reversion rate (:math:`\lambda`) and volatility (:math:`\sigma`) are 
+    * The mean (:math:`\mu`), mean reversion rate (:math:`\lambda`) and volatility (:math:`\sigma`) are
       considered constant over time.
     * Simulated values can be both positive and negative.
     * The Ornstein-Uhlenbeck assumes a continuous path.
@@ -92,6 +93,9 @@ class OrnsteinUhlenbeck(SimBase):
     * :math:`\sigma` is the volatility coefficient (annualized volatility rate),
     * :math:`dW_t` is a Wiener process (standard Brownian motion).
 
+    * todo: explain that sigma is a cov when MV
+
+    
     Simulation
     ..........
 
@@ -99,7 +103,8 @@ class OrnsteinUhlenbeck(SimBase):
 
     .. math::
 
-        X[t + dt] = \mu  + (X[t] - \mu) e^{-\Theta dt} + \sqrt{\frac{\sigma^2}{2\Theta}\left(1 - e^{-2\Theta dt} \right) } \mathcal{N}(0,1)
+        X[t + dt] = \mu  + (X[t] - \mu) e^{-\Theta dt} + %
+        \sqrt{\frac{\sigma^2}{2\Theta}\left(1 - e^{-2\Theta dt} \right) } \mathcal{N}(0,1)
 
     where:
 
@@ -124,7 +129,7 @@ class OrnsteinUhlenbeck(SimBase):
         c &= \sqrt{\frac{\sigma^2}{2\lambda}\left(1 - e^{-2\lambda dt} \right) }
         \end{align}
 
-    :math:`a, b` are estimated with least squares regression, and :math:`c` is estimated from the regression residuals. 
+    :math:`a, b` are estimated with least squares regression, and :math:`c` is estimated from the regression residuals.
     The residuals are also used to estimate the correlations if the data is multi-variate. From these estimates
     the Ornstein-Uhlenbeck parameters are derived as follows:
 
@@ -175,36 +180,45 @@ class OrnsteinUhlenbeck(SimBase):
             self.L_ = np.linalg.cholesky(self.cor)
 
     def _fit_np(self, x: np.ndarray, dt: float):
-        
+
+        SLOPE_TOL = 1e-8
+
         num_series = x.shape[1]
 
         # Prepare to store slopes and intercepts
         slopes = np.zeros(num_series)
         intercepts = np.zeros(num_series)
-        residuals = np.zeros((x.shape[0]-1, x.shape[1]))
-    
+        residuals = np.zeros((x.shape[0] - 1, x.shape[1]))
+
         # Loop through each time series
         for i in range(num_series):
             # Extract the x and y values for the current series
             lin_x = x[:-1, i]
             lin_y = x[1:, i]
-            
+
             # Add a column of ones to x to account for the intercept
             A = np.vstack([lin_x, np.ones(len(lin_x))]).T
-            
+
             # Solve the least squares problem
             slope, intercept = np.linalg.lstsq(A, lin_y, rcond=None)[0]
-            
+
+            if slope <= SLOPE_TOL:
+                warnings.warn(
+                    f"Fitting column with index {i} did not give a correct value. Setting mrr to very high value.",
+                    UserWarning,
+                )
+                slope = SLOPE_TOL
+                intercept = np.mean(lin_y)
+
             # Store the results
             slopes[i] = slope
             intercepts[i] = intercept
 
             # Compute the predicted y-values
             y_pred = slope * lin_x + intercept
-            
+
             # Compute and store the residuals
             residuals[:, i] = lin_y - y_pred
-
 
         # Compute correlations if we have multiple columns
         if residuals.shape[1] > 1:
@@ -219,7 +233,7 @@ class OrnsteinUhlenbeck(SimBase):
 
         self.mrr = -np.log(slope) / dt
         self.mean = intercept / (1 - slope)
-        self.vol = np.sqrt((2 * self.mrr * res_std**2)/(1 - slope**2))
+        self.vol = np.sqrt((2 * self.mrr * res_std**2) / (1 - slope**2))
 
         return self
 
@@ -234,36 +248,25 @@ class OrnsteinUhlenbeck(SimBase):
 
         # Handy OU constants
         mrr_factor = np.exp(-self.mrr * dt)
-        mean_term = self.mean*(1 - mrr_factor)
-        scale_factor = np.sqrt( 
-            self.vol**2 / (2 * self.mrr) * (
-                1 - np.exp(-2 * self.mrr * dt)
-            )
-        )
+        mean_term = self.mean * (1 - mrr_factor)
+        scale_factor = np.sqrt(self.vol**2 / (2 * self.mrr) * (1 - np.exp(-2 * self.mrr * dt)))
 
         # Allocate storage for the simulation
         num_variates = self.mean.shape[1]
 
         # Allocate storage for the simulation
         ans = np.zeros(shape=(num_steps + 1, num_variates * num_paths))
-        
+
         # set the initial value of the simulation on the first row. Tile vertical if needed
         SimBase.set_x0(ans, x0)
 
-
         # Fill a view with noise
         dx = ans[1:, :].reshape(-1, num_variates)
-        _fill_with_correlated_noise(
-            dx, 
-            loc=mean_term,
-            scale=scale_factor, 
-            L=self.L_, 
-            random_state=random_state
-        )
+        _fill_with_correlated_noise(dx, loc=mean_term, scale=scale_factor, L=self.L_, random_state=random_state)
 
         # Forward step trough OU
         mrr_factor = mrr_factor.reshape(-1)
-        for i in range(ans.shape[0]-1):
-            ans[i+1, :] += ans[i, :] * mrr_factor
+        for i in range(ans.shape[0] - 1):
+            ans[i + 1, :] += ans[i, :] * mrr_factor
 
         return ans
