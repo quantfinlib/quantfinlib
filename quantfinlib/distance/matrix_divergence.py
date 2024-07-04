@@ -1,3 +1,5 @@
+"""Matrix divergence measures for positive definite matrices."""
+
 import numpy as np
 from scipy.linalg import logm
 

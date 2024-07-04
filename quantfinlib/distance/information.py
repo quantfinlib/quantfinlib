@@ -1,3 +1,7 @@
+"""Functions to compute information-theoretical measures of codependence betwween two variables.
+These include mutual information, variation of information, and Kullback-Leibler divergence between two variables.
+"""
+
 from typing import Optional, Tuple, Union
 
 import numpy as np
@@ -51,9 +55,11 @@ def _get_optimal_nb_bins(n_obs: int, corr: Optional[float] = None) -> int:
     return int(b)
 
 
-def compute_entropies(x: Union[pd.Series, np.ndarray], y: Union[pd.Series, np.ndarray], bins: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def compute_entropies(
+    x: Union[pd.Series, np.ndarray], y: Union[pd.Series, np.ndarray], bins: int
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Compute entropies of two variables x and y.
-    
+
     Parameters
     ----------
     x : pd.Series or np.ndarray
@@ -62,7 +68,7 @@ def compute_entropies(x: Union[pd.Series, np.ndarray], y: Union[pd.Series, np.nd
         Second input variable.
     bins : int
         Number of bins for histogram calculation.
-    
+
     Returns
     -------
     np.ndarray , np.ndarray, np.ndarray
@@ -77,7 +83,6 @@ def compute_entropies(x: Union[pd.Series, np.ndarray], y: Union[pd.Series, np.nd
     h_y = entropy(hist_y / hist_y.sum())
     h_xy = entropy((hist_xy / hist_xy.sum()).flatten())
     return h_x, h_y, h_xy
-
 
 
 def mutual_info(

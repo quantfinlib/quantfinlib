@@ -3,7 +3,9 @@ import pandas as pd
 import pytest
 from scipy.stats import multivariate_normal, multivariate_t
 
-from quantfinlib.distance.information import kl_divergence_xy, mutual_info, compute_entropies, var_info
+from quantfinlib.distance.information import (compute_entropies,
+                                              kl_divergence_xy, mutual_info,
+                                              var_info)
 
 np.random.seed(123456789)
 
