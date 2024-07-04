@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -49,6 +49,35 @@ def _get_optimal_nb_bins(n_obs: int, corr: Optional[float] = None) -> int:
     else:
         b = round(2**-0.5 * (1 + (1 + 24 * n_obs / (1.0 - corr**2)) ** 0.5) ** 0.5)
     return int(b)
+
+
+def compute_entropies(x: Union[pd.Series, np.ndarray], y: Union[pd.Series, np.ndarray], bins: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Compute entropies of two variables x and y.
+    
+    Parameters
+    ----------
+    x : pd.Series or np.ndarray
+        First input variable.
+    y : pd.Series or np.ndarray
+        Second input variable.
+    bins : int
+        Number of bins for histogram calculation.
+    
+    Returns
+    -------
+    np.ndarray , np.ndarray, np.ndarray
+        Entropy of x, Entropy of y, Joint entropy of x and y.
+    """
+    # Compute joint histogram
+    hist_xy, _, _ = np.histogram2d(x, y, bins)
+    hist_x, _ = np.histogram(x, bins)
+    hist_y, _ = np.histogram(y, bins)
+    # Compute entropies
+    h_x = entropy(hist_x / hist_x.sum())
+    h_y = entropy(hist_y / hist_y.sum())
+    h_xy = entropy((hist_xy / hist_xy.sum()).flatten())
+    return h_x, h_y, h_xy
+
 
 
 def mutual_info(
@@ -103,18 +132,7 @@ def mutual_info(
     _validate_inputs(x, y)
     if bins is None:
         bins = _get_nb_bins_from_xy(x, y)
-    # Compute joint histogram
-    hist_xy, _, _ = np.histogram2d(x, y, bins)
-    hist_x, _ = np.histogram(x, bins)
-    hist_y, _ = np.histogram(y, bins)
-    # Compute probabilities
-    p_xy = hist_xy / hist_xy.sum()
-    p_x = hist_x / hist_x.sum()
-    p_y = hist_y / hist_y.sum()
-    # Compute entropies
-    h_x = entropy(p_x)
-    h_y = entropy(p_y)
-    h_xy = entropy(p_xy.flatten())
+    h_x, h_y, h_xy = compute_entropies(x, y, bins)
     # Compute mutual information
     mi_xy = h_x + h_y - h_xy
     if norm:
@@ -169,18 +187,7 @@ def var_info(
     _validate_inputs(x, y)
     if bins is None:
         bins = _get_nb_bins_from_xy(x, y)
-    # Compute joint histogram
-    hist_xy, _, _ = np.histogram2d(x, y, bins)
-    hist_x, _ = np.histogram(x, bins)
-    hist_y, _ = np.histogram(y, bins)
-    # Compute probabilities
-    p_xy = hist_xy / hist_xy.sum()
-    p_x = hist_x / hist_x.sum()
-    p_y = hist_y / hist_y.sum()
-    # Compute entropies
-    h_x = entropy(p_x)
-    h_y = entropy(p_y)
-    h_xy = entropy(p_xy.flatten())
+    h_x, h_y, h_xy = compute_entropies(x, y, bins)  # Compute entropies
     # Compute variation of information
     var_info_xy = 2 * h_xy - h_x - h_y
     if norm:

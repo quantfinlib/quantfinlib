@@ -1,9 +1,9 @@
 import numpy as np
+import pandas as pd
 import pytest
 from scipy.stats import multivariate_normal, multivariate_t
 
-from quantfinlib.distance.information import (kl_divergence_xy, mutual_info,
-                                              var_info)
+from quantfinlib.distance.information import kl_divergence_xy, mutual_info, compute_entropies, var_info
 
 np.random.seed(123456789)
 
@@ -104,3 +104,68 @@ def test_metric_properties():
     nmi_xy = mutual_info(x, y, norm=True)
     nmi_yx = mutual_info(y, x, norm=True)
     np.testing.assert_almost_equal(nmi_xy, nmi_yx, decimal=5, err_msg="expected normalized mutual information to be symmetric.")
+
+
+def test_entropies():
+    x = np.random.normal(0, 1, 1000)
+    y = 10 * x + np.random.normal(0, .1, 1000)
+    h_x, h_y, h_xy = compute_entropies(x, y, bins=10)
+    assert h_x > 0, "expected entropy of x to be greater than 0."
+    assert h_y > 0, "expected entropy of y to be greater than 0."
+    assert h_xy > 0, "expected joint entropy of x and y to be greater than 0."
+    assert h_x <= h_xy, "expected entropy of x to be less than or equal to joint entropy of x and y."
+    assert h_y <= h_xy, "expected entropy of y to be less than or equal to joint entropy of x and y."
+    assert isinstance(h_x, float), "expected entropy of x to be a float."
+    assert isinstance(h_y, float), "expected entropy of y to be a float."
+    assert isinstance(h_xy, float), "expected joint entropy of x and y to be a float."
+    _, _, h_yx = compute_entropies(y, x, bins=10)
+    np.testing.assert_almost_equal(h_yx, h_xy, decimal=5, err_msg="expected joint entropy of xy to be the same as joint entropy of yx.")
+
+
+@pytest.fixture
+def data():
+    x_, e_ = np.random.normal(size=100000), np.random.normal(0, .1, 100000)
+    data = [[x_, 10*x_+e_], [x_, 10*x_**2+e_], [x_, 10*np.abs(x_)+e_]]
+    return data
+
+@pytest.mark.parametrize("index", [0, 1, 2])
+def test_input_type(index, data):
+    x, y = data[index]
+    x_pd, y_pd = pd.Series(x), pd.Series(y)
+    nmi = mutual_info(x, y, norm=True)
+    nmi_pd = mutual_info(x_pd, y_pd, norm=True)
+    nvi = var_info(x, y, norm=True)
+    nvi_pd = var_info(x_pd, y_pd, norm=True)
+    mi = mutual_info(x, y, norm=False)
+    mi_pd = mutual_info(x_pd, y_pd, norm=False)
+    vi = var_info(x, y, norm=False)
+    vi_pd = var_info(x_pd, y_pd, norm=False)
+    kl = kl_divergence_xy(x, y)
+    kl_pd = kl_divergence_xy(x_pd, y_pd)
+    h_x, h_y, h_xy = compute_entropies(x, y, bins=10)
+    h_x_pd, h_y_pd, h_xy_pd = compute_entropies(x_pd, y_pd, bins=10)
+    np.testing.assert_almost_equal(nmi, nmi_pd, decimal=5, err_msg="expected mutual information to be the same for numpy and pandas.")
+    np.testing.assert_almost_equal(nvi, nvi_pd, decimal=5, err_msg="expected normalized mutual information to be the same for numpy and pandas.")
+    np.testing.assert_almost_equal(mi, mi_pd, decimal=5, err_msg="expected mutual information to be the same for numpy and pandas.")
+    np.testing.assert_almost_equal(vi, vi_pd, decimal=5, err_msg="expected variation of information to be the same for numpy and pandas.")
+    np.testing.assert_almost_equal(kl, kl_pd, decimal=5, err_msg="expected kl divergence to be the same for numpy and pandas.")
+    np.testing.assert_almost_equal(h_x, h_x_pd, decimal=5, err_msg="expected entropy of x to be the same for numpy and pandas.")
+    np.testing.assert_almost_equal(h_y, h_y_pd, decimal=5, err_msg="expected entropy of y to be the same for numpy and pandas.")
+    np.testing.assert_almost_equal(h_xy, h_xy_pd, decimal=5, err_msg="expected joint entropy of x and y to be the same for numpy and pandas.")
+    # Test with user defined bin number
+    nmi_10 = mutual_info(x, y, norm=True, bins=10)
+    nmi_pd_10 = mutual_info(x_pd, y_pd, norm=True, bins=10)
+    nvi_10 = var_info(x, y, norm=True, bins=10)
+    nvi_pd_10 = var_info(x_pd, y_pd, norm=True, bins=10)
+    mi_10 = mutual_info(x, y, norm=False, bins=10)
+    mi_pd_10 = mutual_info(x_pd, y_pd, norm=False, bins=10)
+    vi_10 = var_info(x, y, norm=False, bins=10)
+    vi_pd_10 = var_info(x_pd, y_pd, norm=False, bins=10)
+    kl_10 = kl_divergence_xy(x, y, bins=10)
+    kl_pd_10 = kl_divergence_xy(x_pd, y_pd, bins=10)
+    np.testing.assert_almost_equal(nmi_10, nmi_pd_10, decimal=5, err_msg="expected mutual information to be the same for numpy and pandas.")
+    np.testing.assert_almost_equal(nvi_10, nvi_pd_10, decimal=5, err_msg="expected normalized mutual information to be the same for numpy and pandas.")
+    np.testing.assert_almost_equal(mi_10, mi_pd_10, decimal=5, err_msg="expected mutual information to be the same for numpy and pandas.")
+    np.testing.assert_almost_equal(vi_10, vi_pd_10, decimal=5, err_msg="expected variation of information to be the same for numpy and pandas.")
+    np.testing.assert_almost_equal(kl_10, kl_pd_10, decimal=5, err_msg="expected kl divergence to be the same for numpy and pandas.")
+
