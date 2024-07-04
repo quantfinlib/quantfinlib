@@ -1,3 +1,4 @@
+import math
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional, Tuple, Union
 
@@ -39,6 +40,68 @@ def _get_date_time_index(x: Optional[Any]) -> Optional[pd.DatetimeIndex]:
     if not isinstance(x.index, pd.DatetimeIndex):
         return None
     return x.index
+
+
+def _fill_with_correlated_noise(
+    ans: np.ndarray,
+    loc: Optional[np.ndarray] = None,
+    scale: Optional[np.ndarray] = None,
+    L: Optional[np.ndarray] = None,
+    random_state: Optional[int] = None,
+):
+
+    # Create a Generator instance with the seed
+    rng = np.random.default_rng(random_state)
+
+    # fill with standard normal Nose
+    ans[:, :] = rng.normal(size=ans.shape)
+    if L is not None:
+        ans[:, :] = ans[:, :] @ L.T
+    if scale is not None:
+        ans[:, :] *= scale
+    if loc is not None:
+        ans[:, :] += loc
+
+
+def _triangular_index(T_n: int) -> int:
+    # Calculate the potential index using the derived formula
+    n = (-1 + math.sqrt(1 + 8 * T_n)) / 2
+
+    # Check if n is an integer
+    if n.is_integer():
+        return int(n)
+    else:
+        raise ValueError("The given number is not a triangular number")
+
+
+def _make_cor_from_upper_tri(values: _SimFitDataType) -> np.ndarray:
+
+    values = _to_numpy(values)
+
+    # We support 1 list, or a row/col from a matrix, as long as it's effectively 1d
+    assert values.ndim <= 2
+    if values.ndim == 2:
+        if (values.shape[0] == 1) or (values.shape[1] == 1):
+            values = values.flatten()
+        else:
+            raise ValueError(f"Expected a 1d list of numbers but got {values.shape}")
+
+    # Compute the dimensions of the output matrix
+    num_dims = _triangular_index(len(values)) + 1
+
+    # Initialize an n x n matrix with zeros
+    matrix = np.zeros((num_dims, num_dims))
+
+    # Fill the upper triangle (including the diagonal)
+    index = 0
+    for i in range(num_dims):
+        matrix[i, i] = 1.0
+        for j in range(i + 1, num_dims):
+            matrix[i, j] = values[index]
+            matrix[j, i] = values[index]
+            index += 1
+
+    return matrix
 
 
 class _DateTimeIndexInfo:
