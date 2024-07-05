@@ -1,9 +1,13 @@
 """
-Brownian Motion simulation.
+File: quantfinlib/sim/_bm.py
 
-Classes in this module:
+Description:
+    Brownian Motion simulation.
 
-BrownianMotion()
+Author:    Thijs van den Berg
+Email:     thijs@sitmo.com
+Copyright: (c) 2024 Thijs van den Berg
+License:   MIT License
 """
 
 __all__ = ["BrownianMotion"]
@@ -12,11 +16,12 @@ __all__ = ["BrownianMotion"]
 from typing import Optional, Union
 
 import numpy as np
+from scipy.stats import multivariate_normal, norm
 
-from quantfinlib.sim._base import SimBase
+from quantfinlib.sim._base import SimBase, SimNllMixin, _fill_with_correlated_noise, _to_numpy
 
 
-class BrownianMotion(SimBase):
+class BrownianMotion(SimBase, SimNllMixin):
     r"""A class for simulating Brownian motion paths with given drift and volatility.
 
     Brownian motion is a continuous-time stochastic process used to model various random phenomena. In finance, it
@@ -49,8 +54,8 @@ class BrownianMotion(SimBase):
         import plotly.express as px
         from quantfinlib.sim import BrownianMotion
 
-        bm = BrownianMotion(drift=-2, vol=0.7)
-        paths = bm.path_sample(x0=1.5, dt=1/252, num_steps=252, num_paths=10)
+        model = BrownianMotion(drift=-2, vol=0.7)
+        paths = model.path_sample(x0=1.5, dt=1/252, num_steps=252, num_paths=10)
 
         fig = px.line(paths)
         fig.show()
@@ -60,8 +65,8 @@ class BrownianMotion(SimBase):
         import plotly.express as px
         from quantfinlib.sim import BrownianMotion
 
-        bm = BrownianMotion(drift=-2, vol=0.7)
-        paths = bm.path_sample(x0=1.5, dt=1/252, num_steps=252, num_paths=10)
+        model = BrownianMotion(drift=-2, vol=0.7)
+        paths = model.path_sample(x0=1.5, dt=1/252, num_steps=252, num_paths=10)
 
         fig = px.line(paths)
         fig.show()
@@ -104,7 +109,7 @@ class BrownianMotion(SimBase):
     * :math:`\sigma` is the volatility coefficient (annualized volatility rate),
     * :math:`dW_t` is a Wiener process (standard Brownian motion).
 
-    For papth simulations we use the exact solutusiotn
+    For path simulations we use the exact solution of the discretize SDE:
 
     .. math::
 
@@ -112,8 +117,8 @@ class BrownianMotion(SimBase):
 
     where:
 
-    * :math:`\mu` is the drift coefficient (annualized drift rate),
-    * :math:`\sigma` is the volatility coefficient (annualized volatility rate),
+    * :math:`\mu` is the drift coefficient (annualized drift rate).
+    * :math:`\sigma` is the volatility coefficient (annualized volatility rate).
     * :math:`\mathcal{N}(0,1)` is standard Normal distributed sample.
     * :math:`dt` the time-step size.
 
@@ -127,19 +132,19 @@ class BrownianMotion(SimBase):
 
         Parameters
         ----------
-        drift : float, optional
+        drift : float or array, optional
             The annualized drift rate (default is 0.0).
-        vol : float, optional
-            The annualized volatility rate (default is 0.1).
+        vol : float or array, optional
+            The annualized volatility (default is 0.1).
         cor : optional
-            Correlation matrix for multivariate Brownian motion (default is None).
+            Correlation matrix for multivariate model (default is None, uncorrelated).
 
         """
         super().__init__()
 
         # Parameters
-        self.drift = np.asarray(drift).reshape(1, -1)
-        self.vol = np.asarray(vol).reshape(1, -1)
+        self.drift = _to_numpy(drift).reshape(1, -1)
+        self.vol = _to_numpy(vol).reshape(1, -1)
 
         # Private attributes
         if cor is None:
@@ -148,6 +153,10 @@ class BrownianMotion(SimBase):
         else:
             self.cor = np.asarray(cor)
             self.L_ = np.linalg.cholesky(self.cor)
+
+        self.num_parameters_ = len(self.drift) + len(self.vol)
+        if self.cor is not None:
+            self.num_parameters_ += len(self.drift) * (len(self.drift) - 1) / 2
 
     def _fit_np(self, x: np.ndarray, dt: float):
 
@@ -183,32 +192,34 @@ class BrownianMotion(SimBase):
     ) -> np.ndarray:
 
         # Allocate storage for the simulation
-        num_cols = self.drift.shape[1]
-        ans = np.zeros(shape=(num_steps + 1, num_cols * num_paths))
+        num_variates = self.drift.shape[1]
 
-        # set the initial value of the simulation
+        # Allocate storage for the simulation
+        ans = np.zeros(shape=(num_steps + 1, num_variates * num_paths))
+
+        # set the initial value of the simulation on the first row. Tile vertical if needed
         SimBase.set_x0(ans, x0)
 
-        # Create a Generator instance with the seed
-        rng = np.random.default_rng(random_state)
-
-        # fill in Normal noise
-        ans[1 : num_steps + 1, :] = rng.normal(size=(num_steps, ans.shape[1]))
-
-        tmp = ans[1 : num_steps + 1, :]
-        tmp = tmp.reshape(-1, num_paths, num_cols)
-
-        # Optionally correlate the noise
-        if self.L_ is not None:
-            tmp = tmp @ self.L_.T
-
-        # Translate the noise with drift and variance
-        tmp = tmp * self.vol * dt**0.5 + self.drift * dt
-
-        # reshape back
-        ans[1 : num_steps + 1, :] = tmp.reshape(-1, num_paths * num_cols)
+        # Fill a view with noise
+        dx = ans[1:, :].reshape(-1, num_variates)
+        _fill_with_correlated_noise(
+            dx, loc=self.drift * dt, scale=self.vol * dt**0.5, L=self.L_, random_state=random_state
+        )
 
         # compound
         ans = np.cumsum(ans, axis=0)
 
         return ans
+
+    def _nll(self, x: np.ndarray, dt: float):
+        dx = np.diff(x, axis=0)
+        mean_ = (self.drift * dt).flatten()
+        std_ = (self.vol * dt**0.5).flatten()
+
+        if self.cor is not None:
+            D = np.diag(std_)
+            cov_ = D @ self.cor @ D
+            var = multivariate_normal(mean=mean_, cov=cov_)
+        else:
+            var = norm(loc=mean_, scale=std_)
+        return -1 * np.sum(var.logpdf(dx))

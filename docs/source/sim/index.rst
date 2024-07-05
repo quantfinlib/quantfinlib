@@ -12,7 +12,7 @@ for the calibration to historical data and the generation of future sample paths
     :maxdepth: 1
     :caption: Getting Started
 
-    usage
+    Examples <examples>
 
 .. toctree::
     :maxdepth: 1
@@ -20,3 +20,4 @@ for the calibration to historical data and the generation of future sample paths
 
     bm
     gbm
+    ou
