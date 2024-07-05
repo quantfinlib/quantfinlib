@@ -189,7 +189,7 @@ class OrnsteinUhlenbeck(SimBase, SimNllMixin):
             self.num_parameters_ += len(self.mean) * (len(self.mean) - 1) / 2
 
     def _fit_np_maximum_likelihood(self, x: np.ndarray, dt: float):
-
+        pass
 
     def _fit_np(self, x: np.ndarray, dt: float):
 
