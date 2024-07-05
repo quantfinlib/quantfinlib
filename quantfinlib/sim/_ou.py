@@ -188,6 +188,9 @@ class OrnsteinUhlenbeck(SimBase, SimNllMixin):
         if self.cor is not None:
             self.num_parameters_ += len(self.mean) * (len(self.mean) - 1) / 2
 
+    def _fit_np_maximum_likelihood(self, x: np.ndarray, dt: float):
+
+
     def _fit_np(self, x: np.ndarray, dt: float):
 
         SLOPE_TOL = 1e-8
@@ -228,6 +231,9 @@ class OrnsteinUhlenbeck(SimBase, SimNllMixin):
 
             # Compute and store the residuals
             residuals[:, i] = lin_y - y_pred
+        
+        # Compute residual_std
+        res_std = np.std(residuals, axis=0, ddof=1, keepdims=True)
 
         # Compute correlations if we have multiple columns
         if residuals.shape[1] > 1:
@@ -236,9 +242,6 @@ class OrnsteinUhlenbeck(SimBase, SimNllMixin):
         else:
             self.cor = None
             self.L_ = None
-
-        # Compute OU params from slope, intercept, residual_std
-        res_std = np.std(residuals, axis=0, ddof=1, keepdims=True)
 
         self.mrr = -np.log(slope) / dt
         self.mean = intercept / (1 - slope)
