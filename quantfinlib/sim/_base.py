@@ -9,10 +9,10 @@ Email:     thijs@sitmo.com
 Copyright: (c) 2024 Thijs van den Berg
 License:   MIT License
 """
-
-import math
+from typing import Any, List, Optional, Tuple, Union, Dict
+import warnings
 from abc import ABC, abstractmethod
-from typing import Any, List, Optional, Tuple, Union
+import math
 
 import numpy as np
 import pandas as pd
@@ -20,6 +20,13 @@ import pandas as pd
 from quantfinlib._datatypes.timeseries import time_series_freq_to_duration
 
 _SimFitDataType = Union[int, float, list, np.ndarray, pd.DataFrame, pd.Series]
+
+def _count_non_none_elements(tup: Tuple) -> int:
+    return sum(1 for item in tup if item is not None)
+
+
+def _count_non_none_dict_values(d: Dict) -> int:
+    return sum(1 for value in d.values() if value is not None)
 
 
 def _to_numpy(x: _SimFitDataType) -> np.ndarray:
@@ -46,13 +53,54 @@ def _get_column_names(x: _SimFitDataType) -> Optional[List[str]]:
         return None
 
 
-def _get_date_time_index(x: Optional[Any]) -> Optional[pd.DatetimeIndex]:
+def _get_datetime_index(x: Optional[Any]) -> Optional[pd.DatetimeIndex]:
     if not isinstance(x, (pd.DataFrame, pd.Series)):
         return None
     if not isinstance(x.index, pd.DatetimeIndex):
         return None
     return x.index
 
+def _make_datetime_index(
+    num_rows:int,    
+    label_start: Optional[Any] = None,
+    label_end: Optional[Any] = None,
+    label_freq: Optional[Any] = None,
+    fallback_start: Optional[Any] = None,
+    fallback_freq: Optional[Any] = None,
+    name: Optional[str] = None
+) -> Optional[pd.DatetimeIndex]:
+
+    date_range_args = {
+        'start': label_start,
+        'freq': label_freq,
+        'end': label_end
+    }
+
+    num_vars_set = _count_non_none_dict_values(date_range_args)
+
+    if num_vars_set == 3:
+        raise ValueError('Cannot create a DatetimeIndex when all 3 [label_start, label_end, label_freq] are set.')
+
+    if num_vars_set == 2:
+        return pd.date_range(**date_range_args, periods=num_rows, name=name)
+
+    fallbacks = [
+        ('freq', fallback_freq),
+        ('start', fallback_start),
+    ]
+    
+    for patch_key, patch_value in fallbacks:
+        if date_range_args[patch_key] is None:
+            date_range_args[patch_key] = patch_value
+        num_vars_set = _count_non_none_dict_values(date_range_args)
+        if num_vars_set == 2:
+            break
+
+    if num_vars_set == 2:
+        return pd.date_range(**date_range_args, periods=num_rows, name=name)
+
+    raise ValueError('Cannot create a DatetimeIndex, not enough information.')
+    
 
 def _fill_with_correlated_noise(
     ans: np.ndarray,
@@ -116,126 +164,92 @@ def _make_cor_from_upper_tri(values: _SimFitDataType) -> np.ndarray:
     return matrix
 
 
-class _DateTimeIndexInfo:
-    def __init__(self, x: Optional[Any] = None):
-        index = _get_date_time_index(x)
-        if index is None:
-            self.has_index_ = False
-            self.name_ = None
-            self.min_ = None
-            self.max_ = None
-            self.freq_ = None
-        else:
-            self.has_index_ = True
-            self.name_ = index.name
-            self.min_ = index.min()
-            self.max_ = index.max()
-            self.freq_ = pd.infer_freq(x.index)
+def _estimate_dt_from_time_intervals(first:pd.Timestamp, last: pd.Timestamp, num_rows: int) -> float:
+    # Calculate the total duration between the first and last dates
+    total_duration = last - first
+
+    # Calculate the average duration in days
+    average_duration_days = total_duration / num_rows
+
+    # Convert the average duration from days to years (considering 365.25 days per year for leap years)
+    average_duration_years = average_duration_days / pd.Timedelta(days=365.25)
+
+    # Get the float value
+    average_duration_years_float = average_duration_years.total_seconds() / pd.Timedelta(days=365.25).total_seconds()
+
+    return average_duration_years_float
 
 
 class SimBase(ABC):
     def __init__(self, *args, **kwargs):
-        # Info about the data used for fitting
-        self.fit_container_dtype_ = None
-        self.fit_num_rows_ = None
-        self.fit_num_cols_ = None
-
-        self.fit_index_ = _DateTimeIndexInfo()
-        self.fit_column_names_ = None
-
-        # Additional info from the fit() call we might need later
-        self.fit_dt_ = None
-        self.fit_x0_ = None
-        self.fit_xn_ = None
 
         # defaults, sometimes overrules in derived classs
         self.x0_default = 0.0
         self.num_parameters_ = 2
 
-    def _preprocess_fit_x_and_dt(
-        self, x: Union[list, np.ndarray, pd.DataFrame, pd.Series], dt: Optional[Union[float, int]]
-    ) -> Tuple[np.ndarray, float]:
-        r"""Inspect and normalizer the X and dt value provided to the fit function."""
-
+    def _inspect_and_normalize_fit_x(self, x):
+        
+        # Info about the data used for fitting
         self.fit_container_dtype_ = type(x)
+
+        # Info about the content of x
+        np_x = _to_numpy(x)
+        self.fit_num_rows_ = np_x.shape[0]
+        self.fit_num_cols_ = np_x.shape[1]
+        self.fit_x0_ = np_x[0, ...]
+        self.fit_xn_ = np_x[-1, ...]
+
+        # info about the potential DatetimeIndex of x
+        index = _get_datetime_index(x)
+        if index is not None:
+            self.fit_has_date_time_index_ = True
+            self.fit_index_name_ = index.name
+            self.fit_index_min_ = index.min()
+            self.fit_index_max_ = index.max()
+            self.fit_index_freq_ = pd.infer_freq(index)
+            self.fit_index_rows_ = len(index)
+            self.fit_index_dt_ = _estimate_dt_from_time_intervals(
+                self.fit_index_min_, 
+                self.fit_index_max_, 
+                self.fit_index_rows_
+            )            
+
+        # info about the potential column names of x
         self.fit_column_names_ = _get_column_names(x)
-        self.fit_index_ = _DateTimeIndexInfo(x)
 
-        values = _to_numpy(x)
-        if values.ndim == 1:
-            values = values.reshape(-1, 1)
-        self.fit_num_cols_ = values.shape[1]
-        self.fit_x0_ = values[0, :].reshape(1, -1)
-        self.fit_xn_ = values[-1, :].reshape(1, -1)
-        self.fit_num_rows_ = values.shape[0]
+        return np_x
 
-        # if dt is not provided then we need to infer it
-        if dt is None:
-            if self.fit_index_.freq_ is not None:
-                dt = time_series_freq_to_duration(self.fit_index_.freq_)
-                if dt is None:
-                    raise ValueError("Unable to determine dt based on freq", self.fit_index_.freq_)
-            else:
-                dt = 1 / 252  # Defualt
-        self.fit_dt_ = dt
-
-        return values, dt
-
-    def _preprocess_sim_path_args(
+    def _preprocess_path_sample_x0(
         self,
-        x0: Optional[Union[float, int, list, np.ndarray, pd.DataFrame, pd.Series, str]] = None,
-        dt: Optional[Union[float, int]] = None,
-        label_start=None,
-        label_freq: Optional[str] = None,
-    ) -> Tuple[np.ndarray, float, Any, str]:
+        x0: Optional[Union[float, int, list, np.ndarray, pd.DataFrame, pd.Series, str]] = None
+    ) -> Tuple[np.ndarray, Any]:
 
-        need_datetime_index = (label_start is not None) or (label_freq is not None) or (self.fit_index_.has_index_)
+        # Check if the model was fitted, if so then we can use default values from that
+        is_fitted = hasattr(self, 'fit_num_rows_')
 
-        is_fitted = self.fit_x0_ is not None
-
-        # Defaults for x0
         if x0 is None:
             if is_fitted:
-                x0 = self.fit_x0_
-                if need_datetime_index and (label_start is None):
-                    label_start = self.fit_index_.min_
+                return self.fit_x0_,  self.fit_index_.min_
             else:
-                x0 = np.array([[self.x0_default]])
-        elif isinstance(x0, str):
-            print(x0, is_fitted, need_datetime_index, label_start)
-            if x0 == "first":
-                if not is_fitted:
-                    raise ValueError('x0: "first" can not be used because the model is not fitted.')
-                x0 = self.fit_x0_
-                if need_datetime_index and (label_start is None):
-                    label_start = self.fit_index_.min_
-            elif x0 == "last":
-                if not is_fitted:
-                    raise ValueError('x0: "last" can not be used because the model is not fitted.')
-                x0 = self.fit_xn_
-                if need_datetime_index and (label_start is None):
-                    label_start = self.fit_index_.max_
-            else:
-                raise ValueError(f'x0: Unknown string value "{x0}", valid string values are "first" or "last".')
-        else:
-            x0 = _to_numpy(x0)
+                return np.array([[self.x0_default]]), None
+        
+        if x0 == "first":
+            if not is_fitted:
+                raise ValueError('x0: "first" can not be used because the model is not fitted.')
+            return self.fit_x0_,  self.fit_index_.min_
 
-        x0 = x0.reshape(1, -1)
+        if x0 == "last":
+            if not is_fitted:
+                raise ValueError('x0: "last" can not be used because the model is not fitted.')
+            return self.fit_xn_,  self.fit_index_.max_
 
-        # if dt not t is provided then align dt with the fitting()
-        if dt is None:
-            if is_fitted:
-                dt = self.fit_dt_
-            else:
-                dt = 1.0 / 252.0
-        assert dt is not None
-        assert dt > 0
+        # Any other string is wrong
+        if isinstance(x0, str):
+            raise ValueError(f'x0: Unknown string value "{x0}", valid string values are "first" or "last".')
 
-        # is freq is missing, use the freq we saw while fitting
-        if need_datetime_index and (label_freq is None):
-            label_freq = self.fit_index_.freq_
+        # Defaults for x0, all other cases, we have a non-string value, try to convert it to a numpy npdarray       
+        return _to_numpy(x0), None
 
-        return x0, dt, label_start, label_freq
 
     def _make_columns_names(self, num_target_columns: int = 1, num_paths: int = 1, columns: Optional[List[str]] = None):
         num_base_columns = int(num_target_columns // num_paths)
@@ -245,7 +259,7 @@ class SimBase(ABC):
         if columns is not None:
             assert len(columns) == num_base_columns
             base_columns = columns
-        elif self.fit_column_names_:
+        elif hasattr(self, 'fit_column_names_'): 
             assert len(self.fit_column_names_) == num_base_columns
             base_columns = self.fit_column_names_
         else:
@@ -259,62 +273,6 @@ class SimBase(ABC):
 
         return [f"{c}_{i}" for i in range(num_paths) for c in base_columns]
 
-    def _make_date_time_index(self, num_rows: int, label_start: Optional[str], label_freq: Optional[str]):
-        if label_start is None:
-            label_start = self.fit_index_.min_
-
-        if label_freq is None:
-            label_freq = self.fit_index_.freq_
-
-        assert label_start is not None
-        assert label_freq is not None
-
-        return pd.date_range(start=label_start, freq=label_freq, periods=num_rows, name=self.fit_index_.name_)
-
-    def _format_ans(
-        self,
-        ans: np.ndarray,
-        label_start: Optional[str],
-        label_freq: Optional[str],
-        columns: Optional[List[str]] = None,
-        include_x0: bool = True,
-        num_paths: int = 1,
-    ) -> Union[np.ndarray, pd.Series, pd.DataFrame]:
-
-        need_date_time_index = (self.fit_index_.has_index_) or (label_start is not None) or (label_freq is not None)
-
-        need_columns = (
-            need_date_time_index
-            or (self.fit_container_dtype_ is pd.Series)
-            or (self.fit_container_dtype_ is pd.DataFrame)
-            or (columns is not None)
-        )
-
-        if need_date_time_index:
-            index = self._make_date_time_index(ans.shape[0], label_start, label_freq)
-
-        if need_columns:
-            columns = self._make_columns_names(ans.shape[1], num_paths, columns)
-
-        if need_date_time_index or need_columns:
-            # Return a Series is we have 1 column and didn't fit()
-            # or, if we fitted with a Series
-            if (len(columns) == 1) and (
-                (self.fit_container_dtype_ is pd.Series) or (self.fit_container_dtype_ is None)
-            ):
-                ans = pd.Series(data=ans.flatten(), index=index, name=columns[0])
-            # in all other cases return a pandas DataFrame
-            else:
-                ans = pd.DataFrame(data=ans, columns=columns, index=index)
-
-        # Return ans, potentially strip away the first
-        if include_x0:
-            return ans
-        else:
-            if isinstance(ans, (pd.DataFrame, pd.Series)):
-                return ans.iloc[1:, :]
-            else:
-                return ans[1:, :]
 
     @staticmethod
     def set_x0(ans: np.ndarray, x0: np.ndarray):
@@ -379,16 +337,80 @@ class SimBase(ABC):
             The simulated random paths.
 
         """
-        # handle arg defaults
-        x0, dt, label_start, label_freq = self._preprocess_sim_path_args(x0, dt, label_start, label_freq)
 
-        # do the sims using the actual implementation in the base class
-        ans = self._path_sample_np(x0, dt, num_steps, num_paths, random_state)
+        # Process x0
+        x0_clean, x0_clean_label_start = self._preprocess_path_sample_x0(x0)
 
-        # format the ans
-        ans = self._format_ans(ans, label_start, label_freq, columns, include_x0, num_paths)
+        # Condition that determines if we need to attach a DatetimeIndex to the return value
+        # - when the user specify at lesat one of [label_start, label_start, label_freq]
+        # - when we had a DatetimeIndex during fitting
+        need_datetime_index = (_count_non_none_elements((label_start, label_start, label_freq)) > 0) or hasattr(self, 'fit_has_date_time_index_')
+        
+        # Create the index
+        if need_datetime_index:
 
-        return ans
+            index = _make_datetime_index(
+                num_rows=ans.shape[0],    
+                label_start=label_start,
+                label_end=label_end,
+                label_freq=label_freq,
+                fallback_start=x0_clean_label_start,
+                fallback_freq=self.fit_index_freq_,
+                name=self.get('fit_index_name_', None)
+            )
+  
+            # Compute the average timestep in this index
+            index_dt = _estimate_dt_from_time_intervals(first=index.min(), last=index.max(), num_rows=len(index))
+            
+            # Use the dt of the index if the users hasn't privided a dt
+            if dt is None:
+                dt = index_dt
+            
+            # Check that the dt used for the simulation and dt of the index don't deviate too much
+            if abs(dt - index_dt) / index_dt > 0.01:
+                warnings.warn(
+                    f"The simulation timestep {dt} and the index label timestep {index_dt} differ more than 1%",
+                    UserWarning,
+                )
+
+        # Condition that determines if we need column names
+        need_columns = need_datetime_index or (columns is not None)
+        if hasattr(self, 'fit_container_dtype_'):
+            need_columns = need_columns or (self.fit_container_dtype_ is pd.Series)
+            need_columns = need_columns or (self.fit_container_dtype_ is pd.DataFrame)
+
+        # Create the columnn names
+        if need_columns:
+            columns = self._make_columns_names(ans.shape[1], num_paths, columns)
+
+        # --------------------------------------------------------------------------------------
+        # do the actual sims using the implementation in the derived class
+        # --------------------------------------------------------------------------------------
+        ans = self._path_sample_np(x0_clean, dt, num_steps, num_paths, random_state)
+
+        # Now convert the ans numpy array to a target output container
+        if need_datetime_index or need_columns:
+
+            # Return a Series is we have 1 column and didn't fit()
+            # or, if we fitted with a Series
+            if (len(columns) == 1) and (
+                (self.fit_container_dtype_ is pd.Series) or (self.fit_container_dtype_ is None)
+            ):
+                ans = pd.Series(data=ans.flatten(), index=index, name=columns[0])
+            
+            # in all other cases return a pandas DataFrame
+            else:
+                ans = pd.DataFrame(data=ans, columns=columns, index=index)
+
+        # Return ans, potentially strip away the first row
+        if include_x0:
+            return ans
+        else:
+            if isinstance(ans, (pd.DataFrame, pd.Series)):
+                return ans.iloc[1:, :]
+            else:
+                return ans[1:, :]
+
 
     @abstractmethod
     def _fit_np(self, x: np.ndarray, dt: float):
@@ -412,7 +434,20 @@ class SimBase(ABC):
             The fitted model instance.
 
         """
-        values, dt = self._preprocess_fit_x_and_dt(x, dt)
+
+        # Convert x to a 2d numpy array and store collected information about the x container in self.fit_* attributes 
+        values = self._inspect_and_normalize_fit_x(x)
+
+        # If dt was not passed then maybe we can use an estimate based on a DatetimeIndex of x?
+        if dt is None:
+            dt = self.fit_index_dt_
+            if dt is None:
+                raise ValueError('Unable to fit because we dont know dt. dt ws not provided to the fit() function, and we cant infer dt from a time index of x')
+        
+        # We save the final dt we use in the fit
+        self.fit_dt_ = dt
+
+        # The actual fit
         self._fit_np(values, dt)
         return self
 
@@ -435,7 +470,15 @@ class SimNllMixin:
             The computed negative log-likelihood.
 
         """
-        values, dt = self._preprocess_fit_x_and_dt(x, dt)
+        # Convert x to a 2d numpy array and store collected information about the x container in self.fit_* attributes 
+        values = self._inspect_and_normalize_fit_x(x)
+
+        # If dt was not passed then maybe we can use an estimate based on a DatetimeIndex of x?
+        if dt is None:
+            dt = getattr(self, 'fit_index_dt_', None)
+            if dt is None:
+                raise ValueError('Unable to compute NLL because we dont know dt. dt ws not provided to the fit() function, and we cant infer dt from a time index of x')
+        
         return self._nll(values, dt)
 
     def aic(self, x: Union[np.ndarray, pd.DataFrame, pd.Series], dt: Optional[float] = None) -> float:
@@ -454,8 +497,17 @@ class SimNllMixin:
             The computed Akaike Information Criterion (AIC) value.
 
         """
-        values, dt = self._preprocess_fit_x_and_dt(x, dt)
-        num_samples = x.shape[0]
+        # Convert x to a 2d numpy array and store collected information about the x container in self.fit_* attributes 
+        values = self._inspect_and_normalize_fit_x(x)
+
+        # If dt was not passed then maybe we can use an estimate based on a DatetimeIndex of x?
+        if dt is None:
+            dt = getattr(self, 'fit_index_dt_', None)
+            if dt is None:
+                raise ValueError('Unable to compute NLL because we dont know dt. dt ws not provided to the fit() function, and we cant infer dt from a time index of x')
+        
+
+        num_samples = values.shape[0]
         return 2 * self.num_parameters_ + 2 * self._nll(values, dt) * num_samples
 
     def bic(self, x: Union[np.ndarray, pd.DataFrame, pd.Series], dt: Optional[float] = None) -> float:
@@ -473,6 +525,14 @@ class SimNllMixin:
         bic : float
             The computed Bayesian Information Criterion (BIC) value.
         """
-        values, dt = self._preprocess_fit_x_and_dt(x, dt)
-        num_samples = x.shape[0]
+        # Convert x to a 2d numpy array and store collected information about the x container in self.fit_* attributes 
+        values = self._inspect_and_normalize_fit_x(x)
+
+        # If dt was not passed then maybe we can use an estimate based on a DatetimeIndex of x?
+        if dt is None:
+            dt = getattr(self, 'fit_index_dt_', None)
+            if dt is None:
+                raise ValueError('Unable to compute NLL because we dont know dt. dt ws not provided to the fit() function, and we cant infer dt from a time index of x')
+        
+        num_samples = values.shape[0]
         return 2 * np.log(num_samples) * self.num_parameters_ + 2 * self._nll(values, dt) * num_samples

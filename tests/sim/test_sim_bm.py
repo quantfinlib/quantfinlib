@@ -64,30 +64,30 @@ def test_BrownianMotion_path_sample_mv():
 def test_BrownianMotion_nll_1d():
     b = BrownianMotion(drift=0.05, vol=0.1)    
     p = b.path_sample(x0=1, dt=1/12, num_steps=10, num_paths=1)
-    nll = b.nll(p)
+    nll = b.nll(p, 1/12)
 
 def test_BrownianMotion_nll_2d():
     b = BrownianMotion(drift=[0.05, 0.05], vol=[0.1, 0.1], cor=[[1, 0.4], [0.4, 1]])    
     p = b.path_sample(x0=[1, 1], dt=1/12, num_steps=10, num_paths=1)
-    nll = b.nll(p)
+    nll = b.nll(p, 1/12)
 
 def test_BrownianMotion_aic_1d():
     b = BrownianMotion(drift=0.05, vol=0.1)    
     p = b.path_sample(x0=1, dt=1/12, num_steps=10, num_paths=1)
-    nll = b.aic(p)
+    nll = b.aic(p, 1/12)
 
 def test_BrownianMotion_aic_2d():
     b = BrownianMotion(drift=[0.05, 0.05], vol=[0.1, 0.1], cor=[[1, 0.4], [0.4, 1]])    
     p = b.path_sample(x0=[1, 1], dt=1/12, num_steps=10, num_paths=1)
-    nll = b.aic(p)
+    nll = b.aic(p, 1/12)
 
 def test_BrownianMotion_bic_1d():
     b = BrownianMotion(drift=0.05, vol=0.1)    
     p = b.path_sample(x0=1, dt=1/12, num_steps=10, num_paths=1)
-    nll = b.bic(p)
+    nll = b.bic(p, 1/12)
 
 def test_BrownianMotion_bic_2d():
     b = BrownianMotion(drift=[0.05, 0.05], vol=[0.1, 0.1], cor=[[1, 0.4], [0.4, 1]])    
     p = b.path_sample(x0=[1, 1], dt=1/12, num_steps=10, num_paths=1)
-    nll = b.bic(p)
+    nll = b.bic(p, 1/12)
 

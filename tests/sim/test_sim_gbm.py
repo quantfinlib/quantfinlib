@@ -64,9 +64,9 @@ def test_GeometricBrownianMotion_path_sample_mv():
 def test_GeometricBrownianMotion_nll_1d():
     b = GeometricBrownianMotion(drift=0.05, vol=0.1)    
     p = b.path_sample(x0=1, dt=1/12, num_steps=10, num_paths=1)
-    nll = b.nll(p, None)
+    nll = b.nll(p, 1/12)
 
 def test_GeometricBrownianMotion_nll_2d():
     b = GeometricBrownianMotion(drift=[0.05, 0.05], vol=[0.1, 0.1], cor=[[1, 0.4], [0.4, 1]])    
     p = b.path_sample(x0=[1, 1], dt=1/12, num_steps=10, num_paths=1)
-    nll = b.nll(p)
+    nll = b.nll(p, 1/12)
