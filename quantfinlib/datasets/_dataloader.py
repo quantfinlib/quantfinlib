@@ -1,13 +1,11 @@
 """Functions to load example datasets in quantfinlib."""
 
+import logging
 from pathlib import Path
 
 import pandas as pd
 
-from quantfinlib.util._fs_utils import get_project_root
-from quantfinlib.util.logger_config import get_logger
-
-logger = get_logger()
+from quantfinlib.util import configure_logger, get_project_root, logger
 
 VIX_INDEX_LOCAL_PATH = get_project_root("quantfinlib/datasets/resources/VIX_ochl.pkl")
 MULTI_INDEX_LOCAL_PATH = get_project_root("quantfinlib/datasets/resources/multi_index_close.pkl")
@@ -46,7 +44,7 @@ def load_vix() -> pd.DataFrame:
         df["DATE"] = pd.to_datetime(df["DATE"])
         df.reset_index(drop=True, inplace=True)
         df = df.set_index("DATE").sort_index()
-        logger.debug(f"Loaded dataset with {df.shape[0]} rows and {df.shape[1]} columns. Latest date: {df.index.max()}")
+        logger.info(f"Loaded dataset with {df.shape[0]} rows and {df.shape[1]} columns. Latest date: {df.index.max()}")
     return df
 
 
@@ -102,7 +100,7 @@ def load_treasury_rates() -> pd.DataFrame:
         df["DATE"] = pd.to_datetime(df["DATE"])
         df.reset_index(drop=True, inplace=True)
         df = df.set_index("DATE").sort_index()
-        logger.debug(
+        logger.info(
             f"Loaded dataset with {df.shape[0]} rows and {df.shape[1]} columns. \
             Latest date: {df.index.max()}"
         )
@@ -152,7 +150,7 @@ def load_equity_indices() -> pd.DataFrame:
         'CASE30': EGX30 Index (Egypt)
         'JN0U.JO': FTSE/JSE Africa Top 40 Index (South Africa)
 
-    Example
+    Examplr
     -------
     >>> df_indices = load_equity_indices()
     """
@@ -177,11 +175,8 @@ def load_equity_indices() -> pd.DataFrame:
 
 
 if __name__ == "__main__":
+    configure_logger(verbosity=logging.INFO, log_to_file=False)
+
     print(load_vix().head())
-    logger.info("VIX dataset loaded successfully.")
-
     print(load_equity_indices().head())
-    logger.info("Multi-index dataset loaded successfully.")
-
     print(load_treasury_rates().head())
-    logger.info("Treasury rates dataset loaded successfully.")

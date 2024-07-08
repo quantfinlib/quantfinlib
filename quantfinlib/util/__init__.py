@@ -1,5 +1,6 @@
 """Utility module."""
 
-__all__ = []
+from quantfinlib.util._fs_utils import get_project_root
+from quantfinlib.util._logging import configure_logger, logger
 
-from quantfinlib.util.logger_config import get_logger
+__all__ = [logger, get_project_root, configure_logger]
