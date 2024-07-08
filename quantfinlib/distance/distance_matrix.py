@@ -1,4 +1,5 @@
 """Functions for computing distance matrices for a table/array/dataframe of variables/time series."""
+
 from functools import partial
 from itertools import combinations
 import logging
@@ -13,12 +14,9 @@ from .correlation import (
     corr_to_squared_angular_dist,
 )
 
-from .information import (
-    mutual_info,    
-    var_info
-)
+from .information import mutual_info, var_info
 
-logger = logging.get_logger('quantfinlib')
+logger = logging.getLogger("quantfinlib")
 CORR_TO_DIST_METHOD_MAP = {
     "angular": corr_to_angular_dist,
     "abs_angular": corr_to_abs_angular_dist,
@@ -75,7 +73,7 @@ def get_info_distance_matrix(X: Union[np.ndarray, pd.DataFrame], method: str = "
 
 def _check_shape(X: np.ndarray) -> None:
     """Check if the input array is a 2D array."""
-    assert (X.ndim != 2 and X.shape[1] > 1) , "Input array must be 2D and the number of columns must be greater than 1."
+    assert X.ndim != 2 and X.shape[1] > 1, "Input array must be 2D and the number of columns must be greater than 1."
 
 
 def _calculate_correlation(X: Union[np.ndarray, pd.DataFrame], corr_method: str = "pearson", **kwargs) -> pd.DataFrame:
