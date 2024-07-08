@@ -1,7 +1,7 @@
 """Functions for computing distance matrices for a table/array/dataframe of variables/time series."""
 from functools import partial
 from itertools import combinations
-from quantfinlib.util.logger_config import get_logger
+import logging
 from typing import Callable, Optional, Union
 
 import pandas as pd
@@ -18,7 +18,7 @@ from .information import (
     var_info
 )
 
-logger = get_logger()
+logger = logging.get_logger('quantfinlib')
 CORR_TO_DIST_METHOD_MAP = {
     "angular": corr_to_angular_dist,
     "abs_angular": corr_to_abs_angular_dist,
@@ -65,7 +65,7 @@ def get_info_distance_matrix(X: Union[np.ndarray, pd.DataFrame], method: str = "
     """
     assert method in ["mutual_info", "var_info"], "Invalid method. Must be mutual_info or var_info."
     if method == "mutual_info":
-        logger.warn("Mutual information is not a metric. Consider using var_info instead.")
+        logger.warning("Mutual information is not a metric. Consider using var_info instead.")
         return _get_info_distance_matrix(X, mutual_info, **kwargs)
     elif method == "var_info":
         return _get_info_distance_matrix(X, var_info, **kwargs)
