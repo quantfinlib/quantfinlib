@@ -9,16 +9,13 @@ logger.setLevel(logging.WARN)
 
 
 def configure_logger(verbosity=logging.WARNING, log_to_file=False, log_file_path="quantfinlib.log"):
-    """Configure the logger using the base.yaml configuration file.
-
-    Returns
-    -------
-    logging.Logger
-        The logger object with the configuration settings.
+    """Configure the logger
 
     Example
     -------
-    >>> configure_logger()
+    >>> configure_logger(verbosity=logging.INFO, log_to_file=False)
+    >>> logger.info("Logger INFO test 1,2,3...")
+    >>> logger.warning("Logger WARNING test 1,2,3...")
     """
     global logger
 
