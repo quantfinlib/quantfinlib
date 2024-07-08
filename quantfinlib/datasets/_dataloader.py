@@ -50,8 +50,7 @@ def load_vix() -> pd.DataFrame:
 
 def load_treasury_rates() -> pd.DataFrame:
     """Load the daily Treasury rates dataset with various maturities.
-    Source: https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/...
-    ${year}/all?type=daily_treasury_yield_curve&field_tdr_date_value=${year}&page&_format=csv
+    Source:https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve
 
     Returns
     -------

@@ -4,7 +4,7 @@ import tempfile
 
 import pytest
 
-from quantfinlib.util._logging import configure_logger, logger
+from quantfinlib.util import configure_logger
 
 
 @pytest.fixture(scope="function")
@@ -65,7 +65,7 @@ def test_file_logging(logger):
                 assert "Test info message" not in log_file_content
 
             # Close the file handle and delete the temporary file
-            temp_file.close()
+            # temp_file.close()
 
 
 if __name__ == "__main__":

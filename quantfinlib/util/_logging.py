@@ -2,11 +2,6 @@
 
 import logging
 import logging.config
-from typing import Optional
-
-import yaml
-
-from quantfinlib.util._fs_utils import get_project_root
 
 # Global logger
 logger = logging.getLogger("quantfinlib")
