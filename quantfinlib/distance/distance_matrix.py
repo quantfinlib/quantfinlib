@@ -24,8 +24,15 @@ CORR_TO_DIST_METHOD_MAP = {
 }
 
 
+
+def _check_shape(X: Union[np.ndarray, pd.DataFrame]) -> None:
+    """Check if the input array is a 2D array."""
+    assert X.ndim == 2 and X.shape[1] > 1, "Input array must be 2D and the number of columns must be greater than 1."
+
+
 def _get_info_distance_matrix(X: Union[np.ndarray, pd.DataFrame], func: Callable, **kwargs) -> np.ndarray:
     """Calculate distance matrix between columns of a dataset."""
+    _check_shape(X)
     assert func in [mutual_info, var_info], "Invalid function. Must be mutual_info or var_info."
     inp_pd_df = isinstance(X, pd.DataFrame)
     if inp_pd_df:
@@ -71,13 +78,9 @@ def get_info_distance_matrix(X: Union[np.ndarray, pd.DataFrame], method: str = "
         raise NotImplementedError(f"Method {method} is not implemented.")
 
 
-def _check_shape(X: np.ndarray) -> None:
-    """Check if the input array is a 2D array."""
-    assert X.ndim != 2 and X.shape[1] > 1, "Input array must be 2D and the number of columns must be greater than 1."
-
-
 def _calculate_correlation(X: Union[np.ndarray, pd.DataFrame], corr_method: str = "pearson", **kwargs) -> pd.DataFrame:
     """Calculate correlation matrix between columns of a dataset."""
+    _check_shape(X)
     inp_numpy_array = isinstance(X, np.ndarray)
     if inp_numpy_array:
         logger.info("Input is a NumPy array. Converting to Pandas DataFrame for correlation calculation.")
