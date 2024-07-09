@@ -1,9 +1,17 @@
 from itertools import product
 
+from matplotlib.artist import get
+
 from quantfinlib.distance.distance_matrix import (
     _calculate_correlation,
     get_corr_distance_matrix,
     get_info_distance_matrix,
+)
+
+from quantfinlib.distance.correlation import (
+    corr_to_abs_angular_dist,
+    corr_to_angular_dist,
+    corr_to_squared_angular_dist,
 )
 
 from quantfinlib.distance.information import mutual_info, var_info
@@ -14,6 +22,9 @@ from scipy.stats import spearmanr
 
 
 CORR_TO_DIST_METHOD = ["angular", "abs_angular", "squared_angular"]
+CORR_TO_DIST_METHOD_MAP = dict(
+    zip(CORR_TO_DIST_METHOD, [corr_to_angular_dist, corr_to_abs_angular_dist, corr_to_squared_angular_dist])
+)
 CORR_METHOD = ["spearman", "pearson"]
 INFO_METHOD = ["mutual_info", "var_info"]
 
@@ -115,14 +126,12 @@ def test_info_distance_matrix(info_method, multivar_normal_X, input_cov, expecte
         np.allclose(
             dist_matrix, expected_nvi, atol=1e-2
         ), "Expected estimated distance matrix of multivariate Gaussian to be close to the expected matrix derived from theory."
-        expected = np.array([[0, 0.444, 0.634], [0.444, 0, 0.741], [0.634, 0.741, 0]])
     else:
         np.testing.assert_equal(
             np.diag(dist_matrix),
             np.ones((df.shape[1])),
             "Expected the diagonal elements of the distance matrix to be 1.",
         )
-        expected = np.array([[1, 0.243, 0.137], [0.243, 1, 0.096], [0.137, 0.096, 1]])
         np.allclose(
             dist_matrix, expected_nmi, atol=1e-2
         ), "Expected estimated distance matrix of multivariate Gaussian to be close to the expected matrix derived from theory."
@@ -142,16 +151,17 @@ def test_check_in_out_type(dtype):
 
 def corr_transformer(corr):
     corr_ = corr.copy()
-    corr_[0,1] = corr[1,2]
-    corr_[1,0] = corr[2,1]
-    corr_[0,2] = corr[0,1]
-    corr_[2,0] = corr[1,0]
+    corr_[0, 1] = corr[1, 2]
+    corr_[1, 0] = corr[2, 1]
+    corr_[0, 2] = corr[0, 1]
+    corr_[2, 0] = corr[1, 0]
     return corr_
 
 
-def test_dist_with_corr_transformer(multivar_normal_X, input_cov):
+@pytest.mark.parametrize("corr_method, corr_to_dist_method", list(product(CORR_METHOD, CORR_TO_DIST_METHOD)))
+def test_dist_with_corr_transformer(corr_method, corr_to_dist_method, multivar_normal_X, input_cov):
     dist_matrix = get_corr_distance_matrix(
-        multivar_normal_X, method="angular", corr_method="pearson", corr_transformer=corr_transformer
+        multivar_normal_X, method=corr_to_dist_method, corr_method=corr_method, corr_transformer=corr_transformer
     )
     assert np.allclose(dist_matrix, dist_matrix.T), "Expected distance matrix to be symmetric."
     assert np.all(dist_matrix >= 0), "Expected all elements of the distance matrix to be non-negative."
@@ -160,7 +170,21 @@ def test_dist_with_corr_transformer(multivar_normal_X, input_cov):
         np.diag(dist_matrix), np.array([0, 0, 0]), "Expected the diagonal elements of the distance matrix to be 0."
     )
     transformed_cov = corr_transformer(input_cov)
-    expected = (0.5 * (1 - transformed_cov)) ** 0.5
-    assert np.allclose(
-        dist_matrix, expected, atol=1e-2
-    ), "Expected distance matrix to be close to the expected value."
+    if corr_method == "pearson":
+        expected = CORR_TO_DIST_METHOD_MAP[corr_to_dist_method](transformed_cov)
+        assert np.allclose(dist_matrix, expected, atol=1e-2), "Expected distance matrix to be close to the expected value."
+
+
+def test_wrong_input_shape():
+    X = np.random.normal(0, 1, (1000, 2, 2))
+    
+    with pytest.raises(AssertionError):
+        get_corr_distance_matrix(X, method="angular", corr_method="pearson")
+    with pytest.raises(AssertionError):
+        get_info_distance_matrix(X, method="mutual_info")
+
+
+def test_wrong_corr_method():
+    X = np.random.normal(0, 1, (1000, 2))
+    with pytest.raises(ValueError):
+        get_corr_distance_matrix(X, method="angular", corr_method="wrong")
