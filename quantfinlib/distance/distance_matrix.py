@@ -29,6 +29,11 @@ def _check_shape(X: Union[np.ndarray, pd.DataFrame]) -> None:
     assert X.ndim == 2 and X.shape[1] > 1, "Input array must be 2D and the number of columns must be greater than 1."
 
 
+def _check_corr_method(corr_method: str) -> None:
+    """Check if the correlation method is valid."""
+    assert corr_method in ["pearson", "spearman"], "Invalid correlation method. Must be pearson or spearman."
+
+
 def _get_info_distance_matrix(X: Union[np.ndarray, pd.DataFrame], func: Callable, **kwargs) -> np.ndarray:
     """Calculate distance matrix between columns of a dataset."""
     _check_shape(X)
@@ -80,6 +85,7 @@ def get_info_distance_matrix(X: Union[np.ndarray, pd.DataFrame], method: str = "
 def _calculate_correlation(X: Union[np.ndarray, pd.DataFrame], corr_method: str = "pearson", **kwargs) -> pd.DataFrame:
     """Calculate correlation matrix between columns of a dataset."""
     _check_shape(X)
+    _check_corr_method(corr_method)
     inp_numpy_array = isinstance(X, np.ndarray)
     if inp_numpy_array:
         logger.info("Input is a NumPy array. Converting to Pandas DataFrame for correlation calculation.")

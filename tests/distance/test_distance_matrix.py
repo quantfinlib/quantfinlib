@@ -184,7 +184,19 @@ def test_wrong_input_shape():
         get_info_distance_matrix(X, method="mutual_info")
 
 
-def test_wrong_corr_method():
+def test_wrong_corr_to_dist_method():
     X = np.random.normal(0, 1, (1000, 2))
     with pytest.raises(ValueError):
+        get_corr_distance_matrix(X, method="wrong", corr_method="pearson")
+
+
+def test_wrong_info_method():
+    X = np.random.normal(0, 1, (1000, 2))
+    with pytest.raises(AssertionError):
+        get_info_distance_matrix(X, method="wrong")
+
+
+def test_wrong_corr_method():
+    X = np.random.normal(0, 1, (1000, 2))
+    with pytest.raises(AssertionError):
         get_corr_distance_matrix(X, method="angular", corr_method="wrong")
