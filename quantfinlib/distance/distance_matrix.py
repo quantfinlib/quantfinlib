@@ -24,7 +24,6 @@ CORR_TO_DIST_METHOD_MAP = {
 }
 
 
-
 def _check_shape(X: Union[np.ndarray, pd.DataFrame]) -> None:
     """Check if the input array is a 2D array."""
     assert X.ndim == 2 and X.shape[1] > 1, "Input array must be 2D and the number of columns must be greater than 1."
