@@ -138,3 +138,29 @@ def test_check_in_out_type(dtype):
     dist_info_matrix = get_info_distance_matrix(X, method="mutual_info")
     assert isinstance(dist_corr_matrix, dtype_map[dtype]), f"Expected output to be a {dtype}."
     assert isinstance(dist_info_matrix, dtype_map[dtype]), f"Expected output to be a {dtype}."
+
+
+def corr_transformer(corr):
+    corr_ = corr.copy()
+    corr_[0,1] = corr[1,2]
+    corr_[1,0] = corr[2,1]
+    corr_[0,2] = corr[0,1]
+    corr_[2,0] = corr[1,0]
+    return corr_
+
+
+def test_dist_with_corr_transformer(multivar_normal_X, input_cov):
+    dist_matrix = get_corr_distance_matrix(
+        multivar_normal_X, method="angular", corr_method="pearson", corr_transformer=corr_transformer
+    )
+    assert np.allclose(dist_matrix, dist_matrix.T), "Expected distance matrix to be symmetric."
+    assert np.all(dist_matrix >= 0), "Expected all elements of the distance matrix to be non-negative."
+    assert np.all(dist_matrix <= 1), "Expected all elements of the distance matrix to be less than or equal to 1."
+    np.testing.assert_equal(
+        np.diag(dist_matrix), np.array([0, 0, 0]), "Expected the diagonal elements of the distance matrix to be 0."
+    )
+    transformed_cov = corr_transformer(input_cov)
+    expected = (0.5 * (1 - transformed_cov)) ** 0.5
+    assert np.allclose(
+        dist_matrix, expected, atol=1e-2
+    ), "Expected distance matrix to be close to the expected value."
