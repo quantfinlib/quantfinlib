@@ -1,3 +1,5 @@
+"""Module to provide decorators for input validation."""
+
 from functools import wraps
 import inspect
 from typing import Callable
@@ -18,30 +20,28 @@ def _check_ndim_shape_1Darray(x: SeriesOrArray) -> None:
         raise ValueError("Number of elements must be greater than 1.")
 
 
-
 def validate_series_or_1Darray(*arg_names: str) -> Callable:
     """Decorator to check if input is a pandas Series or a numpy array with 1 dimension."""
+
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(*args, **kwargs):
             # Get the function signature
             sig = inspect.signature(func)
             bound_args = sig.bind_partial(*args, **kwargs).arguments
-            
+
             for arg_name in arg_names:
                 if arg_name in bound_args:
                     arg = bound_args[arg_name]
                     if arg is not None:  # Handle cases where arg might be None
                         _check_dtype_series_or_array(x=arg)
                         _check_ndim_shape_1Darray(x=arg)
-            
+
             return func(*args, **kwargs)
 
         return wrapper
 
     return decorator
-
-
 
 
 def _check_dtype_frame_or_array(X: DataFrameOrArray):
@@ -58,20 +58,21 @@ def _check_ndim_shape_2Darray(X: DataFrameOrArray):
 
 def validate_frame_or_2Darray(*arg_names: str) -> Callable:
     """Decorator to check if input is a pandas DataFrame or a numpy array with 2 dimensions."""
+
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(*args, **kwargs):
             # Get the function signature
             sig = inspect.signature(func)
             bound_args = sig.bind_partial(*args, **kwargs).arguments
-            
+
             for arg_name in arg_names:
                 if arg_name in bound_args:
                     arg = bound_args[arg_name]
                     if arg is not None:  # Handle cases where arg might be None
                         _check_dtype_frame_or_array(X=arg)
                         _check_ndim_shape_2Darray(X=arg)
-            
+
             return func(*args, **kwargs)
 
         return wrapper
