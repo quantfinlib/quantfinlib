@@ -1,7 +1,5 @@
 from itertools import product
 
-from matplotlib.artist import get
-
 from quantfinlib.distance.distance_matrix import (
     _calculate_correlation,
     get_corr_distance_matrix,
@@ -14,7 +12,6 @@ from quantfinlib.distance.correlation import (
     corr_to_squared_angular_dist,
 )
 
-from quantfinlib.distance.information import mutual_info, var_info
 import numpy as np
 import pandas as pd
 import pytest
@@ -112,6 +109,7 @@ def test_corr_distance_matrix(corr_method, corr_to_dist_method, multivar_normal_
 @pytest.mark.parametrize("info_method", INFO_METHOD)
 def test_info_distance_matrix(info_method, multivar_normal_X, input_cov, expected_nmi, expected_nvi):
     df = pd.DataFrame(multivar_normal_X)
+    print(info_method)
     dist_matrix = get_info_distance_matrix(df, method=info_method)
     assert dist_matrix.shape == input_cov.shape
     assert np.allclose(dist_matrix, dist_matrix.T), "Expected distance matrix to be symmetric."
@@ -172,31 +170,33 @@ def test_dist_with_corr_transformer(corr_method, corr_to_dist_method, multivar_n
     transformed_cov = corr_transformer(input_cov)
     if corr_method == "pearson":
         expected = CORR_TO_DIST_METHOD_MAP[corr_to_dist_method](transformed_cov)
-        assert np.allclose(dist_matrix, expected, atol=1e-2), "Expected distance matrix to be close to the expected value."
+        assert np.allclose(
+            dist_matrix, expected, atol=1e-2
+        ), "Expected distance matrix to be close to the expected value."
 
 
 def test_wrong_input_shape():
     X = np.random.normal(0, 1, (1000, 2, 2))
-    
-    with pytest.raises(AssertionError):
+
+    with pytest.raises(ValueError):
         get_corr_distance_matrix(X, method="angular", corr_method="pearson")
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         get_info_distance_matrix(X, method="mutual_info")
 
 
 def test_wrong_corr_to_dist_method():
     X = np.random.normal(0, 1, (1000, 2))
-    with pytest.raises(ValueError):
+    with pytest.raises(AssertionError, match="Invalid method. Must be one of angular, abs_angular, squared_angular."):
         get_corr_distance_matrix(X, method="wrong", corr_method="pearson")
 
 
 def test_wrong_info_method():
     X = np.random.normal(0, 1, (1000, 2))
-    with pytest.raises(AssertionError):
+    with pytest.raises(AssertionError, match="Invalid method. Must be one of mutual_info or var_info."):
         get_info_distance_matrix(X, method="wrong")
 
 
 def test_wrong_corr_method():
     X = np.random.normal(0, 1, (1000, 2))
-    with pytest.raises(AssertionError):
+    with pytest.raises(AssertionError, match="Invalid correlation method. Must be pearson or spearman."):
         get_corr_distance_matrix(X, method="angular", corr_method="wrong")

@@ -14,7 +14,5 @@ from quantfinlib.distance.information import (
     mutual_info,
     var_info,
 )
-from quantfinlib.distance.matrix_divergence import (
-    log_det_divergence,
-    von_neuman_divergence
-)
+from quantfinlib.distance.matrix_divergence import log_det_divergence, von_neuman_divergence
+from quantfinlib.distance.distance_matrix import get_corr_distance_matrix, get_info_distance_matrix
