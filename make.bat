@@ -2,6 +2,7 @@
 
 if "%1"=="format" goto format
 if "%1"=="lint" goto lint
+if "%1"=="mypy" goto mypy
 
 if "%1"=="major" goto major
 if "%1"=="minor" goto minor
@@ -27,6 +28,11 @@ exit /b
 :lint
 echo run flake8
 poetry run flake8 --config .flake8 quantfinlib
+exit /b
+
+:mypy
+echo run mypy
+poetry run mypy quantfinlib
 exit /b
 
 :major
