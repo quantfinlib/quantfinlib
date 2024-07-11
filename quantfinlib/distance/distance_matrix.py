@@ -140,6 +140,4 @@ def get_corr_distance_matrix(
     if corr_transformer is not None:
         corr = corr_transformer(corr)
     func = CORR_TO_DIST_METHOD_MAP.get(method)
-    if func is None:
-        raise ValueError(f"Invalid method. Must be one of {list(CORR_TO_DIST_METHOD_MAP.keys())}.")
     return func(corr)

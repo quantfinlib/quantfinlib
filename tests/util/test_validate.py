@@ -12,18 +12,23 @@ def test_validate_series_or_1Darray():
 
     x = np.array([1, 2, 3])
     assert np.array_equal(test_func(x), x)
+    assert np.array_equal(test_func(x=x), x)
 
     x = pd.Series([1, 2, 3])
     assert np.array_equal(test_func(x), x)
+    assert np.array_equal(test_func(x=x), x)
 
     with pytest.raises(ValueError):
         test_func(1)
+        test_func(x=1)
 
     with pytest.raises(ValueError):
         test_func(np.array([[1, 2], [3, 4]]))
+        test_func(x=np.array([[1, 2], [3, 4]]))
 
     with pytest.raises(ValueError):
         test_func(pd.DataFrame({"a": [1, 2], "b": [3, 4]}))
+        test_func(x=pd.DataFrame({"a": [1, 2], "b": [3, 4]}))
 
 
 def test_validate_frame_or_2Darray():
@@ -32,19 +37,24 @@ def test_validate_frame_or_2Darray():
         return X
 
     X = np.array([[1, 2], [3, 4]])
-    assert np.array_equal(test_func(X), X)
+    assert np.array_equal(test_func(X), X)  # Test positional arg
+    assert np.array_equal(test_func(X=X), X)  # Test keyword arg
 
     X = pd.DataFrame({"a": [1, 2], "b": [3, 4]})
-    assert np.array_equal(test_func(X), X)
+    assert np.array_equal(test_func(X), X)  # Test positional arg
+    assert np.array_equal(test_func(X=X), X)  # Test keyword arg
 
     with pytest.raises(ValueError):
-        test_func(1)
+        test_func(1)  
+        test_func(X=1)
 
     with pytest.raises(ValueError):
         test_func(np.array([1, 2, 3]))
+        test_func(X=np.array([1, 2, 3]))
 
     with pytest.raises(ValueError):
         test_func(pd.Series([1, 2, 3]))
+        test_func(X=pd.Series([1, 2, 3]))
 
 
 def test_validate_series_or_1Darray_with_multiple_inputs():
@@ -56,22 +66,28 @@ def test_validate_series_or_1Darray_with_multiple_inputs():
     x = np.array([1, 2, 3])
     y = np.array([4, 5, 6])
     assert np.array_equal(test_func(x, y), (x, y))
+    assert np.array_equal(test_func(x=x, y=y), (x, y))
 
     x = pd.Series([1, 2, 3])
     y = pd.Series([4, 5, 6])
     assert np.array_equal(test_func(x, y), (x, y))
+    assert np.array_equal(test_func(x=x, y=y), (x, y))
 
     with pytest.raises(ValueError):
         test_func(1, y)
+        test_func(x=1, y=y)
 
     with pytest.raises(ValueError):
         test_func(x, 1)
+        test_func(x=x, y=1)
 
     with pytest.raises(ValueError):
         test_func(np.array([[1, 2], [3, 4]]), y)
+        test_func(x=np.array([[1, 2], [3, 4]]), y=y)
 
     with pytest.raises(ValueError):
         test_func(x, pd.DataFrame({"a": [1, 2], "b": [3, 4]}))
+        test_func(x=x, y=pd.DataFrame({"a": [1, 2], "b": [3, 4]}))
 
 
 def test_validate_frame_or_2Darray_with_multiple_inputs():
@@ -83,19 +99,25 @@ def test_validate_frame_or_2Darray_with_multiple_inputs():
     X = np.array([[1, 2], [3, 4]])
     Y = np.array([[5, 6], [7, 8]])
     assert np.array_equal(test_func(X, Y), (X, Y))
+    assert np.array_equal(test_func(X=X, Y=Y), (X, Y))
 
     X = pd.DataFrame({"a": [1, 2], "b": [3, 4]})
     Y = pd.DataFrame({"a": [5, 6], "b": [7, 8]})
     assert np.array_equal(test_func(X, Y), (X, Y))
+    assert np.array_equal(test_func(X=X, Y=Y), (X, Y))
 
     with pytest.raises(ValueError):
         test_func(1, Y)
+        test_func(X=1, Y=Y)
 
     with pytest.raises(ValueError):
         test_func(X, 1)
+        test_func(X=X, Y=1)
 
     with pytest.raises(ValueError):
         test_func(np.array([1, 2, 3]), Y)
+        test_func(X=np.array([1, 2, 3]), Y=Y)
 
     with pytest.raises(ValueError):
         test_func(X, pd.Series([5, 6, 7]))
+        test_func(X=X, Y=pd.Series([5, 6, 7]))
