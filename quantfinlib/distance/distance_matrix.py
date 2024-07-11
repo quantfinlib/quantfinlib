@@ -3,20 +3,25 @@
 from functools import partial
 from itertools import combinations
 import logging
-from typing import Callable, Optional, Union
-
+from typing import Callable, Optional
 import pandas as pd
 import numpy as np
 
-from .correlation import (
+from quantfinlib.distance.correlation import (
     corr_to_abs_angular_dist,
     corr_to_angular_dist,
     corr_to_squared_angular_dist,
 )
 
-from .information import mutual_info, var_info
+from quantfinlib.distance.information import mutual_info, var_info
+from quantfinlib.util import (
+    validate_frame_or_2Darray,
+    DataFrameOrArray,
+)
 
 logger = logging.getLogger("quantfinlib")
+logger.setLevel(logging.WARNING)
+
 CORR_TO_DIST_METHOD_MAP = {
     "angular": corr_to_angular_dist,
     "abs_angular": corr_to_abs_angular_dist,
@@ -24,19 +29,9 @@ CORR_TO_DIST_METHOD_MAP = {
 }
 
 
-def _check_shape(X: Union[np.ndarray, pd.DataFrame]) -> None:
-    """Check if the input array is a 2D array."""
-    assert X.ndim == 2 and X.shape[1] > 1, "Input array must be 2D and the number of columns must be greater than 1."
-
-
-def _check_corr_method(corr_method: str) -> None:
-    """Check if the correlation method is valid."""
-    assert corr_method in ["pearson", "spearman"], "Invalid correlation method. Must be pearson or spearman."
-
-
-def _get_info_distance_matrix(X: Union[np.ndarray, pd.DataFrame], func: Callable, **kwargs) -> np.ndarray:
+@validate_frame_or_2Darray("X")
+def _get_info_distance_matrix(X: DataFrameOrArray, func: Callable, **kwargs) -> np.ndarray:
     """Calculate distance matrix between columns of a dataset."""
-    _check_shape(X)
     assert func in [mutual_info, var_info], "Invalid function. Must be mutual_info or var_info."
     inp_pd_df = isinstance(X, pd.DataFrame)
     if inp_pd_df:
@@ -55,7 +50,12 @@ def _get_info_distance_matrix(X: Union[np.ndarray, pd.DataFrame], func: Callable
     return res
 
 
-def get_info_distance_matrix(X: Union[np.ndarray, pd.DataFrame], method: str = "var_info", **kwargs) -> np.ndarray:
+def _check_info_method(method: str) -> None:
+    """Check if the information method is valid."""
+    assert method in ["mutual_info", "var_info"], "Invalid method. Must be one of mutual_info or var_info."
+
+
+def get_info_distance_matrix(X: DataFrameOrArray, method: str = "var_info", **kwargs) -> np.ndarray:
     """Calculate distance matrix between columns of a dataset.
 
     Parameters
@@ -72,7 +72,7 @@ def get_info_distance_matrix(X: Union[np.ndarray, pd.DataFrame], method: str = "
     np.ndarray
         The distance matrix.
     """
-    assert method in ["mutual_info", "var_info"], "Invalid method. Must be mutual_info or var_info."
+    _check_info_method(method)
     if method == "mutual_info":
         logger.warning("Mutual information is not a metric. Consider using var_info instead.")
         return _get_info_distance_matrix(X, mutual_info, **kwargs)
@@ -82,10 +82,9 @@ def get_info_distance_matrix(X: Union[np.ndarray, pd.DataFrame], method: str = "
         raise NotImplementedError(f"Method {method} is not implemented.")
 
 
-def _calculate_correlation(X: Union[np.ndarray, pd.DataFrame], corr_method: str = "pearson", **kwargs) -> pd.DataFrame:
+@validate_frame_or_2Darray("X")
+def _calculate_correlation(X: DataFrameOrArray, corr_method: str = "pearson", **kwargs) -> pd.DataFrame:
     """Calculate correlation matrix between columns of a dataset."""
-    _check_shape(X)
-    _check_corr_method(corr_method)
     inp_numpy_array = isinstance(X, np.ndarray)
     if inp_numpy_array:
         logger.info("Input is a NumPy array. Converting to Pandas DataFrame for correlation calculation.")
@@ -94,8 +93,22 @@ def _calculate_correlation(X: Union[np.ndarray, pd.DataFrame], corr_method: str 
     return corr.values if inp_numpy_array else corr
 
 
+def _check_corr_calculation_method(corr_method: str) -> None:
+    """Check if the correlation method is valid."""
+    assert corr_method in ["pearson", "spearman"], "Invalid correlation method. Must be pearson or spearman."
+
+
+def _check_corr_to_dist_method(method: str) -> None:
+    """Check if the correlation to distance method is valid."""
+    assert method in [
+        "angular",
+        "abs_angular",
+        "squared_angular",
+    ], "Invalid method. Must be one of angular, abs_angular, squared_angular."
+
+
 def get_corr_distance_matrix(
-    X: Union[np.ndarray, pd.DataFrame],
+    X: DataFrameOrArray,
     corr_method: str = "pearson",
     method: str = "angular",
     corr_transformer: Optional[Callable] = None,
@@ -121,6 +134,8 @@ def get_corr_distance_matrix(
     np.ndarray
         The distance matrix.
     """
+    _check_corr_calculation_method(corr_method)
+    _check_corr_to_dist_method(method)
     corr = _calculate_correlation(X, corr_method, **kwargs)
     if corr_transformer is not None:
         corr = corr_transformer(corr)
