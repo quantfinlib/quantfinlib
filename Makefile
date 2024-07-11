@@ -1,8 +1,8 @@
-.PHONY: format lint major minor patch build publish docs test
+.PHONY: format lint mypy major minor patch build publish docs test
 
 help:
 	@echo "Usage:"
-	@echo "  make [format, lint, major, minor, patch, build, publish, docs, test]"
+	@echo "  make [format, lint, mypy, major, minor, patch, build, publish, docs, test]"
 
 format:
 	@echo "Formatting code with isort"
@@ -12,7 +12,11 @@ format:
 
 lint:
 	@echo "Running flake8"
-	poetry run flake8 mlops --per-file-ignores="__init__.py:F401" --ignore="D205" --docstring-convention="numpy" --max-line-length=120
+	poetry run flake8 --config .flake8 quantfinlib
+
+mypy:
+	@echo "Running mypy"
+	poetry run mypy quantfinlib
 
 major:
 	poetry run bump2version major --allow-dirty --verbose
