@@ -2,18 +2,12 @@
 These include mutual information, variation of information, and Kullback-Leibler divergence between two variables.
 """
 
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple
 
 import numpy as np
-import pandas as pd
 from scipy.stats import entropy
 
-
-def _validate_inputs(x: Union[pd.Series, np.ndarray], y: Union[pd.Series, np.ndarray]) -> None:
-    if not isinstance(x, (pd.Series, np.ndarray)):
-        raise ValueError("x must be a pandas Series or a numpy array")
-    if not isinstance(y, (pd.Series, np.ndarray)):
-        raise ValueError("y must be a pandas Series or a numpy array")
+from quantfinlib.util import validate_series_or_1Darray, SeriesOrArray
 
 
 def _get_nb_bins_from_xy(x: np.ndarray, y: np.ndarray) -> int:
@@ -55,9 +49,8 @@ def _get_optimal_nb_bins(n_obs: int, corr: Optional[float] = None) -> int:
     return int(b)
 
 
-def compute_entropies(
-    x: Union[pd.Series, np.ndarray], y: Union[pd.Series, np.ndarray], bins: int
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+@validate_series_or_1Darray("x", "y")
+def compute_entropies(x: SeriesOrArray, y: SeriesOrArray, bins: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Compute entropies of two variables x and y.
 
     Parameters
@@ -85,9 +78,8 @@ def compute_entropies(
     return h_x, h_y, h_xy
 
 
-def mutual_info(
-    x: Union[pd.Series, np.ndarray], y: Union[pd.Series, np.ndarray], bins: Optional[int] = None, norm: bool = True
-) -> float:
+@validate_series_or_1Darray("x", "y")
+def mutual_info(x: SeriesOrArray, y: SeriesOrArray, bins: Optional[int] = None, norm: bool = True) -> float:
     r"""
     Calculate mutual information between two variables.
 
@@ -133,8 +125,6 @@ def mutual_info(
             mi_xy = mutual_info(x, y)
             print(f"Mutual information = {mi_xy}")
     """
-    # Validate inputs
-    _validate_inputs(x, y)
     if bins is None:
         bins = _get_nb_bins_from_xy(x, y)
     h_x, h_y, h_xy = compute_entropies(x, y, bins)
@@ -145,8 +135,9 @@ def mutual_info(
     return mi_xy
 
 
+@validate_series_or_1Darray("x", "y")
 def var_info(
-    x: Union[pd.Series, np.ndarray], y: Union[pd.Series, np.ndarray], bins: Optional[int] = None, norm: bool = True
+    x: SeriesOrArray, y: SeriesOrArray, bins: Optional[int] = None, norm: bool = True
 ) -> float:
     """Calculate variation of information between two variables.
 
@@ -188,8 +179,6 @@ def var_info(
             vi_xy = var_info(x, y)
             print(f"variation of information = {vi_xy}")
     """
-    # Validate inputs
-    _validate_inputs(x, y)
     if bins is None:
         bins = _get_nb_bins_from_xy(x, y)
     h_x, h_y, h_xy = compute_entropies(x, y, bins)  # Compute entropies
@@ -200,7 +189,8 @@ def var_info(
     return var_info_xy
 
 
-def kl_divergence_xy(x: np.ndarray, y: np.ndarray, bins: Optional[int] = None) -> float:
+@validate_series_or_1Darray("x", "y")
+def kl_divergence_xy(x: SeriesOrArray, y: SeriesOrArray, bins: Optional[int] = None) -> float:
     """
     Calculate the Kullback-Leibler divergence between two variables.
 
@@ -218,10 +208,8 @@ def kl_divergence_xy(x: np.ndarray, y: np.ndarray, bins: Optional[int] = None) -
     float
         Kullback-Leibler divergence between x and y.
     """
-    _validate_inputs(x, y)
     if bins is None:
         bins = _get_nb_bins_from_xy(x, y)
-
     # Discretize the variables
     hist_x, _ = np.histogram(x, bins=bins)
     hist_y, _ = np.histogram(y, bins=bins)
