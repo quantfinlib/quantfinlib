@@ -1,5 +1,4 @@
 from typing import Dict, Tuple, Union
-
 import numpy as np
 
 
@@ -7,7 +6,8 @@ def _cor_block_diagonal(
     block_sizes: Union[list, np.ndarray] = [10, 10, 20, 24, 64],
     block_cors: Union[list, np.ndarray] = [0.5, 0.2, 0.3, 0.5, 0.3],
 ) -> np.ndarray:
-    """Generate a correlation matrix with blocks of correlated assets.
+    """
+    Generate a correlation matrix with blocks of correlated assets.
 
     Example
     -------
@@ -27,12 +27,15 @@ def _cor_block_diagonal(
     ----------
     block_sizes: Union[list, np.ndarray]
         A list of asset block sizes.
-    block_cors:Union[list, np.ndarray]
+    block_cors: Union[list, np.ndarray]
         A list of correlation values for each block.
 
     Returns
     -------
         np.dnarray
+        np.dnarray
+
+    np.dnarray
 
     """
     N = np.sum(block_sizes)
@@ -45,20 +48,20 @@ def _cor_block_diagonal(
     return cor
 
 
-def _cov_to_cor(cov, cov_reg=1e-6):
-    """Convert a covariance matrix into a correlation matrix + standard deviation vector.
+def _cov_to_cor(cov: np.ndarray, cov_reg: float = 1e-6) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Convert a covariance matrix into a correlation matrix + standard deviation vector.
 
     Parameters
     ----------
     cov: np.ndarray
         Covariance matrix.
     cov_reg: float, optional, default=1E-6
-        Optional minimal value for the standard deviation, to prevent the matrix to become singular.
+        Optional minimal value for the standard deviation, to prevent the matrix from becoming singular.
 
     Returns
     -------
     cor, std
-
     """
     # Derive the correlation matrix from a covariance matrix
     std = np.sqrt(np.maximum(np.diag(cov), cov_reg))
@@ -68,8 +71,9 @@ def _cov_to_cor(cov, cov_reg=1e-6):
     return cor, std
 
 
-def _cor_to_cov(cor, std):
-    """Convert a correlation matrix into covariance matrix.
+def _cor_to_cov(cor: np.ndarray, std: np.ndarray) -> np.ndarray:
+    """
+    Convert a correlation matrix into a covariance matrix.
 
     Parameters
     ----------
@@ -86,21 +90,21 @@ def _cor_to_cov(cor, std):
     return cov
 
 
-def _eig_to_cor(eigen_values, eigen_vectors):
-    """Convert eigenvalues/eigenvectors into a correlation matrix.
+def _eig_to_cor(eigen_values: np.ndarray, eigen_vectors: np.ndarray) -> np.ndarray:
+    """
+    Convert eigenvalues/eigenvectors into a correlation matrix.
 
     Parameters
     ----------
     eigen_values: np.ndarray
         Eigenvalues vector.
     eigen_vectors: np.ndarray
-        An eigenvector matrix,with the eigenvectors in columns.
+        An eigenvector matrix, with the eigenvectors in columns.
 
     Returns
     -------
     cor
     """
-
     cor = np.dot(eigen_vectors, eigen_values[:, np.newaxis] * eigen_vectors.T)
 
     # fix numerical issues
@@ -110,15 +114,16 @@ def _eig_to_cor(eigen_values, eigen_vectors):
     return cor
 
 
-def _cor_to_eig(cor, sort=True, k=None):
-    """Convert a correlation matrix into eigenvalues, eigenvectors
+def _cor_to_eig(cor: np.ndarray, sort: bool = True, k: int = None) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Convert a correlation matrix into eigenvalues and eigenvectors.
 
     Parameters
     ----------
     cor: np.ndarray
         Correlation matrix.
     sort: bool, default=True
-        Sort the eigenvalues/vectors in decreasing order, the largest eigenvalue first
+        Sort the eigenvalues/vectors in decreasing order, with the largest eigenvalue first.
     k:  int, optional, default=None
         When specified, return only the k largest eigenvalues/vectors.
 
@@ -143,8 +148,9 @@ def _cor_to_eig(cor, sort=True, k=None):
     return eigen_values, eigen_vectors
 
 
-def _eig_complete(eigen_values, eigen_vectors):
-    """Complete a subset of eigenvalues/vectors into a full set.
+def _eig_complete(eigen_values: np.ndarray, eigen_vectors: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Complete a subset of eigenvalues/eigenvectors into a full set.
 
     Parameters
     ----------
@@ -155,7 +161,7 @@ def _eig_complete(eigen_values, eigen_vectors):
 
     Returns
     -------
-
+    eigen_values, eigen_vectors
     """
     N = eigen_vectors.shape[0]
     k = eigen_vectors.shape[1]
@@ -168,18 +174,17 @@ def _eig_complete(eigen_values, eigen_vectors):
         v[:k] = eigen_values
         v[k:] = (N - np.sum(eigen_values)) / (N - k)
         e, _, _ = np.linalg.svd(eigen_vectors)
-        e[:, :k] = (
-            eigen_vectors  # original eigenvectors echo-ed by svd might have flipped direction, restore to org vectors
-        )
+        e[:, :k] = eigen_vectors
         return v, e
     return eigen_values, eigen_vectors
 
 
-def _marcenko_pastur_support(var, num_timesteps, num_assets):
-    """Compute the domain (support) where the Marcenko Pastur distribution is non-zero.
+def _marcenko_pastur_support(var: float, num_timesteps: int, num_assets: int) -> Tuple[float, float]:
+    """
+    Compute the range (support) where the Marcenko Pastur distribution is non-zero.
 
     The Marchenko–Pastur distribution is the distribution of the eigenvalues of the correlation matrix
-    of random uncorrelated timeseries.
+    of random uncorrelated time series.
 
     Parameters
     ----------
@@ -192,17 +197,18 @@ def _marcenko_pastur_support(var, num_timesteps, num_assets):
 
     Returns
     -------
-        lower_bound, upper_bound
+    lower_bound, upper_bound
     """
     q = num_timesteps / num_assets
     return var * (1 - (1.0 / q) ** 0.5) ** 2, var * (1 + (1.0 / q) ** 0.5) ** 2
 
 
-def _marchenko_pastur_pdf(var, num_timesteps, num_assets, eigen_values):
-    """The Marchenko–Pastur probability density function.
+def _marchenko_pastur_pdf(var: float, num_timesteps: int, num_assets: int, eigen_values) -> np.ndarray:
+    """
+    The Marchenko–Pastur probability density function.
 
     The Marchenko–Pastur distribution is the distribution of the eigenvalues of the correlation matrix
-    of random uncorrelated timeseries.
+    of random uncorrelated time series.
 
     Parameters
     ----------
@@ -218,6 +224,9 @@ def _marchenko_pastur_pdf(var, num_timesteps, num_assets, eigen_values):
     Returns
     -------
         A list of probability density values.
+        A list of probability density values.
+
+    A list of probability density values.
 
     """
     q = num_timesteps / num_assets
@@ -232,11 +241,12 @@ def _marchenko_pastur_pdf(var, num_timesteps, num_assets, eigen_values):
     return pdf
 
 
-def _marchenko_pastur_fit(num_timesteps, num_assets, eigen_values):
-    """Fit the Marchenko–Pastur distribution (estimate the variance parameter) to a list of eigenvalues
+def _marchenko_pastur_fit(num_timesteps: int, num_assets: int, eigen_values: np.ndarray) -> float:
+    """
+    Fit the Marchenko–Pastur distribution (estimate the variance parameter) to a list of eigenvalues.
 
     The Marchenko–Pastur distribution is the distribution of the eigenvalues of the correlation matrix
-    of random uncorrelated timeseries.
+    of random uncorrelated time series.
 
     Parameters
     ----------
@@ -249,8 +259,7 @@ def _marchenko_pastur_fit(num_timesteps, num_assets, eigen_values):
 
     Returns
     -------
-    The optimal var parameters
-
+    The optimal var parameter.
     """
     max_ll = -1e9
     max_var = 0
@@ -265,48 +274,47 @@ def _marchenko_pastur_fit(num_timesteps, num_assets, eigen_values):
     return max_var
 
 
-def _cov_denoise(cov, num_timesteps, k=None):
-    """Denoise a covariance matrix.
+def _cov_denoise(cov: np.ndarray, num_timesteps: int, k: int = None) -> Tuple[np.ndarray, dict]:
+    """
+    Denoise a covariance matrix.
 
     Parameters
     ----------
     cov: np. ndarray
-        A covariance matrix
+        A covariance matrix.
     num_timesteps: int
-        Number of time-steps used in the covariance matrix estimate
+        Number of time-steps used in the covariance matrix estimate.
     k: int, optional, default=None
         When specified, denoise assuming that the top-k largest eigenvectors are the signal.
-        When omitted, determine the optimal k by fitting the Marchenko–Pastur distribution
+        When omitted, determine the optimal k by fitting the Marchenko–Pastur distribution.
 
     Returns
     -------
     cov, info
-
     """
     cor, std = _cov_to_cor(cov)
     cor_, info = _cor_denoise(cor, num_timesteps, k=k)
     return _cor_to_cov(cor_, std), info
 
 
-def _cor_denoise(cor, num_timesteps, k=None):
-    """Denoise a covariance matrix.
+def _cor_denoise(cor: np.ndarray, num_timesteps: int, k: int = None) -> Tuple[np.ndarray, np.ndarray, dict]:
+    """
+    Denoise a correlation matrix.
 
     Parameters
     ----------
     cor: np. ndarray
-        A correlation matrix
+        A correlation matrix.
     num_timesteps: int
-        Number of time-steps used in the covariance matrix estimate
+        Number of time-steps used in the covariance matrix estimate.
     k: int, optional, default=None
         When specified, denoise assuming that the top-k largest eigenvectors are the signal.
-        When omitted, determine the optimal k by fitting the Marchenko–Pastur distribution
+        When omitted, determine the optimal k by fitting the Marchenko–Pastur distribution.
 
     Returns
     -------
-    cor, info
-
+    cor, eigen_vectors, info
     """
-
     if k is None:
         # Estimate number of factors
         eigen_values, eigen_vectors = _cor_to_eig(cor)
@@ -320,23 +328,23 @@ def _cor_denoise(cor, num_timesteps, k=None):
         return v, e, info
 
 
-def _eigen_values_denoise(eigen_values, num_timesteps, k=None):
-    """Denoise a list of eigenvalues.
+def _eigen_values_denoise(eigen_values: np.ndarray, num_timesteps: int, k: int = None) -> Tuple[np.ndarray, dict]:
+    """
+    Denoise a list of eigenvalues.
 
     Parameters
     ----------
-    eigen_values: np. ndarray
+    eigen_values: np.ndarray
         A list of eigenvalues.
     num_timesteps: int
-        Number of time-steps used in the covariance matrix estimate
+        Number of time-steps used in the covariance matrix estimate.
     k: int, optional, default=None
         When specified, denoise assuming that the top-k largest eigenvectors are the signal.
-        When omitted, determine the optimal k by fitting the Marchenko–Pastur distribution
+        When omitted, determine the optimal k by fitting the Marchenko–Pastur distribution.
 
     Returns
     -------
-    eigen_values, info
-
+    improved_eigen_values, info
     """
     info = {}
     info["fitted"] = False
@@ -360,8 +368,9 @@ def _eigen_values_denoise(eigen_values, num_timesteps, k=None):
     return improved_eigen_values, info
 
 
-def _random_cov(dim=3):
-    """Create a random covariance matrix.
+def _random_cov(dim: int = 3) -> np.ndarray:
+    """
+    Create a random covariance matrix.
 
     The sum of the covariances on the main diagonal is approximately 1.
 
@@ -379,13 +388,14 @@ def _random_cov(dim=3):
     return np.matmul(x.T, x)
 
 
-def _random_cor(dim=3):
-    """Create a random correlation matix.
+def _random_cor(dim: int = 3) -> np.ndarray:
+    """
+    Create a random correlation matrix.
 
     Parameters
     ----------
     dim: int
-    Number of dimensions
+        Number of dimensions
 
     Returns
     -------
@@ -396,30 +406,31 @@ def _random_cor(dim=3):
     return cor
 
 
-def _decorrelate(x: np.ndarray, ddof: int = 1, adjust: str = None, k=None) -> Tuple[np.ndarray, dict]:
-    """De-correlate & whiten a set of time-series.
+def _decorrelate(x: np.ndarray, ddof: int = 1, adjust: str = None, k: int = None) -> Tuple[np.ndarray, dict]:
+    """
+    De-correlate & whiten a set of time series.
 
-    Transforms a matrix of timeseries (in columns) into timeseries such that they have zero mean,
-    unit variance, and mutually uncorrelated.
-    The resulting time-series factors are sorted left to right in descreading eigenvalues. The time-series
-    in the first column is the stongest factor, and the time-series in the last column is the smallest
-    factor.
+    Transforms a matrix of time series (in columns) into time series such that they have zero mean,
+    unit variance, and are mutually uncorrelated.
+    The resulting time series factors are sorted from left to right in decreasing eigenvalues.
+    The time series in the first column is the strongest factor, and the time series in the last column is the smallest factor.
 
     Parameters
     ----------
     x: np.array
-        A matrix with time-series stored in columns
-    adjust: str, default = None
-        * 'denoise'. Denoise the correlation matrix using the Marchenko Pasteur distribution.
-        * 'pca'. Do a PCA reduction.
+        A matrix with time series stored in columns.
+    ddof: int, optional, default=1
+        Delta degrees of freedom used in the variance estimate.
+    adjust: str, optional, default=None
+        Indicates how to adjust the decorrelated factors. Options are 'denoise' or 'pca'.
     k: int, optional, default=None
         When specified, denoise or PCA assuming that the top-k largest eigenvectors are the signal.
-        When omitted, determine the optimal k by fitting the Marchenko–Pastur distribution
+        When omitted, determine the optimal k by fitting the Marchenko–Pastur distribution.
 
     Returns
     -------
-    * Decorrelated series
-    * a dict with [mean, std, eigen_val, eigen_vec]. This dict can be used to re-verse the decorrelation.
+    Decorrelated series, a dict with statistical information.
+
     """
     assert adjust in [None, "denoise", "pca"], 'Invalid adjustment string. Valid values are "denoise" or "pca"'
 
@@ -460,33 +471,36 @@ def _decorrelate(x: np.ndarray, ddof: int = 1, adjust: str = None, k=None) -> Tu
             eigen_val, denoise_stats = _eigen_values_denoise(eigen_val, x.shape[0], k)
             stats.update(denoise_stats)
 
-            # rescale each column to set the std to 1.
-            ans = ans / eigen_val.reshape(1, -1) ** 0.5  # todo, eigenvalues can be zero now that we added pca
+            ans = ans / eigen_val.reshape(1, -1) ** 0.5
 
     stats.update({"mean": mean, "std": std, "eigen_val": eigen_val, "eigen_vec": eigen_vec})
     return ans, stats
 
 
-def _recorrelate(e, mean, std, eigen_val, eigen_vec, **kwargs):
-    """Re-correlated previously de-correlated time-series.
+def _recorrelate(
+    e: np.ndarray, mean: np.ndarray, std: np.ndarray, eigen_val: np.ndarray, eigen_vec: np.ndarray, **kwargs
+):
+    """
+    Re-correlate previously de-correlated time series.
 
-    This function is the inverse of the decorrelate funtion.
+    This function is the inverse of the decorrelate function.
 
     Parameters
     ----------
     e: np.ndarray
-        A matrix with time-series stored in columns
+        A matrix with de-correlated time series stored in columns.
     mean: np.ndarray
-        Means for each time-series.
+        Means for each time series.
     std: np.ndarray
-        Standard deviation fo each time-series.
-    eigen_val:
+        Standard deviation for each time series.
+    eigen_val: np.ndarray
         Eigenvalues of the target correlation matrix.
-    eigen_vec:
+    eigen_vec: np.ndarray
         Eigenvectors of the target correlation matrix.
 
     Returns
     -------
+    The re-correlated time series.
 
     """
     e = e * eigen_val.reshape(1, -1) ** 0.5
