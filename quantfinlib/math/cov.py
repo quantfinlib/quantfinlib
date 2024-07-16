@@ -1,4 +1,5 @@
-from typing import Dict, Tuple, Union
+from typing import Tuple, Union
+
 import numpy as np
 
 
@@ -38,6 +39,13 @@ def _cor_block_diagonal(
     np.dnarray
 
     """
+
+    if len(block_sizes) != len(block_cors):
+        raise ValueError("block_sizes and block_cors must have the same length")
+
+    if len(block_sizes) == 0:
+        return np.zeros((0, 0))
+
     N = np.sum(block_sizes)
     cor = np.zeros((N, N))
     i = 0
@@ -114,7 +122,7 @@ def _eig_to_cor(eigen_values: np.ndarray, eigen_vectors: np.ndarray) -> np.ndarr
     return cor
 
 
-def _cor_to_eig(cor: np.ndarray, sort: bool = True, k: int = None) -> Tuple[np.ndarray, np.ndarray]:
+def _cor_to_eig(cor: np.ndarray, sort: bool = True, k: Union[int, None] = None) -> Tuple[np.ndarray, np.ndarray]:
     """
     Convert a correlation matrix into eigenvalues and eigenvectors.
 
@@ -132,8 +140,10 @@ def _cor_to_eig(cor: np.ndarray, sort: bool = True, k: int = None) -> Tuple[np.n
     eigen_values, eigenvectors (with the eigenvectors in columns)
     """
     if k:
-        N = cor.shape[0]
-        eigen_values, eigen_vectors = np.linalg.eigh(cor, subset_by_index=(N - k, N - 1))
+        eigen_values, eigen_vectors = np.linalg.eigh(cor)
+        idx = np.argsort(eigen_values)[-k:][::-1]
+        eigen_values = eigen_values[idx]
+        eigen_vectors = eigen_vectors[:, idx]
     else:
         eigen_values, eigen_vectors = np.linalg.eigh(cor)
 
@@ -141,10 +151,10 @@ def _cor_to_eig(cor: np.ndarray, sort: bool = True, k: int = None) -> Tuple[np.n
         idx = eigen_values.argsort()[::-1]
         eigen_values = eigen_values[idx]
         eigen_vectors = eigen_vectors[:, idx]
-    real = True
-    if real:
-        eigen_vectors = eigen_vectors.real
-        eigen_values = eigen_values.real
+
+    eigen_vectors = eigen_vectors.real
+    eigen_values = eigen_values.real
+
     return eigen_values, eigen_vectors
 
 
@@ -223,12 +233,11 @@ def _marchenko_pastur_pdf(var: float, num_timesteps: int, num_assets: int, eigen
 
     Returns
     -------
-        A list of probability density values.
-        A list of probability density values.
-
     A list of probability density values.
-
     """
+    if var <= 0:
+        raise ValueError("Variance must be positive.")
+
     q = num_timesteps / num_assets
     e_min, e_max = _marcenko_pastur_support(var, num_timesteps, num_assets)
     pdf = np.zeros_like(eigen_values)
@@ -261,6 +270,8 @@ def _marchenko_pastur_fit(num_timesteps: int, num_assets: int, eigen_values: np.
     -------
     The optimal var parameter.
     """
+    if not isinstance(eigen_values, np.ndarray):
+        raise ValueError("eigen_values must be a numpy array")
     max_ll = -1e9
     max_var = 0
     for var in np.linspace(0.01, 4, 1000):
@@ -274,7 +285,7 @@ def _marchenko_pastur_fit(num_timesteps: int, num_assets: int, eigen_values: np.
     return max_var
 
 
-def _cov_denoise(cov: np.ndarray, num_timesteps: int, k: int = None) -> Tuple[np.ndarray, dict]:
+def _cov_denoise(cov: np.ndarray, num_timesteps: int, k: Union[int, None] = None) -> Tuple[np.ndarray, dict]:
     """
     Denoise a covariance matrix.
 
@@ -292,12 +303,17 @@ def _cov_denoise(cov: np.ndarray, num_timesteps: int, k: int = None) -> Tuple[np
     -------
     cov, info
     """
+    if not isinstance(cov, np.ndarray):
+        raise TypeError("Input covariance matrix must be a numpy array")
+
     cor, std = _cov_to_cor(cov)
-    cor_, info = _cor_denoise(cor, num_timesteps, k=k)
+    cor_, _, info = _cor_denoise(cor, num_timesteps, k=k)
     return _cor_to_cov(cor_, std), info
 
 
-def _cor_denoise(cor: np.ndarray, num_timesteps: int, k: int = None) -> Tuple[np.ndarray, np.ndarray, dict]:
+def _cor_denoise(
+    cor: np.ndarray, num_timesteps: int, k: Union[int, None] = None
+) -> Tuple[np.ndarray, np.ndarray, dict]:
     """
     Denoise a correlation matrix.
 
@@ -315,20 +331,27 @@ def _cor_denoise(cor: np.ndarray, num_timesteps: int, k: int = None) -> Tuple[np
     -------
     cor, eigen_vectors, info
     """
+    if not isinstance(cor, np.ndarray):
+        raise TypeError("Input correlation matrix must be a numpy array")
+    if cor.ndim != 2 or cor.shape[0] != cor.shape[1]:
+        raise ValueError("Input must be a square matrix")
+
     if k is None:
         # Estimate number of factors
         eigen_values, eigen_vectors = _cor_to_eig(cor)
         improved_eigen_values, info = _eigen_values_denoise(eigen_values, num_timesteps, k=None)
-        return _eig_to_cor(improved_eigen_values, eigen_vectors), info
+        return _eig_to_cor(improved_eigen_values, eigen_vectors), None, info
     else:
-        # Manual provide number of factors
-        eigen_values, eigen_vectors = _cor_to_eig(cor, k=k)
-        v, e = _eig_complete(eigen_values, eigen_vectors)
+        # Manually provide number of factors
+        eigen_values, eigen_vectors = _cor_to_eig(cor, sort=True)
+        v, e = _eig_complete(eigen_values[:k], eigen_vectors[:, :k])  # Truncate to top k components
         info = {"fitted": False, "k": k}
-        return v, e, info
+        return _eig_to_cor(v, e), e, info
 
 
-def _eigen_values_denoise(eigen_values: np.ndarray, num_timesteps: int, k: int = None) -> Tuple[np.ndarray, dict]:
+def _eigen_values_denoise(
+    eigen_values: np.ndarray, num_timesteps: int, k: Union[int, None] = None
+) -> Tuple[np.ndarray, dict]:
     """
     Denoise a list of eigenvalues.
 
@@ -404,109 +427,6 @@ def _random_cor(dim: int = 3) -> np.ndarray:
     cov = _random_cov(dim=dim)
     cor, std = _cov_to_cor(cov)
     return cor
-
-
-def _decorrelate(x: np.ndarray, ddof: int = 1, adjust: str = None, k: int = None) -> Tuple[np.ndarray, dict]:
-    """
-    De-correlate & whiten a set of time series.
-
-    Transforms a matrix of time series (in columns) into time series such that they have zero mean,
-    unit variance, and are mutually uncorrelated.
-    The resulting time series factors are sorted from left to right in decreasing eigenvalues.
-    The time series in the first column is the strongest factor, and the time series in the last column is the smallest factor.
-
-    Parameters
-    ----------
-    x: np.array
-        A matrix with time series stored in columns.
-    ddof: int, optional, default=1
-        Delta degrees of freedom used in the variance estimate.
-    adjust: str, optional, default=None
-        Indicates how to adjust the decorrelated factors. Options are 'denoise' or 'pca'.
-    k: int, optional, default=None
-        When specified, denoise or PCA assuming that the top-k largest eigenvectors are the signal.
-        When omitted, determine the optimal k by fitting the Marchenko–Pastur distribution.
-
-    Returns
-    -------
-    Decorrelated series, a dict with statistical information.
-
-    """
-    assert adjust in [None, "denoise", "pca"], 'Invalid adjustment string. Valid values are "denoise" or "pca"'
-
-    stats = {}
-
-    mean = np.mean(x, axis=0)
-    cov = np.cov(x, rowvar=False, ddof=ddof)
-    cor, std = _cov_to_cor(cov)
-    x_ = (x - mean.reshape(1, -1)) / std.reshape(1, -1)
-
-    eigen_val, eigen_vec = _cor_to_eig(cor)
-
-    # decorelate
-    ans = np.matmul(x_, eigen_vec)
-
-    # adjust eigenvalues if needed
-    if adjust is not None:
-
-        # for pca, we set the k smalest eigenvalues to zero.
-        if adjust == "pca":
-            if not k:
-                # use eigen_values_denoise to estimate "k", the number of non-noisy eigenvalues
-                eigen_val, denoise_stats = _eigen_values_denoise(eigen_val, x.shape[0], k)
-                stats.update(denoise_stats)
-                k = denoise_stats["k"]
-
-            # for pca we set the last eigenvalues to zero
-            if k < len(eigen_val):
-                eigen_val[k:] = 0
-
-            # rescale each column to set the std to 1.
-            # Divide the first k columns with the eigenvalues, the eigenvalues are zero
-            ans[:, :k] = ans[:, :k] / eigen_val.reshape(1, -1)[:, :k] ** 0.5
-
-        elif adjust == "denoise":
-            # use eigen_values_denoise to (potentialy) estimate k and adjust the smallest
-            # eigenvalues to their mean
-            eigen_val, denoise_stats = _eigen_values_denoise(eigen_val, x.shape[0], k)
-            stats.update(denoise_stats)
-
-            ans = ans / eigen_val.reshape(1, -1) ** 0.5
-
-    stats.update({"mean": mean, "std": std, "eigen_val": eigen_val, "eigen_vec": eigen_vec})
-    return ans, stats
-
-
-def _recorrelate(
-    e: np.ndarray, mean: np.ndarray, std: np.ndarray, eigen_val: np.ndarray, eigen_vec: np.ndarray, **kwargs
-):
-    """
-    Re-correlate previously de-correlated time series.
-
-    This function is the inverse of the decorrelate function.
-
-    Parameters
-    ----------
-    e: np.ndarray
-        A matrix with de-correlated time series stored in columns.
-    mean: np.ndarray
-        Means for each time series.
-    std: np.ndarray
-        Standard deviation for each time series.
-    eigen_val: np.ndarray
-        Eigenvalues of the target correlation matrix.
-    eigen_vec: np.ndarray
-        Eigenvectors of the target correlation matrix.
-
-    Returns
-    -------
-    The re-correlated time series.
-
-    """
-    e = e * eigen_val.reshape(1, -1) ** 0.5
-    x = np.matmul(e, eigen_vec.T)
-    x = x * std.reshape(1, -1) + mean.reshape(1, -1)
-    return x
 
 
 if __name__ == "__main__":
