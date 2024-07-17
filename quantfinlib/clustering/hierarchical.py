@@ -1,3 +1,5 @@
+"""Hierarchical clustering module."""
+
 from typing import Optional
 
 import numpy as np
@@ -167,7 +169,7 @@ def optimize_n_clusters(
             gap_values.append(gap)
             gap_std_values.append(gap_std)
         gap_values, gap_std_values = np.array(gap_values), np.array(gap_std_values)
-        k = np.where(gap_values[:-1] - gap_values[1:] + gap_std_values[1:] > 0 )[0][0]
+        k = np.where(gap_values[:-1] - gap_values[1:] + gap_std_values[1:] > 0)[0][0]
         return int(k + 2)
     elif metric == "silhouette":
         silh_values = []

@@ -24,14 +24,15 @@ def _check_labels_distance_consistency(dist: DataFrameOrArray, labels: SeriesOrA
 def gap_statistic(
     dist: DataFrameOrArray, labels: SeriesOrArray, nb: int = 10, random_state: Optional[int] = None
 ) -> Tuple[float, float]:
-    """
+    r"""
     Calculate the gap statistic for a given distance matrix and cluster labels.
 
     .. math::
-        \\text{gap}(k) = E(\log(W_k)) - \log(W_k)
+        GAP(k) = E(\log\left(W_{k}\right)) - \log\left(W_{k}\right)
 
-    where :math:`W_k` is the sum of within-cluster dispersion for :math:`k` clusters, and
-    :math:`E(\log(W_k))` is the expected value of :math:`\log(W_k)` for randomized distances.
+
+    where :math:`W_{k}` is the sum of within-cluster dispersion for :math:`k` clusters, and
+    :math:`E(\log(W_{k}))` is the expected value of :math:`\log(W_{k})` for randomized distances.
 
     Parameters
     ----------
@@ -62,7 +63,7 @@ def gap_statistic(
     Wk = np.sum(within_clstr_identifier * dist**2) / (4 * k)
     # Calculate the expected value of log(Wk) under a null reference distribution by randomizing the distance matrix
     E_log_Wk = 0
-    log_wk_boots = [] # Store gap statistics for each bootstrap sample
+    log_wk_boots = []  # Store gap statistics for each bootstrap sample
     if random_state is not None:
         seed = random_state
     else:

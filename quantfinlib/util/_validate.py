@@ -21,7 +21,7 @@ def _check_ndim_shape_1Darray(x: SeriesOrArray) -> None:
     
 
 def validate_series_or_1Darray(*arg_names: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-    """Decorator to check if input is a pandas Series or a numpy array with 1 dimension."""
+    """Check if input is a pandas Series or a numpy array with 1 dimension."""
 
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
@@ -57,7 +57,7 @@ def _check_ndim_shape_2Darray(X: DataFrameOrArray) -> None:
 
 
 def validate_frame_or_2Darray(*arg_names: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-    """Decorator to check if input is a pandas DataFrame or a numpy array with 2 dimensions."""
+    """Check if input is a pandas DataFrame or a numpy array with 2 dimensions."""
 
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
