@@ -1,9 +1,11 @@
 """Functions for computing distance matrices for a table/array/dataframe of variables/time series."""
 
+import dis
 from functools import partial
 from itertools import combinations
 import logging
 from typing import Callable, Optional
+from wsgiref import validate
 import pandas as pd
 import numpy as np
 
@@ -98,19 +100,19 @@ def _check_corr_calculation_method(corr_method: str) -> None:
     assert corr_method in ["pearson", "spearman"], "Invalid correlation method. Must be pearson or spearman."
 
 
-def _check_corr_to_dist_method(method: str) -> None:
+def _check_corr_to_dist_method(corr_to_dist_method: str) -> None:
     """Check if the correlation to distance method is valid."""
-    assert method in [
+    assert corr_to_dist_method in [
         "angular",
         "abs_angular",
         "squared_angular",
-    ], "Invalid method. Must be one of angular, abs_angular, squared_angular."
+    ], "Invalid corr_to_dist_method. Must be one of angular, abs_angular, squared_angular."
 
 
 def get_corr_distance_matrix(
     X: DataFrameOrArray,
     corr_method: str = "pearson",
-    method: str = "angular",
+    corr_to_dist_method: str = "angular",
     corr_transformer: Optional[Callable] = None,
     **kwargs,
 ) -> np.ndarray:
@@ -122,7 +124,7 @@ def get_corr_distance_matrix(
         The input dataset.
     corr_method : str, optional
         The correlation method. Default is 'pearson'.
-    method : str, optional
+    corr_to_dist_method : str, optional
         The distance calculation method. Default is 'angular'.
     corr_transformer : Callable, optional
         A function to transform the correlation matrix before calculating distance.
@@ -135,9 +137,28 @@ def get_corr_distance_matrix(
         The distance matrix.
     """
     _check_corr_calculation_method(corr_method)
-    _check_corr_to_dist_method(method)
     corr = _calculate_correlation(X, corr_method, **kwargs)
     if corr_transformer is not None:
         corr = corr_transformer(corr)
-    func = CORR_TO_DIST_METHOD_MAP.get(method)
+    return corr_to_dist(corr=corr, corr_to_dist_method=corr_to_dist_method)
+    
+
+@validate_frame_or_2Darray("corr")
+def corr_to_dist(corr: DataFrameOrArray, corr_to_dist_method: str = "angular") -> DataFrameOrArray:
+    """Convert a correlation matrix to a distance matrix.
+
+    Parameters
+    ----------
+    corr : np.ndarray or pd.DataFrame
+        The input correlation matrix.
+    corr_to_dist_method : str, optional
+        The distance calculation method. Default is 'angular'.
+
+    Returns
+    -------
+    np.ndarray
+        The distance matrix.
+    """
+    _check_corr_to_dist_method(corr_to_dist_method=corr_to_dist_method)
+    func = CORR_TO_DIST_METHOD_MAP.get(corr_to_dist_method)
     return func(corr)
