@@ -1,11 +1,9 @@
 """Functions for computing distance matrices for a table/array/dataframe of variables/time series."""
 
-import dis
 from functools import partial
 from itertools import combinations
 import logging
 from typing import Callable, Optional
-from wsgiref import validate
 import pandas as pd
 import numpy as np
 
@@ -106,7 +104,7 @@ def _check_corr_to_dist_method(corr_to_dist_method: str) -> None:
         "angular",
         "abs_angular",
         "squared_angular",
-    ], "Invalid corr_to_dist_method. Must be one of angular, abs_angular, squared_angular."
+    ], "Invalid corr_to_dist method. Must be one of angular, abs_angular, squared_angular."
 
 
 def get_corr_distance_matrix(
@@ -141,7 +139,7 @@ def get_corr_distance_matrix(
     if corr_transformer is not None:
         corr = corr_transformer(corr)
     return corr_to_dist(corr=corr, corr_to_dist_method=corr_to_dist_method)
-    
+
 
 @validate_frame_or_2Darray("corr")
 def corr_to_dist(corr: DataFrameOrArray, corr_to_dist_method: str = "angular") -> DataFrameOrArray:
