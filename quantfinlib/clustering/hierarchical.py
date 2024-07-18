@@ -104,9 +104,11 @@ class HC:
             else:
                 self.dist: DataFrameOrArray = get_info_distance_matrix(X=self.X, method="var_info")
         else:
-            raise ValueError(
-                f"Codependence method {self.codependence_method} is not supported. Choose between 'pearson-correlation', 'spearman-correlation', 'var_info'."
+            error_message = (
+                f"Codependence method {self.codependence_method} is not supported. "
+                "Expected 'pearson-correlation','spearman-correlation', 'var_info'."
             )
+            raise ValueError(error_message)
 
     @property
     def linkage(self) -> np.ndarray:
