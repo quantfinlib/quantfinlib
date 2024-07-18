@@ -25,7 +25,7 @@ class HC:
         Distance matrix.
     codependence_method : str
         The codependence method, default is 'pearson'.
-        Options are 'pearson', 'spearman', 'var_info'.
+        Options are 'pearson-correlation', 'spearman-correlation', 'var_info'.
     corr_to_dist_method : str
         The correlation to distance conversion method, default is 'angular'.
         Options are 'angular', 'abs_angular', 'squared_angular'.
@@ -66,7 +66,7 @@ class HC:
         X: Optional[DataFrameOrArray] = None,
         corr: Optional[DataFrameOrArray] = None,
         dist: Optional[DataFrameOrArray] = None,
-        codependence_method: str = "pearson",
+        codependence_method: str = "pearson-correlation",
         corr_to_dist_method: str = "angular",
         linkage_method: str = "ward",
         optimal_ordering: bool = True,
@@ -134,7 +134,7 @@ class HC:
         np.ndarray
             The cluster labels.
         """
-        return hierarchy.cut_tree(Z=self.linkage, n_clusters=n_clusters)
+        return hierarchy.cut_tree(Z=self.linkage, n_clusters=n_clusters).flatten()
 
     def get_optimal_nclusters(self, max_clust: int = 20, metric: str = "gap", nb: int = 10) -> int:
         """Get the optimal number of clusters."""

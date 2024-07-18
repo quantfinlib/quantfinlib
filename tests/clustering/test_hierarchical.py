@@ -82,6 +82,25 @@ class TestHC(unittest.TestCase):
         self.assertEqual(linkage.shape[0], self.X.shape[1] - 1)
         self.assertEqual(linkage.shape[1], 4)
 
+    def test_get_clusters(self):
+        hc = HC(self.X)
+        clusters = hc.get_clusters(n_clusters=5)
+        self.assertIsInstance(clusters, np.ndarray)
+        self.assertEqual(clusters.shape[0], self.X.shape[1])
+        np.testing.assert_array_equal(np.unique(clusters), np.arange(5))
+
+    def test_compute_distance_matrix(self):
+        hc = HC(X=self.X, codependence_method="pearson-correlation")
+        hc.dist = None
+        hc._compute_distance_matrix()
+        assert hc.dist is not None
+        np.testing.assert_array_equal(hc.dist, self.dist_pearson)
+
+    def test_linkage_property(self):
+        hc = HC(X=self.X, codependence_method="pearson-correlation")
+        linkage = hc.linkage
+        assert hc._linkage is not None
+        np.testing.assert_array_equal(linkage, hc._linkage)
 
 
 def cor_block_diagonal(
@@ -113,8 +132,8 @@ def test_block_diagonal(corr_to_dist_method, metric):
 
 
 def test_optimal_ncluster_unsupported_metric():
-    corr=np.random.rand(10, 10)
-    corr = np.triu(corr) + np.triu(corr).T # make it symmetric
+    corr = np.random.rand(10, 10)
+    corr = np.triu(corr) + np.triu(corr).T  # make it symmetric
     np.fill_diagonal(corr, 1)
     hc = HC(corr=corr, codependence_method="pearson-correlation")
     with pytest.raises(ValueError):
@@ -123,14 +142,13 @@ def test_optimal_ncluster_unsupported_metric():
 
 def test_not_enough_input_for_clustering():
     with pytest.raises(ValueError):
-        hc = HC(X=None, corr=None, dist = None, codependence_method="pearson-correlation")
+        hc = HC(X=None, corr=None, dist=None, codependence_method="pearson-correlation")
     with pytest.raises(ValueError):
         hc = HC()
     with pytest.raises(ValueError):
-        hc = HC(X=None, corr=None, dist = None, codependence_method="var_info")
+        hc = HC(X=None, corr=None, dist=None, codependence_method="var_info")
 
 
 def test_invalid_codependence_method():
     with pytest.raises(ValueError):
-        hc = HC(X=None, corr=None, dist = None, codependence_method="unsupported")
-
+        hc = HC(X=None, corr=None, dist=None, codependence_method="unsupported")
