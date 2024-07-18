@@ -92,3 +92,9 @@ def test_pandas_silh_tstats(simple_dist, simple_labels):
     tstat_pd = silhouette_tstat(dist, labels)
     assert isinstance(tstat_pd, float)
     assert np.isclose(tstat_pd, tstat_np, atol=1e-5)
+
+
+def test_gap_random_seed(simple_dist, simple_labels):
+    gap1, gap_std_1 = gap_statistic(simple_dist, simple_labels, nb=1000, random_state=0)
+    gap2, gap_std_2 = gap_statistic(simple_dist, simple_labels, nb=1000, random_state=10)
+    assert np.isclose(gap1, gap2, atol=1e-2)

@@ -68,6 +68,21 @@ class TestHC(unittest.TestCase):
         self.assertEqual(linkage.shape[0], self.X.shape[1] - 1)
         self.assertEqual(linkage.shape[1], 4)
 
+    def test_optimal_ordering(self):
+        hc = HC(X=self.X, codependence_method="pearson-correlation", optimal_ordering=False)
+        self.assertEqual(hc.optimal_ordering, False)
+        linkage = hc.linkage
+        self.assertIsInstance(linkage, np.ndarray)
+        self.assertEqual(linkage.shape[0], self.X.shape[1] - 1)
+        self.assertEqual(linkage.shape[1], 4)
+        hc = HC(X=self.X, codependence_method="pearson-correlation", optimal_ordering=True)
+        self.assertEqual(hc.optimal_ordering, True)
+        linkage = hc.linkage
+        self.assertIsInstance(linkage, np.ndarray)
+        self.assertEqual(linkage.shape[0], self.X.shape[1] - 1)
+        self.assertEqual(linkage.shape[1], 4)
+
+
 
 def cor_block_diagonal(
     block_sizes: Union[list, np.ndarray] = [60, 60, 60, 60],
@@ -95,3 +110,27 @@ def test_block_diagonal(corr_to_dist_method, metric):
     assert isinstance(optimal_nclust, int)
     assert optimal_nclust > 0 and optimal_nclust <= 10
     assert optimal_nclust == 4
+
+
+def test_optimal_ncluster_unsupported_metric():
+    corr=np.random.rand(10, 10)
+    corr = np.triu(corr) + np.triu(corr).T # make it symmetric
+    np.fill_diagonal(corr, 1)
+    hc = HC(corr=corr, codependence_method="pearson-correlation")
+    with pytest.raises(ValueError):
+        hc.get_optimal_nclusters(max_clust=10, metric="unsupported", nb=1000)
+
+
+def test_not_enough_input_for_clustering():
+    with pytest.raises(ValueError):
+        hc = HC(X=None, corr=None, dist = None, codependence_method="pearson-correlation")
+    with pytest.raises(ValueError):
+        hc = HC()
+    with pytest.raises(ValueError):
+        hc = HC(X=None, corr=None, dist = None, codependence_method="var_info")
+
+
+def test_invalid_codependence_method():
+    with pytest.raises(ValueError):
+        hc = HC(X=None, corr=None, dist = None, codependence_method="unsupported")
+

@@ -79,6 +79,7 @@ class HC:
         self.corr_to_dist_method = corr_to_dist_method
         self.linkage_method = linkage_method
         self._linkage = None
+        self.optimal_ordering = optimal_ordering
 
         if self.dist is None:
             self._compute_distance_matrix()
@@ -102,6 +103,10 @@ class HC:
                 raise ValueError("X must be provided to compute the distance matrix.")
             else:
                 self.dist: DataFrameOrArray = get_info_distance_matrix(X=self.X, method="var_info")
+        else:
+            raise ValueError(
+                f"Codependence method {self.codependence_method} is not supported. Choose between 'pearson-correlation', 'spearman-correlation', 'var_info'."
+            )
 
     @property
     def linkage(self) -> np.ndarray:
@@ -110,7 +115,7 @@ class HC:
             self._linkage = hierarchy.linkage(
                 y=squareform(self.dist),
                 method=self.linkage_method,
-                optimal_ordering=True,
+                optimal_ordering=self.optimal_ordering,
             )
         return self._linkage
 
