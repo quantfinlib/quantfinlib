@@ -85,7 +85,7 @@ def multivar_normal_X(input_cov):
 @pytest.mark.parametrize("corr_method, corr_to_dist_method", list(product(CORR_METHOD, CORR_TO_DIST_METHOD)))
 def test_corr_distance_matrix(corr_method, corr_to_dist_method, multivar_normal_X, input_cov):
     df = pd.DataFrame(multivar_normal_X)
-    dist_matrix = get_corr_distance_matrix(df, method=corr_to_dist_method, corr_method=corr_method).values
+    dist_matrix = get_corr_distance_matrix(df, corr_to_dist_method=corr_to_dist_method, corr_method=corr_method).values
     assert dist_matrix.shape == input_cov.shape
     assert np.allclose(dist_matrix, dist_matrix.T), "Expected distance matrix to be symmetric."
     assert np.all(dist_matrix >= 0), "Expected all elements of the distance matrix to be non-negative."
@@ -141,7 +141,7 @@ def test_check_in_out_type(dtype):
     X = np.random.multivariate_normal([0, 0], [[1, 0.5], [0.5, 1]], 10000)
     if dtype == "pandas dataframe":
         X = pd.DataFrame(X)
-    dist_corr_matrix = get_corr_distance_matrix(X, method="angular", corr_method="pearson")
+    dist_corr_matrix = get_corr_distance_matrix(X, corr_to_dist_method="angular", corr_method="pearson")
     dist_info_matrix = get_info_distance_matrix(X, method="mutual_info")
     assert isinstance(dist_corr_matrix, dtype_map[dtype]), f"Expected output to be a {dtype}."
     assert isinstance(dist_info_matrix, dtype_map[dtype]), f"Expected output to be a {dtype}."
@@ -159,7 +159,7 @@ def corr_transformer(corr):
 @pytest.mark.parametrize("corr_method, corr_to_dist_method", list(product(CORR_METHOD, CORR_TO_DIST_METHOD)))
 def test_dist_with_corr_transformer(corr_method, corr_to_dist_method, multivar_normal_X, input_cov):
     dist_matrix = get_corr_distance_matrix(
-        multivar_normal_X, method=corr_to_dist_method, corr_method=corr_method, corr_transformer=corr_transformer
+        multivar_normal_X, corr_to_dist_method=corr_to_dist_method, corr_method=corr_method, corr_transformer=corr_transformer
     )
     assert np.allclose(dist_matrix, dist_matrix.T), "Expected distance matrix to be symmetric."
     assert np.all(dist_matrix >= 0), "Expected all elements of the distance matrix to be non-negative."
@@ -179,15 +179,15 @@ def test_wrong_input_shape():
     X = np.random.normal(0, 1, (1000, 2, 2))
 
     with pytest.raises(ValueError):
-        get_corr_distance_matrix(X, method="angular", corr_method="pearson")
+        get_corr_distance_matrix(X, corr_to_dist_method="angular", corr_method="pearson")
     with pytest.raises(ValueError):
         get_info_distance_matrix(X, method="mutual_info")
 
 
 def test_wrong_corr_to_dist_method():
     X = np.random.normal(0, 1, (1000, 2))
-    with pytest.raises(AssertionError, match="Invalid method. Must be one of angular, abs_angular, squared_angular."):
-        get_corr_distance_matrix(X, method="wrong", corr_method="pearson")
+    with pytest.raises(AssertionError, match="Invalid corr_to_dist method. Must be one of angular, abs_angular, squared_angular."):
+        get_corr_distance_matrix(X, corr_to_dist_method="wrong", corr_method="pearson")
 
 
 def test_wrong_info_method():
@@ -199,4 +199,4 @@ def test_wrong_info_method():
 def test_wrong_corr_method():
     X = np.random.normal(0, 1, (1000, 2))
     with pytest.raises(AssertionError, match="Invalid correlation method. Must be pearson or spearman."):
-        get_corr_distance_matrix(X, method="angular", corr_method="wrong")
+        get_corr_distance_matrix(X, corr_to_dist_method="angular", corr_method="wrong")

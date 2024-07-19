@@ -10,13 +10,16 @@ from scipy.stats import entropy
 from quantfinlib.util import validate_series_or_1Darray, SeriesOrArray
 
 
-def _get_nb_bins_from_xy(x: np.ndarray, y: np.ndarray) -> int:
+def _get_nb_bins_from_xy(x: np.ndarray, y: Optional[np.ndarray] = None) -> int:
     """Calculate number of bins for discretizing a pair of variables x & y."""
-    corr = np.corrcoef(x, y)[0, 1]
-    if corr == 1:
+    if y is None:
         return _get_optimal_nb_bins(x.shape[0], None)
     else:
-        return _get_optimal_nb_bins(x.shape[0], corr=np.corrcoef(x, y)[0, 1])
+        corr = np.corrcoef(x, y)[0, 1]
+        if corr == 1 or abs(corr - 1) < 1e-5:
+            return _get_optimal_nb_bins(x.shape[0], None)
+        else:
+            return _get_optimal_nb_bins(x.shape[0], corr=np.corrcoef(x, y)[0, 1])
 
 
 def _get_optimal_nb_bins(n_obs: int, corr: Optional[float] = None) -> int:

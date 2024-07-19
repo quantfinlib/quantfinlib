@@ -222,6 +222,8 @@ def test_get_nb_bins_from_xy():
     calculated_nbins = _get_nb_bins_from_xy(x, x)
     expected_nbins = _get_optimal_nb_bins(x.shape[0])
     assert calculated_nbins == expected_nbins, "expected number of bins to be optimal number of bins."
+    calculated_nbins_without_y_arg = _get_nb_bins_from_xy(x)
+    assert calculated_nbins_without_y_arg == expected_nbins, "expected number of bins to be optimal number of bins."
 
 
 def test_univariate_get_optimal_nb_bins():
