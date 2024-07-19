@@ -98,9 +98,11 @@ class TestHC(unittest.TestCase):
 
     def test_linkage_property(self):
         hc = HC(X=self.X, codependence_method="pearson-correlation")
+        assert hc._linkage is None
         linkage = hc.linkage
         assert hc._linkage is not None
         np.testing.assert_array_equal(linkage, hc._linkage)
+    
 
 
 def cor_block_diagonal(

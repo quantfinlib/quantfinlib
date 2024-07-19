@@ -1,9 +1,17 @@
-from quantfinlib.util._validate import validate_series_or_1Darray, validate_frame_or_2Darray
+from quantfinlib.util._validate import (
+    validate_series_or_1Darray,
+    validate_frame_or_2Darray,
+    _check_dtype_frame_or_array,
+    _check_dtype_series_or_array,
+    _check_ndim_shape_1Darray,
+    _check_ndim_shape_2Darray,
+)
 
 import pytest
 
 import numpy as np
 import pandas as pd
+
 
 def test_validate_series_or_1Darray():
     @validate_series_or_1Darray("x")
@@ -45,7 +53,7 @@ def test_validate_frame_or_2Darray():
     assert np.array_equal(test_func(X=X), X)  # Test keyword arg
 
     with pytest.raises(ValueError):
-        test_func(1)  
+        test_func(1)
         test_func(X=1)
 
     with pytest.raises(ValueError):
@@ -121,3 +129,67 @@ def test_validate_frame_or_2Darray_with_multiple_inputs():
     with pytest.raises(ValueError):
         test_func(X, pd.Series([5, 6, 7]))
         test_func(X=X, Y=pd.Series([5, 6, 7]))
+
+
+def test_check_dtype_series_or_array():
+    x = [1, 2, 3]
+    with pytest.raises(ValueError):
+        _check_dtype_series_or_array(x)
+
+    x = pd.DataFrame({"a": [1, 2], "b": [3, 4]})
+    with pytest.raises(ValueError):
+        _check_dtype_series_or_array(x)
+
+    x = np.array([1, 2, 3])
+    _check_dtype_series_or_array(x)
+
+    x = pd.Series([1, 2, 3])
+    _check_dtype_series_or_array(x)
+
+
+def test_check_ndim_shape_1Darray():
+    x = np.array([[1, 2], [3, 4]])
+    with pytest.raises(ValueError):
+        _check_ndim_shape_1Darray(x)
+
+    x = pd.DataFrame({"a": [1, 2], "b": [3, 4]})
+    with pytest.raises(ValueError):
+        _check_ndim_shape_1Darray(x)
+
+    x = np.array([1, 2, 3])
+    _check_ndim_shape_1Darray(x)
+
+    x = pd.Series([1, 2, 3])
+    _check_ndim_shape_1Darray(x)
+
+
+def test_check_dtype_frame_or_array():
+    X = [1, 2, 3]
+    with pytest.raises(ValueError):
+        _check_dtype_frame_or_array(X)
+
+    X = pd.Series([1, 2, 3])
+    with pytest.raises(ValueError):
+        _check_dtype_frame_or_array(X)
+
+    X = np.array([1, 2, 3])
+    _check_dtype_frame_or_array(X)
+
+    X = pd.DataFrame({"a": [1, 2], "b": [3, 4]})
+    _check_dtype_frame_or_array(X)
+
+
+def test_check_ndim_shape_2Darray():
+    X = np.array([1, 2, 3])
+    with pytest.raises(ValueError):
+        _check_ndim_shape_2Darray(X)
+
+    X = pd.Series([1, 2, 3])
+    with pytest.raises(ValueError):
+        _check_ndim_shape_2Darray(X)
+
+    X = np.array([[1, 2], [3, 4]])
+    _check_ndim_shape_2Darray(X)
+
+    X = pd.DataFrame({"a": [1, 2], "b": [3, 4]})
+    _check_ndim_shape_2Darray(X)
