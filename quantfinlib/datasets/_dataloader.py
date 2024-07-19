@@ -18,20 +18,35 @@ def _load_pickle_to_df(filename: Path) -> pd.DataFrame:
 
 
 def load_vix() -> pd.DataFrame:
-    """Load the VIX Index daily dataset with Open, Close,High, and Low index values.
+    """Load the VIX Index dataset.
+    The dataset provides daily Open, Close, High, and Low values for the index.
+    The VIX index is a measurement of market volatility and is often referred to as the "fear index".
+    It is calculated using the implied volatility of options on the S&P 500 index.
+    The VIX index provides insight into investor expectations for future market volatility.
+
     Source: https://www.cboe.com/tradable_products/vix/vix_historical_data/ (updated daily)
 
-    Parameters
-    ----------
+    |     DATE     | OPEN  |  HIGH  |  LOW  | CLOSE |
+    |--------------|-------|--------|-------|-------|
+    | 1990-01-02   | 17.24 | 17.24  | 17.24 | 17.24 |
+    | 1990-01-03   | 18.19 | 18.19  | 18.19 | 18.19 |
+     ...
 
     Returns
     -------
     pd.DataFrame
         The VIX index levels, 1 row per day, with columns: OPEN, HIGH, LOW, CLOSE
 
+
+    Parameters
+    ----------
+
+
     Examples
     --------
+    >>> from quantfinlib.datasets import load_vix
     >>> df_vix = load_vix()
+    >>> print(df_vix.head())
     """
 
     if not VIX_INDEX_LOCAL_PATH.exists():
@@ -49,24 +64,31 @@ def load_vix() -> pd.DataFrame:
 
 
 def load_treasury_rates() -> pd.DataFrame:
-    """Load the daily Treasury rates dataset with various maturities.
+    """Load the daily treasury rates dataset.
+    The dataset provides a snapshot of historical daily interest rates for various U.S. Treasury bond maturities.
+
     Source:https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve
+
+    DATE        | 1m  | 2m  | 3m  | 4m  | 6m  | 1y  | 2y  | 3y  | 5y  | 7y  | 10y | 20y | 30y |
+    ------------|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|
+    1990-01-02  | NaN | NaN | 7.83| NaN | 7.89| 7.81| 7.87| 7.90| 7.87| 7.98| 7.94| NaN | 8.00|
+    1990-01-03  | NaN | NaN | 7.89| NaN | 7.94| 7.85| 7.94| 7.96| 7.92| 8.04| 7.99| NaN | 8.04|
+    ...
 
     Returns
     -------
         pd.DataFrame
-            The daily Treasury rates dataset, 1 row per day,
-            with columns for different maturities:
-            1m, 2m, 3m, 4m, 6m, 1y, 2y, 3y, 5y, 7y, 10y, 20y, 30y
+            1 row per day, columns: 1m, 2m, 3m, 4m, 6m, 1y, 2y, 3y, 5y, 7y, 10y, 20y, 30y
+
+    Parameters
+    ----------
+
 
     Example
     -------
-    >>> df_treasury_rates = load_treasury_rates()
-
-    Raises
-    ------
-    FileNotFoundError
-        If the dataset file does not exist at the specified path.
+    >>> from quantfinlib.datasets import load_treasury_rates
+    >>> df = load_treasury_rates()
+    >>> print(df.head())
     """
     if not TREASURY_RATES_LOCAL_PATH.exists():
         raise FileNotFoundError(
@@ -107,8 +129,17 @@ def load_treasury_rates() -> pd.DataFrame:
 
 
 def load_equity_indices() -> pd.DataFrame:
-    """Load the multi-index dataset with daily Close prices for various indices.
+    """Load the multi-index equity dataset.
+    The dataset contains daily Close prices for 30+ equity indices.
+
     Source: https://www.kaggle.com/datasets/mukhazarahmad/worldwide-stock-market-indices-data
+
+    |     DATE     |    GSPC    |    IXIC    |    DJI    |    NYA    |   XAX BUK100P   |...
+    |--------------|------------|------------|-----------|-----------|-----------------|
+    | 2000-01-03   | 1455.21997 | 4131.14990 | 11357.509 | 6762.1098 | 868.7399902     |
+    | 2000-01-04   | 1399.42004 | 3901.68994 | 10997.929 | 6543.7597 | 849.6500244     |
+    ...
+
 
     Returns
     -------
@@ -149,9 +180,11 @@ def load_equity_indices() -> pd.DataFrame:
         'CASE30': EGX30 Index (Egypt)
         'JN0U.JO': FTSE/JSE Africa Top 40 Index (South Africa)
 
-    Examplr
+    Example
     -------
-    >>> df_indices = load_equity_indices()
+    >>> from quantfinlib.datasets import load_equity_indices
+    >>> df = load_equity_indices()
+    >>> print(df.head())
     """
     if not MULTI_INDEX_LOCAL_PATH.exists():
         raise FileNotFoundError(
