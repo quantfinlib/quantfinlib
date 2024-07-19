@@ -162,6 +162,14 @@ def test_check_ndim_shape_1Darray():
     x = pd.Series([1, 2, 3])
     _check_ndim_shape_1Darray(x)
 
+    x = pd.Series([1])
+    with pytest.raises(ValueError):
+        _check_ndim_shape_1Darray(x)
+
+    x = np.array([1])
+    with pytest.raises(ValueError):
+        _check_ndim_shape_1Darray(x)
+
 
 def test_check_dtype_frame_or_array():
     X = [1, 2, 3]
@@ -193,3 +201,7 @@ def test_check_ndim_shape_2Darray():
 
     X = pd.DataFrame({"a": [1, 2], "b": [3, 4]})
     _check_ndim_shape_2Darray(X)
+
+    X = np.array([[1], [2], [3]])
+    with pytest.raises(ValueError):
+        _check_ndim_shape_2Darray(X)

@@ -102,7 +102,30 @@ class TestHC(unittest.TestCase):
         linkage = hc.linkage
         assert hc._linkage is not None
         np.testing.assert_array_equal(linkage, hc._linkage)
+        hc._linkage = None
+        linkage = hc.linkage
+        assert hc._linkage is not None
+        np.testing.assert_array_equal(linkage, hc._linkage)
     
+    def test_linkage_method(self):
+        hc = HC(X=self.X, codependence_method="pearson-correlation", linkage_method="single")
+        linkage = hc.linkage
+        self.assertIsInstance(linkage, np.ndarray)
+        self.assertEqual(linkage.shape[0], self.X.shape[1] - 1)
+        self.assertEqual(linkage.shape[1], 4)
+        hc = HC(X=self.X, codependence_method="pearson-correlation", linkage_method="complete")
+        linkage = hc.linkage
+        self.assertIsInstance(linkage, np.ndarray)
+        self.assertEqual(linkage.shape[0], self.X.shape[1] - 1)
+        self.assertEqual(linkage.shape[1], 4)
+
+    def test_dist_input(self):
+        hc = HC(dist=self.dist_pearson, codependence_method="pearson-correlation")
+        np.testing.assert_array_equal(hc.dist, self.dist_pearson)
+        linkage = hc.linkage
+        self.assertIsInstance(linkage, np.ndarray)
+        self.assertEqual(linkage.shape[0], self.X.shape[1] - 1)
+        self.assertEqual(linkage.shape[1], 4)
 
 
 def cor_block_diagonal(

@@ -74,15 +74,15 @@ class HC:
 
         self.X = X
         self.corr = corr
-        self.dist = dist
         self.codependence_method = codependence_method
         self.corr_to_dist_method = corr_to_dist_method
         self.linkage_method = linkage_method
-        self._linkage = None
         self.optimal_ordering = optimal_ordering
-
-        if self.dist is None:
+        if dist is None:
             self._compute_distance_matrix()
+        else:
+            self.dist = dist
+        self._linkage = None
 
     def _compute_distance_matrix(self):
         """Compute the distance matrix."""
