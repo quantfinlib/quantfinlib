@@ -70,11 +70,6 @@ def test_cor_block_diagonal_block_size_type():
     check_block(cor, 10, 20, 0.3)
 
 
-# *********************************************************************************************************************
-# *********************************************************************************************************************
-# *********************************************************************************************************************
-
-
 def test_cov_to_cor_default():
     cov = np.array([[4, 2], [2, 3]])
     expected_cor = np.array([[1.0, 0.57735027], [0.57735027, 1.0]])
@@ -690,6 +685,16 @@ def test_cor_denoise_large_matrix():
     np.random.seed(0)
     cor = np.corrcoef(np.random.randn(100, 50), rowvar=False)
     num_timesteps = 200
+    denoised_cor, _, info = _cor_denoise(cor, num_timesteps)
+
+    assert denoised_cor.shape == cor.shape, "Denoised correlation matrix should have the same shape as the input."
+    assert "fitted" in info, "The info dictionary should contain the 'fitted' key."
+
+
+def test_cor_denoise_large_matrix_low_num_time_steps():
+    np.random.seed(0)
+    cor = np.corrcoef(np.random.randn(100, 50), rowvar=False)
+    num_timesteps = 10
     denoised_cor, _, info = _cor_denoise(cor, num_timesteps)
 
     assert denoised_cor.shape == cor.shape, "Denoised correlation matrix should have the same shape as the input."
