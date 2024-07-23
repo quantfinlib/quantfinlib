@@ -371,11 +371,15 @@ def _eigen_values_denoise(
     """
     info = {}
     info["fitted"] = False
-
+    num_assets = len(eigen_values)
+    if num_assets > num_timesteps:
+        eigen_values[-(num_assets - num_timesteps):] = 0.0
     if k is None:
         # Fit the Marchenko Pastur distribution to the eigenvalues and find the noise-var shape parameter,
-        num_assets = len(eigen_values)
-        best_var = _marchenko_pastur_fit(num_timesteps, num_assets, eigen_values)
+        if num_assets > num_timesteps:
+            best_var = _marchenko_pastur_fit(num_timesteps, num_assets, eigen_values[:num_assets - num_timesteps])
+        else:
+            best_var = _marchenko_pastur_fit(num_timesteps, num_assets, eigen_values)
         _, max_noise_eig_val = _marcenko_pastur_support(best_var, num_timesteps, num_assets)
         k = np.sum(1 * (eigen_values >= max_noise_eig_val))
 
@@ -427,7 +431,3 @@ def _random_cor(dim: int = 3) -> np.ndarray:
     cov = _random_cov(dim=dim)
     cor, std = _cov_to_cor(cov)
     return cor
-
-
-if __name__ == "__main__":
-    ...
