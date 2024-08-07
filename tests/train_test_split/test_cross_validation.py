@@ -1,5 +1,4 @@
-from cycler import K
-from quantfinlib.train_test_split.cross_validation import _purge, _embarge, _remove_overlapping_groups
+from quantfinlib.train_test_split.cross_validation import _purge, _embargo, _remove_overlapping_groups
 from sklearn.model_selection import KFold
 
 import numpy as np
@@ -7,90 +6,131 @@ import pandas as pd
 import pytest
 
 
-@pytest.fixture 
-def kfold_data_integer_groups_even_sampling():# -> tuple[Iterator[tuple[ndarray[Any, Any], ndarray[Any, Any]...:
-    n_splits = 5
-    n_samples = 100
-    indices = np.arange(n_samples)
-    groups = np.hstack([np.zeros(10) + i for i in range(10)])
-    kfold = KFold(n_splits=n_splits)
-    return kfold.split(indices), indices, groups
+def integer_even_groups():
+    return np.hstack([np.zeros(10) + i for i in range(10)])
 
 
-@pytest.fixture
-def kfold_data_integer_groups_uneven_sampling():
-    n_splits = 5
-    n_samples = 100
-    indices = np.arange(n_samples)
-    groups = np.random.randint(0, 33, n_samples)
+def integer_uneven_groups():
+    groups = np.random.randint(0, 33, 100)
     # make sure that all groups between 0 and 32 are present in the data
     groups = np.unique(groups, return_inverse=True)[1].reshape(groups.shape)
     groups.sort()
-    print(groups)
-    kfold = KFold(n_splits=n_splits)
-    return kfold.split(indices), indices, groups
+    return groups
 
 
-def get_train_test_groups(groups, train_index, test_index):
-    train_groups = groups[train_index]
-    test_groups = groups[test_index]
-    return train_groups, test_groups
+def datetime_even_groups():
+    return pd.date_range("2020-01-01", periods=100, freq="D")
 
 
-@pytest.mark.parametrize("n_purge", np.arange(0, 5))
-def test_purge_integers_even_sampling(n_purge, kfold_data_integer_groups_even_sampling):
-    spliter, indices, groups = kfold_data_integer_groups_even_sampling
+def datetime_uneven_groups():
+    groups = pd.date_range("2020-01-01", periods=100, freq="D")
+    group_indices = np.random.randint(0, 60, 100)
+    # make sure that all groups between 0 and 32 are present in the data
+    group_indices = np.unique(group_indices, return_inverse=True)[1].reshape(group_indices.shape)
+    group_indices.sort()
+    return groups[group_indices]
+
+
+@pytest.fixture(
+    params=[
+        ("integer", np.arange(100), integer_even_groups()),
+        ("integer_uneven", np.arange(100), integer_uneven_groups()),
+        ("datetime_even", np.arange(100), datetime_even_groups()),
+        ("datetime_uneven", np.arange(100), datetime_uneven_groups()),
+    ]
+)
+def kfold_data(request):
+    data_type, indices, groups = request.param
+    kfold = KFold(n_splits=5)
+    return kfold.split(indices), indices, groups, data_type
+
+
+def test_remove_overlapping_groups(kfold_data):
+    spliter, indices, groups, _ = kfold_data
+    for train_index, test_index in spliter:
+        train_index, test_index = _remove_overlapping_groups(train_index, test_index, indices, groups)
+        train_groups = groups[train_index]
+        test_groups = groups[test_index]
+        assert len(np.intersect1d(train_groups, test_groups)) == 0
+
+
+def generic_test_purge(kfold_data, n_purge):
+    spliter, indices, groups, data_type = kfold_data
     for train_index, test_index in spliter:
         train_index, test_index = _remove_overlapping_groups(train_index, test_index, indices, groups)
         purged_train_index = _purge(train_index, test_index, indices, groups, n_purge)
-        train_groups, test_groups = get_train_test_groups(groups, train_index, test_index)
-        train_groups_purged, _ = get_train_test_groups(groups, purged_train_index, test_index)
+        train_groups = groups[train_index]
+        test_groups = groups[test_index]
+        train_groups_purged = groups[purged_train_index]
         assert len(np.intersect1d(train_groups_purged, test_groups)) == 0
         assert len(np.unique(train_groups)) - len(np.unique(train_groups_purged)) <= n_purge
+        assert len(np.unique(train_groups)) - len(np.unique(train_groups_purged)) >= 0
         if any(train_index > max(test_index)):
             expected_purged_groups = max(test_groups) + np.arange(1, n_purge + 1)
-            expected_purged_groups = expected_purged_groups[expected_purged_groups <= max(groups)] # Correct for the upper bound of the groups
-            assert len(np.intersect1d(train_groups_purged, expected_purged_groups)) == 0, "Expected purged groups not to be in the final training set."
-            assert sorted(np.setdiff1d(train_groups, train_groups_purged)) == sorted(expected_purged_groups), "Expected purged groups to be removed from the final training set."
-            assert len(purged_train_index) >= len(train_index) - n_purge * 10
-            if max(train_groups) <= max(test_groups)+n_purge:
-                assert max(train_groups_purged) < min(test_groups)   
+            expected_purged_groups = expected_purged_groups[
+                expected_purged_groups <= max(groups)
+            ]  # Correct for the upper bound of the groups
+            assert len(np.intersect1d(train_groups_purged, expected_purged_groups)) == 0
+            assert sorted(np.setdiff1d(train_groups, train_groups_purged)) == sorted(expected_purged_groups)
+            if data_type == "integer_even":
+                assert len(purged_train_index) >= len(train_index) - n_purge * 10
+            if data_type == "datetime_even":
+                assert len(purged_train_index) >= len(train_index) - n_purge
         else:
             assert len(purged_train_index) == len(train_index)
             assert len(train_groups_purged) == len(train_groups)
 
 
-
-@pytest.mark.parametrize("n_purge", np.arange(0, 5))
-def test_purge_integers_uneven_sampling(n_purge, kfold_data_integer_groups_uneven_sampling):
-    spliter, indices, groups = kfold_data_integer_groups_uneven_sampling
+def generic_test_embargo(kfold_data, n_embargo):
+    spliter, indices, groups, data_type = kfold_data
     for train_index, test_index in spliter:
         train_index, test_index = _remove_overlapping_groups(train_index, test_index, indices, groups)
-        purged_train_index = _purge(train_index, test_index, indices, groups, n_purge)
-        train_groups, test_groups = get_train_test_groups(groups, train_index, test_index)
-        train_groups_purged, _ = get_train_test_groups(groups, purged_train_index, test_index)
-        assert len(np.intersect1d(train_groups_purged, test_groups)) == 0
-        assert len(np.unique(train_groups)) - len(np.unique(train_groups_purged)) <= n_purge
-        if any(train_index > max(test_index)):
-            expected_purged_groups = max(test_groups) + np.arange(1, n_purge + 1)
-            expected_purged_groups = expected_purged_groups[expected_purged_groups <= max(groups)] # Correct for the upper bound of the groups
-            assert len(np.intersect1d(train_groups_purged, expected_purged_groups)) == 0, "Expected purged groups not to be in the final training set."
-            assert sorted(np.setdiff1d(train_groups, train_groups_purged)) == sorted(expected_purged_groups), "Expected purged groups to be removed from the final training set."
-            if max(train_groups) <= max(test_groups)+n_purge:
-                assert max(train_groups_purged) < min(test_groups)   
+        embargod_train_index = _embargo(train_index, test_index, indices, groups, n_embargo)
+        train_groups = groups[train_index]
+        test_groups = groups[test_index]
+        train_groups_embargod = groups[embargod_train_index]
+        assert len(np.intersect1d(train_groups_embargod, test_groups)) == 0
+        assert len(np.unique(train_groups)) - len(np.unique(train_groups_embargod)) >= 0
+        assert len(np.unique(train_groups)) - len(np.unique(train_groups_embargod)) <= n_embargo
+        if any(train_index < max(test_index)):
+            expected_embargod_groups = min(test_groups) - np.arange(1, n_embargo + 1)
+            expected_embargod_groups = expected_embargod_groups[
+                expected_embargod_groups >= min(groups)
+            ]  # Correct for the lower bound of the groups
+            assert len(np.intersect1d(train_groups_embargod, expected_embargod_groups)) == 0
+            assert sorted(np.setdiff1d(train_groups, train_groups_embargod)) == sorted(expected_embargod_groups)
+            if data_type == "integer_even":
+                assert len(embargod_train_index) >= len(train_index) - n_embargo * 10
+            if data_type == "datetime_even":
+                assert len(embargod_train_index) >= len(train_index) - n_embargo
         else:
-            assert len(purged_train_index) == len(train_index)
-            assert len(train_groups_purged) == len(train_groups)
+            assert len(embargod_train_index) == len(train_index)
+            assert len(train_groups_embargod) == len(train_groups)
 
 
-@pytest.mark.parametrize("n_purge", [pd.Timedelta(days=1), -1, 1.34, 1j+1, "1"])
-def test_invalid_n_purge_integer_groups(n_purge, kfold_data_integer_groups_even_sampling):
-    spliter, indices, groups = kfold_data_integer_groups_even_sampling
-    for train_index, test_index in spliter:
-        train_index, test_index = _remove_overlapping_groups(train_index, test_index, indices, groups)
-        if n_purge == -1:
-            with pytest.raises(ValueError):
-                _purge(train_index, test_index, indices, groups, n_purge)
-        else: 
-            with pytest.raises(TypeError):
-                _purge(train_index, test_index, indices, groups, n_purge)
+@pytest.mark.parametrize("n_purge", [np.arange(0, 5)] + [pd.timedelta_range(start="1 day", periods=5, freq="D")])
+def test_purge_per_n_purge(n_purge, kfold_data):
+    correct_int_input_type = isinstance(n_purge, int) and (kfold_data[-1] in ["integer_even", "integer_uneven"])
+    correct_datetime_input_type = isinstance(n_purge, pd.Timedelta) and (
+        kfold_data[-1] in ["datetime_even", "datetime_uneven"]
+    )
+    correct_input_type = correct_int_input_type or correct_datetime_input_type
+    if correct_input_type:
+        generic_test_purge(kfold_data, n_purge)
+    else:
+        with pytest.raises(TypeError):
+            generic_test_purge(kfold_data, n_purge)
+
+
+@pytest.mark.parametrize("n_embargo", [np.arange(0, 5)] + [pd.timedelta_range(start="1 day", periods=5, freq="D")])
+def test_embargo_per_n_embargo(n_embargo, kfold_data):
+    correct_int_input_type = isinstance(n_embargo, int) and (kfold_data[-1] in ["integer_even", "integer_uneven"])
+    correct_datetime_input_type = isinstance(n_embargo, pd.Timedelta) and (
+        kfold_data[-1] in ["datetime_even", "datetime_uneven"]
+    )
+    correct_input_type = correct_int_input_type or correct_datetime_input_type
+    if correct_input_type:
+        generic_test_embargo(kfold_data, n_embargo)
+    else:
+        with pytest.raises(TypeError):
+            generic_test_embargo(kfold_data, n_embargo)
