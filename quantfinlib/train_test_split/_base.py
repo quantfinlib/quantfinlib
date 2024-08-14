@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from numbers import Integral
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -13,7 +13,7 @@ def _validate_purge_embargo_inputs(
     test_index: np.ndarray,
     indices: np.ndarray,
     groups: Union[np.ndarray, pd.DatetimeIndex],
-    delta_t: Union[int, pd.Timedelta],
+    delta_t: Union[Integral, pd.Timedelta],
 ) -> None:  # pragma: no cover
     """Validate the inputs for the `purge` and `embargo` functions.
 
@@ -53,7 +53,7 @@ def _purge(
     test_index: np.ndarray,
     indices: np.ndarray,
     groups: Union[np.ndarray, pd.DatetimeIndex],
-    n_purge: Union[int, pd.Timedelta],
+    n_purge: Union[Integral, pd.Timedelta],
 ) -> np.ndarray:
     """Remove training indices whose groups fall within `n_purge` from the last test group.
 
@@ -86,7 +86,7 @@ def _embargo(
     test_index: np.ndarray,
     indices: np.ndarray,
     groups: Union[np.ndarray, pd.DatetimeIndex],
-    n_embargo: Union[int, pd.Timedelta],
+    n_embargo: Union[Integral, pd.Timedelta],
 ) -> np.ndarray:
     """Remove training indices whose groups fall within `n_embargo` from the first test group.
 
@@ -117,14 +117,14 @@ def _embargo(
 class _BaseCV(ABC):
     """Base class for cross-validation splitters."""
 
-    def __init__(self, n_embargo: Union[int, pd.Timedelta], n_purge: Union[int, pd.Timedelta]) -> None:
-        if not isinstance(n_embargo, (int, pd.Timedelta)):
+    def __init__(self, n_embargo: Union[Integral, pd.Timedelta], n_purge: Union[Integral, pd.Timedelta]) -> None:
+        if not isinstance(n_embargo, (Integral, pd.Timedelta)):
             raise TypeError("n_embargo must be an integer or a Timedelta")
-        if not isinstance(n_purge, (int, pd.Timedelta)):
+        if not isinstance(n_purge, (Integral, pd.Timedelta)):
             raise TypeError("n_purge must be an integer or a Timedelta")
-        if isinstance(n_embargo, int) and n_embargo < 0:
+        if isinstance(n_embargo, Integral) and n_embargo < 0:
             raise ValueError("n_embargo must be a non-negative integer")
-        if isinstance(n_purge, int) and n_purge < 0:
+        if isinstance(n_purge, Integral) and n_purge < 0:
             raise ValueError("n_purge must be a non-negative integer")
         if isinstance(n_embargo, pd.Timedelta) and n_embargo < pd.Timedelta(0):
             raise ValueError("n_embargo must be a non-negative Timedelta")
@@ -134,7 +134,7 @@ class _BaseCV(ABC):
         self.n_purge = n_purge
 
     @abstractmethod
-    def get_n_splits(self) -> int:
+    def get_n_splits(self) -> Any:
         """Return the number of splits."""
         raise NotImplementedError("Subclasses must implement get_n_split method")
 
@@ -144,7 +144,7 @@ class _BaseCV(ABC):
         X: Union[np.ndarray, pd.DataFrame],
         y: Optional[Union[np.ndarray, pd.Series]] = None,
         groups: Optional[Union[np.ndarray, pd.Series]] = None,
-    ):
+    ) -> Any:
         """Generate indices to split data into training and test sets."""
         if not isinstance(X, (np.ndarray, pd.DataFrame)):
             raise TypeError("X must be a numpy array or a DataFrame")
