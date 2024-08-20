@@ -6,10 +6,10 @@ from typing import Generator, Optional, Tuple, Union
 import numpy as np
 import pandas as pd
 
-from quantfinlib.train_test_split._base import _BaseCV, _embargo
+from quantfinlib.train_test_split._base import BaseCV, _embargo
 
 
-class WalkForward(_BaseCV):
+class WalkForward(BaseCV):
     """Walk forward train-test split."""
 
     def __init__(

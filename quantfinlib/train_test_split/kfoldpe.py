@@ -6,7 +6,7 @@ from typing import Generator, Optional, Tuple, Union
 import numpy as np
 import pandas as pd
 
-from quantfinlib.train_test_split._base import _BaseCV, _purge, _embargo
+from quantfinlib.train_test_split._base import BaseCV, _purge, _embargo
 
 
 def _validate_split_settings(n_samples: int, n_folds: int, n_embargo: int, n_purge: int) -> None:
@@ -24,7 +24,7 @@ def _validate_split_settings(n_samples: int, n_folds: int, n_embargo: int, n_pur
         raise ValueError(f"The sum {n_purge + n_embargo = } must be less than {max_train_size = }.")
 
 
-class TimeAwareKFold(_BaseCV):
+class TimeAwareKFold(BaseCV):
     """Purge-embargo K-Fold cross-validator.
 
     Provides train/test indices to split data in train/test sets. The training set is purged and embargoed.

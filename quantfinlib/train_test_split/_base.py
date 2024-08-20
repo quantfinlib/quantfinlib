@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 
 
+
 def _validate_purge_embargo_inputs(
     train_index: np.ndarray,
     test_index: np.ndarray,
@@ -74,10 +75,18 @@ def _purge(
     -------
     np.ndarra
         The purged training indices.
+    
+    Raises
+    ------
+    ValueError
+        If all training indices were purged
     """
     _validate_purge_embargo_inputs(train_index, test_index, indices, groups, n_purge)
     max_test_group = groups[test_index].max()
     purged_index = indices[(groups <= max_test_group + n_purge) & (groups > max_test_group)]
+    train_index = np.setdiff1d(train_index, purged_index)
+    if len(train_index) == 0:
+        raise ValueError("All training indices were purged. No training data available.")
     return np.setdiff1d(train_index, purged_index)
 
 
@@ -107,14 +116,22 @@ def _embargo(
     -------
     np.ndarray
         The embargoed training indices.
+
+    Raises
+    ------
+    ValueError
+        If all training indices were embargoed.
     """
     _validate_purge_embargo_inputs(train_index, test_index, indices, groups, n_embargo)
     min_test_group = groups[test_index].min()
     embargoed_index = indices[(groups >= min_test_group - n_embargo) & (groups < min_test_group)]
-    return np.setdiff1d(train_index, embargoed_index)
+    train_index = np.setdiff1d(train_index, embargoed_index)
+    if len(train_index) == 0:
+        raise ValueError("All training indices were embargoed. No training data available.")
+    return train_index
 
 
-class _BaseCV(ABC):
+class BaseCV(ABC):
     """Base class for cross-validation splitters."""
 
     def __init__(self, n_embargo: Union[Integral, pd.Timedelta], n_purge: Union[Integral, pd.Timedelta]) -> None:
