@@ -1,7 +1,5 @@
 from typing import Union
 
-from py import test
-
 from quantfinlib.train_test_split._base import BaseCV, _purge, _embargo
 from sklearn.model_selection import KFold
 
