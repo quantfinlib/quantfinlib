@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 
 
-
 def _validate_purge_embargo_inputs(
     train_index: np.ndarray,
     test_index: np.ndarray,
@@ -45,7 +44,8 @@ def _validate_purge_embargo_inputs(
             raise ValueError("groups must be sorted in ascending order")
     else:
         raise TypeError(
-            "delta_t must be an integer and groups must be a numpy array, or delta_t must be a Timedelta and groups must be a DatetimeIndex"
+            "delta_t must be an integer and groups must be a numpy array, \
+            or delta_t must be a Timedelta and groups must be a DatetimeIndex"
         )
 
 
@@ -75,7 +75,7 @@ def _purge(
     -------
     np.ndarra
         The purged training indices.
-    
+
     Raises
     ------
     ValueError
