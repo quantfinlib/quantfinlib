@@ -88,6 +88,8 @@ def test_walk_forward_datetime(n_embargo, train_window, test_window, wf_split_ty
     assert wf._finalized_splits == True
     assert isinstance(wf.get_n_splits(), Integral)
     assert wf.get_n_splits() > 0
+    assert isinstance(wf.get_n_splits(), Integral)
+    assert wf.get_n_splits() == len(list(wf.split(X=X, groups=groups)))
 
 
 def test_invalid_wf_split_type():

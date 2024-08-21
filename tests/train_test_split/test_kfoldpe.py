@@ -21,6 +21,8 @@ def test_validate_split_settings():
         _validate_split_settings(n_samples=10, n_folds=5, n_embargo=9, n_purge=0)
     with pytest.raises(ValueError):
         _validate_split_settings(n_samples=10, n_folds=5, n_embargo=5, n_purge=5)
+    with pytest.raises(ValueError):
+        _validate_split_settings(n_samples=10, n_folds=2, n_embargo=5, n_purge=4)
 
 
 def test_invalid_n_folds():
@@ -57,4 +59,20 @@ def test_split(n_folds, n_embargo, n_purge, look_forward):
         if look_forward:
             assert min(test_groups) - max(train_groups) >= kfold.n_embargo
 
-#def test_
+
+test_data = list(product([5], [1,2,3], [1,2,3], [True, False]))
+
+@pytest.mark.parametrize("n_folds, n_embargo, n_purge, look_forward", test_data)
+def test_split_no_groups(n_folds, n_embargo, n_purge, look_forward):
+    kfold = TimeAwareKFold(n_folds=5, n_embargo=n_embargo, n_purge=n_purge, look_forward=look_forward)
+    X = np.random.randn(1000, 2)
+    groups = np.arange(len(X))
+    for train_index, test_index in kfold.split(X=X):
+        assert len(np.intersect1d(train_index, test_index)) == 0
+        train_groups = groups[train_index]
+        test_groups = groups[test_index]
+        assert len(np.intersect1d(train_groups, test_groups)) == 0
+        if any(train_index < min(test_index)) and any(train_index > max(test_index)):
+            assert len(np.unique(groups)) - len(np.unique(train_groups)) - len(np.unique(test_groups)) == kfold.n_embargo + kfold.n_purge
+            if look_forward:
+                assert min(test_groups) - max(train_groups) == n_embargo + 1

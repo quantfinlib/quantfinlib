@@ -69,6 +69,7 @@ class WalkForward(BaseCV):
             Train and test indices.
 
         """
+        super().split(X, y, groups)
         n_samples = X.shape[0]
         indices = np.arange(n_samples)
         groups = groups if groups is not None else np.arange(n_samples)

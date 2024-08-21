@@ -106,9 +106,11 @@ class TimeAwareKFold(BaseCV):
         Generator[Tuple[np.ndarray, np.ndarray], None, None]
             Train and test indices.
         """
+        super().split(X, y, groups)
         _validate_split_settings(
             n_samples=X.shape[0], n_folds=self.n_folds, n_embargo=self.n_embargo, n_purge=self.n_purge
         )
+    
         if groups is None:
             groups = np.arange(X.shape[0])
         indices = np.arange(X.shape[0])

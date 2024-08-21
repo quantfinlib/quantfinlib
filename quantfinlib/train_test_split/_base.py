@@ -13,7 +13,7 @@ def _validate_purge_embargo_inputs(
     train_index: np.ndarray,
     test_index: np.ndarray,
     indices: np.ndarray,
-    groups: Union[np.ndarray, pd.DatetimeIndex],
+    groups: Union[np.ndarray, pd.Series, pd.DatetimeIndex],
     delta_t: Union[Integral, pd.Timedelta],
 ) -> None:  # pragma: no cover
     """Validate the inputs for the `purge` and `embargo` functions.
@@ -26,7 +26,7 @@ def _validate_purge_embargo_inputs(
         The test indices.
     indices : np.ndarray
         All indices.
-    groups : Union[np.ndarray, pd.DatetimeIndex]
+    groups : Union[np.ndarray, pd.Series, pd.DatetimeIndex]
         The groups.
     delta_t : Union[int, pd.Timedelta]
         The time period for purging or embargoing.
@@ -38,7 +38,7 @@ def _validate_purge_embargo_inputs(
             raise ValueError("delta_t must be a non-negative integer")
         if not np.all(np.diff(groups) >= 0):
             raise ValueError("groups must be sorted in ascending order")
-    elif isinstance(delta_t, pd.Timedelta) and isinstance(groups, pd.DatetimeIndex):
+    elif isinstance(delta_t, pd.Timedelta) and isinstance(groups, (pd.Series, pd.DatetimeIndex)):
         if delta_t < pd.Timedelta(0):
             raise ValueError("delta_t must be a non-negative Timedelta")
         if not groups.is_monotonic_increasing:
@@ -53,7 +53,7 @@ def _purge(
     train_index: np.ndarray,
     test_index: np.ndarray,
     indices: np.ndarray,
-    groups: Union[np.ndarray, pd.DatetimeIndex],
+    groups: Union[np.ndarray, pd.Series, pd.DatetimeIndex],
     n_purge: Union[Integral, pd.Timedelta],
 ) -> np.ndarray:
     """Remove training indices whose groups fall within `n_purge` from the last test group.
@@ -66,7 +66,7 @@ def _purge(
         The test indices.
     indices : np.ndarray
         All indices.
-    groups : Union[np.ndarray, pd.DatetimeIndex]
+    groups : Union[np.ndarray, pd.Series, pd.DatetimeIndex]
         The groups
     n_purge : Union[int, pd.Timedelta]
         Purge period.
@@ -94,7 +94,7 @@ def _embargo(
     train_index: np.ndarray,
     test_index: np.ndarray,
     indices: np.ndarray,
-    groups: Union[np.ndarray, pd.DatetimeIndex],
+    groups: Union[np.ndarray, pd.Series, pd.DatetimeIndex],
     n_embargo: Union[Integral, pd.Timedelta],
 ) -> np.ndarray:
     """Remove training indices whose groups fall within `n_embargo` from the first test group.
@@ -107,7 +107,7 @@ def _embargo(
         The test indices.
     indices : np.ndarray
         All indices.
-    groups : Union[np.ndarray, pd.DatetimeIndex]
+    groups : Union[np.ndarray, pd.Series, pd.DatetimeIndex]
         The groups
     n_embargo : Union[int, pd.Timedelta]
         Embargo period.
@@ -160,16 +160,16 @@ class BaseCV(ABC):
         self,
         X: Union[np.ndarray, pd.DataFrame],
         y: Optional[Union[np.ndarray, pd.Series]] = None,
-        groups: Optional[Union[np.ndarray, pd.Series]] = None,
+        groups: Optional[Union[np.ndarray, pd.Series, pd.DatetimeIndex]] = None,
     ) -> Any:
         """Generate indices to split data into training and test sets."""
         if not isinstance(X, (np.ndarray, pd.DataFrame)):
             raise TypeError("X must be a numpy array or a DataFrame")
         if y is not None and not isinstance(y, (np.ndarray, pd.Series)):
             raise TypeError("y must be a numpy array or a Series")
-        if groups is not None and not isinstance(groups, (np.ndarray, pd.Series)):
+        if groups is not None and not isinstance(groups, (np.ndarray, pd.Series, pd.DatetimeIndex)):
             raise TypeError("groups must be a numpy array or a Series")
         if isinstance(groups, np.ndarray) and not np.all(np.diff(groups) >= 0):
             raise ValueError("groups must be sorted in ascending order")
-        if isinstance(groups, pd.Series) and not groups.is_monotonic_increasing:
+        if isinstance(groups, (pd.Series, pd.DatetimeIndex)) and not groups.is_monotonic_increasing:
             raise ValueError("groups must be sorted in ascending order")

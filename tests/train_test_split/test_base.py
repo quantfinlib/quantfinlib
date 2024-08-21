@@ -1,12 +1,13 @@
 from typing import Union
 
-from quantfinlib.train_test_split._base import _purge, _embargo
+from py import test
+
+from quantfinlib.train_test_split._base import BaseCV, _purge, _embargo
 from sklearn.model_selection import KFold
 
 import numpy as np
 import pandas as pd
 import pytest
-
 
 
 def _remove_overlapping_groups(
@@ -36,6 +37,7 @@ def _remove_overlapping_groups(
     train_index = np.sort(np.setdiff1d(train_index, overlapping_index))
     test_index = np.sort(np.union1d(test_index, overlapping_index))
     return train_index, test_index
+
 
 def integer_even_groups():
     return np.hstack([np.zeros(10) + i for i in range(10)])
@@ -165,3 +167,74 @@ def test_embargo_per_n_embargo(n_embargo, kfold_data):
     else:
         with pytest.raises(TypeError):
             generic_test_embargo(kfold_data, n_embargo)
+
+
+def test_large_pe():
+    X = np.random.randn(100, 2)
+    groups = np.random.randint(0, 2, 100)
+    groups = np.unique(groups, return_inverse=True)[1].reshape(groups.shape)
+    groups.sort()
+    indices = np.arange(100)
+    train_idx = indices[groups == 0]
+    test_idx = indices[groups == 1]
+    with pytest.raises(ValueError):
+        _embargo(train_idx, test_idx, indices, groups, 1)
+    train_idx = indices[groups == 1]
+    test_idx = indices[groups == 0]
+    with pytest.raises(ValueError):
+        _purge(train_idx, test_idx, indices, groups, 1)
+
+
+class mock(BaseCV):
+    def __init__(self, n_embargo, n_purge) -> None:
+        super().__init__(n_embargo=n_embargo, n_purge=n_purge)
+
+    def get_n_splits(self) -> int:
+        pass
+
+    def split(self, X, y, groups) -> None:
+        super().split(X, y, groups)
+        pass
+
+
+def test_incorrect_base_settings():
+    with pytest.raises(TypeError):
+        mock_cv = mock(n_embargo="a", n_purge=1)
+    with pytest.raises(TypeError):
+        mock_cv = mock(n_embargo=1, n_purge="a")
+    with pytest.raises(ValueError):
+        mock_cv = mock(n_embargo=-1, n_purge=1)
+    with pytest.raises(ValueError):
+        mock_cv = mock(n_embargo=1, n_purge=-1)
+    with pytest.raises(TypeError):
+        mock_cv = mock(n_embargo=1, n_purge=1.1)
+    with pytest.raises(TypeError):
+        mock_cv = mock(n_embargo=1.1, n_purge=1)
+    with pytest.raises(TypeError):
+        mock_cv = mock(n_embargo=1.1, n_purge=1.1)
+    with pytest.raises(TypeError):
+        mock_cv = mock(n_embargo=pd.Timedelta(-1, unit="D"), n_purge=1.1)
+    with pytest.raises(ValueError):
+        mock_cv = mock(n_embargo=1, n_purge=pd.Timedelta(-1, unit="D"))
+    with pytest.raises(ValueError):
+        mock_cv = mock(n_embargo=pd.Timedelta(-1, unit="D"), n_purge=pd.Timedelta(-1, unit="D"))
+    with pytest.raises(ValueError):
+        mock_cv = mock(n_embargo=pd.Timedelta(1, unit="D"), n_purge=pd.Timedelta(-1, unit="D"))
+    with pytest.raises(ValueError):
+        mock_cv = mock(n_embargo=1, n_purge=-2)
+    with pytest.raises(ValueError):
+        mock_cv = mock(n_embargo=-1, n_purge=2)
+
+
+def test_incorrect_split_inputs():
+    mock_cv = mock(n_embargo=1, n_purge=1)
+    with pytest.raises(TypeError):
+        mock_cv.split(X=[1, 2, 3], y=None, groups=None)
+    with pytest.raises(TypeError):
+        mock_cv.split(X=np.array([1, 2, 3]), y=[1, 2, 3], groups=None)
+    with pytest.raises(TypeError):
+        mock_cv.split(X=np.array([1, 2, 3]), y=None, groups=[1, 2, 3])
+    with pytest.raises(ValueError):
+        mock_cv.split(X=np.array([1, 2, 3]), y=None, groups=np.array([1, 3, 2]))
+    with pytest.raises(ValueError):
+        mock_cv.split(X=np.array([1, 2, 3]), y=None, groups=pd.Series([1, 3, 2]))
