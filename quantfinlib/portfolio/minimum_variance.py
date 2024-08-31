@@ -11,7 +11,7 @@ from quantfinlib.portfolio._base import PortfolioOptimize
 @dataclass
 class MinimumVariance(PortfolioOptimize):
     """Minimum variance portfolio optimization.
-    
+
     Attributes
     ----------
     cov_matrix : pd.DataFrame
@@ -27,7 +27,7 @@ class MinimumVariance(PortfolioOptimize):
     -------
     optimize()
         Optimize the minimum variance portfolio with the given constraints.
-    
+
     Properties
     ----------
     weights : pd.Series
@@ -87,6 +87,7 @@ def _get_constraints(
     constraints : list[cp.Constraint]
         A list of constraints for the optimization problem.
     """
+    constraints = [cp.sum(w) == 1, cp.pos(w)]
     constraints = [cp.sum(w) == 1, w >= 0]
     asset_map = {asset: i for i, asset in enumerate(asset_names)}
     for asset, upper_bound in upper_bound_constraints.items():
