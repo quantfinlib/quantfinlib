@@ -7,12 +7,14 @@ from typing import Any, Optional, Union
 import numpy as np
 import pandas as pd
 
+from quantfinlib.train_test_split._dtypes import ARRAYORDF_TYPE, GROUP_TYPE, INDEX_TYPE, Y_TYPE
+
 
 def _validate_purge_embargo_inputs(
-    train_index: np.ndarray,
-    test_index: np.ndarray,
-    indices: np.ndarray,
-    groups: Union[np.ndarray, pd.Series, pd.DatetimeIndex],
+    train_index: INDEX_TYPE,
+    test_index: INDEX_TYPE,
+    indices: INDEX_TYPE,
+    groups: GROUP_TYPE,
     delta_t: Union[Integral, pd.Timedelta],
 ) -> None:  # pragma: no cover
     """Validate the inputs for the `purge` and `embargo` functions.
@@ -30,7 +32,7 @@ def _validate_purge_embargo_inputs(
     delta_t : Union[int, pd.Timedelta]
         The time period for purging or embargoing.
     """
-    if not all(isinstance(x, np.ndarray) for x in [train_index, test_index, indices]):
+    if not all(isinstance(x, INDEX_TYPE) for x in [train_index, test_index, indices]):
         raise TypeError("train_index, test_index, and indices must be numpy arrays")
     if isinstance(delta_t, Integral) and isinstance(groups, np.ndarray):
         if delta_t < 0:
@@ -50,10 +52,10 @@ def _validate_purge_embargo_inputs(
 
 
 def _purge(
-    train_index: np.ndarray,
-    test_index: np.ndarray,
-    indices: np.ndarray,
-    groups: Union[np.ndarray, pd.Series, pd.DatetimeIndex],
+    train_index: INDEX_TYPE,
+    test_index: INDEX_TYPE,
+    indices: INDEX_TYPE,
+    groups: GROUP_TYPE,
     n_purge: Union[Integral, pd.Timedelta],
 ) -> np.ndarray:
     """Remove training indices whose groups fall within `n_purge` from the last test group.
@@ -91,9 +93,9 @@ def _purge(
 
 
 def _embargo(
-    train_index: np.ndarray,
-    test_index: np.ndarray,
-    indices: np.ndarray,
+    train_index: INDEX_TYPE,
+    test_index: INDEX_TYPE,
+    indices: INDEX_TYPE,
     groups: Union[np.ndarray, pd.Series, pd.DatetimeIndex],
     n_embargo: Union[Integral, pd.Timedelta],
 ) -> np.ndarray:
@@ -151,16 +153,18 @@ class BaseCV(ABC):
         self.n_purge = n_purge
 
     @abstractmethod
-    def get_n_splits(self) -> Any:
+    def get_n_splits(
+        self, X: Optional[ARRAYORDF_TYPE] = None, y: Optional[Y_TYPE] = None, groups: Optional[GROUP_TYPE] = None
+    ) -> Any:
         """Return the number of splits."""
         raise NotImplementedError("Subclasses must implement get_n_split method")
 
     @abstractmethod
     def split(
         self,
-        X: Union[np.ndarray, pd.DataFrame],
-        y: Optional[Union[np.ndarray, pd.Series]] = None,
-        groups: Optional[Union[np.ndarray, pd.Series, pd.DatetimeIndex]] = None,
+        X: ARRAYORDF_TYPE,
+        y: Optional[Y_TYPE] = None,
+        groups: Optional[GROUP_TYPE] = None,
     ) -> Any:
         """Generate indices to split data into training and test sets."""
         if not isinstance(X, (np.ndarray, pd.DataFrame)):
