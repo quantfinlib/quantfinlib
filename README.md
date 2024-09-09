@@ -6,12 +6,15 @@
 
 <h3 style='background-color:red; color:white; padding:20px'>This library is pre-alpha, please only use it for development testing</h2>
 
-``$ pip install quantfinlib``
+```
+$ pip install quantfinlib
+```
+
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/quantfinlib/quantfinlib/blob/main/LICENSE)
 [![Python Version](https://img.shields.io/pypi/pyversions/quantfinlib.svg)](https://pypi.org/project/quantfinlib/)
 [![PyPI Version](https://img.shields.io/pypi/v/quantfinlib.svg)](https://pypi.org/project/quantfinlib/)
-[![Build Status](https://github.com/quantfinlib/quantfinlib/workflows/run_tests/badge.svg)](https://github.com/quantfinlib/quantfinlib/actions?query=workflow%3Arun_tests)
+[![Build Status](https://github.com/quantfinlib/quantfinlib/actions/workflows/deploy.yml/badge.svg)](https://github.com/quantfinlib/quantfinlib/actions/workflows/deploy.yml)
 [![Coverage Status](https://coveralls.io/repos/github/quantfinlib/quantfinlib/badge.svg?branch=main)](https://coveralls.io/github/quantfinlib/quantfinlib?branch=main)
 [![Docs](https://readthedocs.org/projects/quantfinlib/badge/?version=latest)](https://quantfinlib.readthedocs.io/en/latest/)
 
