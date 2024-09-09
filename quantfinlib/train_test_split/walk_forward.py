@@ -8,9 +8,7 @@ import numpy as np
 import pandas as pd
 
 from quantfinlib.train_test_split._base import BaseCV, _embargo
-from quantfinlib.train_test_split._dtypes import INDEX_TYPE, GROUP_TYPE, Y_TYPE, ARRAYORDF_TYPE
-
-
+from quantfinlib.train_test_split._dtypes import GroupType, IndexType, XType, YType
 
 
 class WalkForward(BaseCV):
@@ -27,9 +25,11 @@ class WalkForward(BaseCV):
     test_window : Integral, optional
         The size of the test window, by default 0.
     split_type : str, optional
-        The type of walk forward split to perform, either `expanding` window or `rolling` window , by default 'expanding'.
+        The type of walk forward split to perform, either `expanding` window or `rolling` window ,
+        by default 'expanding'.
     freq : Optional[str], optional
-        The frequency of the data, by default None. Required if `groups` provided to the `split` method are not integers.
+        The frequency of the data, by default None.
+        Required if `groups` provided to the `split` method are not integers.
 
 
     Methods
@@ -74,7 +74,7 @@ class WalkForward(BaseCV):
         )
 
     def get_n_splits(
-        self, X: Optional[ARRAYORDF_TYPE] = None, y: Optional[Y_TYPE] = None, groups: Optional[GROUP_TYPE] = None
+        self, X: Optional[XType] = None, y: Optional[YType] = None, groups: Optional[GroupType] = None
     ) -> int:
         """Return the number of splits."""
         if self._finalized_splits:
@@ -85,10 +85,10 @@ class WalkForward(BaseCV):
 
     def split(
         self,
-        X: ARRAYORDF_TYPE,
-        y: Optional[Y_TYPE] = None,
-        groups: Optional[GROUP_TYPE] = None,
-    ) -> Generator[Tuple[INDEX_TYPE, INDEX_TYPE], None, None]:
+        X: XType,
+        y: Optional[YType] = None,
+        groups: Optional[GroupType] = None,
+    ) -> Generator[Tuple[IndexType, IndexType], None, None]:
         """Generate indices to split data into training and test sets.
 
         Parameters

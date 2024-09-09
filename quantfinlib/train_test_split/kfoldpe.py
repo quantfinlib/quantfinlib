@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from quantfinlib.train_test_split._base import BaseCV, _purge, _embargo
-from quantfinlib.train_test_split._dtypes import ARRAYORDF_TYPE, BND_PER_FOLD_TYPE, GROUP_TYPE, INDEX_TYPE, Y_TYPE
+from quantfinlib.train_test_split._dtypes import BoundPerFoldType, GroupType, IndexType, XType, YType
 
 
 def _validate_split_settings(n_samples: Integral, n_folds: Integral, n_embargo: Integral, n_purge: Integral) -> None:
@@ -90,7 +90,7 @@ class TimeAwareKFold(BaseCV):
         self.freq = freq
 
     def get_n_splits(
-        self, X: Optional[ARRAYORDF_TYPE] = None, y: Optional[Y_TYPE] = None, groups: Optional[GROUP_TYPE] = None
+        self, X: Optional[XType] = None, y: Optional[YType] = None, groups: Optional[GroupType] = None
     ) -> int:
         """Return the number of splits.
         This method return n_folds - 1 if look_forward is True, otherwise n_folds.
@@ -106,10 +106,10 @@ class TimeAwareKFold(BaseCV):
 
     def split(
         self,
-        X: ARRAYORDF_TYPE,
-        y: Optional[Y_TYPE] = None,
-        groups: Optional[GROUP_TYPE] = None,
-    ) -> Generator[Tuple[INDEX_TYPE, INDEX_TYPE], None, None]:
+        X: XType,
+        y: Optional[YType] = None,
+        groups: Optional[GroupType] = None,
+    ) -> Generator[Tuple[IndexType, IndexType], None, None]:
         """Generate indices to split data into training and test sets.
 
         Parameters
@@ -160,7 +160,7 @@ class TimeAwareKFold(BaseCV):
             yield train_index, test_index
 
 
-def _modify_fold_bounds(bound_per_fold: BND_PER_FOLD_TYPE, groups: GROUP_TYPE) -> BND_PER_FOLD_TYPE:
+def _modify_fold_bounds(bound_per_fold: BoundPerFoldType, groups: GroupType) -> BoundPerFoldType:
     """
     Modify fold bounds.
 
@@ -192,11 +192,11 @@ def _modify_fold_bounds(bound_per_fold: BND_PER_FOLD_TYPE, groups: GROUP_TYPE) -
 
 
 def _get_train_index_per_split(
-    indices: INDEX_TYPE,
-    test_index: INDEX_TYPE,
-    groups: GROUP_TYPE,
+    indices: IndexType,
+    test_index: IndexType,
+    groups: GroupType,
     look_forward: bool = False,
-) -> INDEX_TYPE:
+) -> IndexType:
     """Find train index for a given split.
 
     Parameters
