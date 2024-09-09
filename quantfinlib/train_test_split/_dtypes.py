@@ -16,25 +16,25 @@ from quantfinlib.util._custom_types import (
 IndexType: TypeAlias = Annotated[np.ndarray, _CustomNumpyArrayPydanticAnnotation(shape=("*",), dtype=np.int_)]
 
 YTypeArray: TypeAlias = Union[
-    Annotated[np.ndarray, _CustomNumpyArrayPydanticAnnotation(shape=("*",), dtype=np.int64)],
-    Annotated[np.ndarray, _CustomNumpyArrayPydanticAnnotation(shape=("*",), dtype=np.float_)],
+    Annotated[np.ndarray, _CustomNumpyArrayPydanticAnnotation(shape=("*",), dtype=np.int_)],
+    Annotated[np.ndarray, _CustomNumpyArrayPydanticAnnotation(shape=("*",), dtype=np.float64)],
     Annotated[np.ndarray, _CustomNumpyArrayPydanticAnnotation(shape=("*",), dtype=np.bool_)],
 ]
 YTypeSeries: TypeAlias = Union[
-    Annotated[pd.Series, _CustomPandasSeriesPydanticAnnotation(dtype=np.int64)],
-    Annotated[pd.Series, _CustomPandasSeriesPydanticAnnotation(dtype=np.float_)],
+    Annotated[pd.Series, _CustomPandasSeriesPydanticAnnotation(dtype=np.int_)],
+    Annotated[pd.Series, _CustomPandasSeriesPydanticAnnotation(dtype=np.float64)],
     Annotated[pd.Series, _CustomPandasSeriesPydanticAnnotation(dtype=np.bool_)],
 ]
 YType: TypeAlias = Union[YTypeArray, YTypeSeries]
 
 GroupType: TypeAlias = Union[
-    Annotated[np.ndarray, _CustomNumpyArrayPydanticAnnotation(shape=("*",), dtype=np.int64)],
-    Annotated[pd.Series, _CustomPandasSeriesPydanticAnnotation(dtype=np.int64)],
+    Annotated[np.ndarray, _CustomNumpyArrayPydanticAnnotation(shape=("*",), dtype=np.int_)],
+    Annotated[pd.Series, _CustomPandasSeriesPydanticAnnotation(dtype=np.int_)],
     Annotated[pd.DatetimeIndex, _CustomPandasSeriesPydanticAnnotation()],
 ]
 
 BoundPerFoldType: TypeAlias = Annotated[
-    np.ndarray[Any, Any], _CustomNumpyArrayPydanticAnnotation(shape=("*", 2), dtype=np.int64)
+    np.ndarray[Any, Any], _CustomNumpyArrayPydanticAnnotation(shape=("*", 2), dtype=np.int_)
 ]
 
 XType: TypeAlias = Union[
