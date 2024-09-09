@@ -8,7 +8,11 @@ import pytest
 
 from itertools import product
 
+from tests.train_test_split.test_kfoldpe import DATA_SIZE
+
 np.random.seed(42)
+DATA_SIZE = 100
+
 
 int_test_data = list(product(np.arange(7), [9, 10, 11], np.arange(1, 10), ["expanding", "rolling"]))
 
@@ -22,11 +26,11 @@ def test_walk_forward_int(n_embargo, train_window, test_window, split_type):
         test_window=test_window,
         split_type=split_type
     )
-    groups = np.random.randint(0, 33, 100)
+    groups = np.random.randint(0, 33, DATA_SIZE)
     # make sure that all groups between 0 and 32 are present in the data
     groups = np.unique(groups, return_inverse=True)[1].reshape(groups.shape)
     groups.sort()
-    X = np.random.randn(100, 2)
+    X = np.random.randn(DATA_SIZE, 2)
     for train_index, test_index in wf.split(X=X, groups=groups):
         train_groups = groups[train_index]
         test_groups = groups[test_index]
@@ -41,9 +45,8 @@ def test_walk_forward_int(n_embargo, train_window, test_window, split_type):
 
 @pytest.mark.parametrize("n_embargo, train_window, test_window, split_type", int_test_data)
 def test_walk_forward_datetime(n_embargo, train_window, test_window, split_type):
-    groups = pd.date_range("2020-01-01", periods=100, freq="D")
-    group_indices = np.random.randint(0, 60, 100)
-    # make sure that all groups between 0 and 32 are present in the data
+    groups = pd.date_range("2020-01-01", periods=DATA_SIZE, freq="D")
+    group_indices = np.random.randint(0, 60, DATA_SIZE)
     group_indices = np.unique(group_indices, return_inverse=True)[1].reshape(group_indices.shape)
     group_indices.sort()
     groups = groups[group_indices]
