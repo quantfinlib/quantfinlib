@@ -24,7 +24,7 @@ def test_bruteforce_calculation_cumsumtest():
             s_n_t = (log_y[t] - log_y[n]) / (sigma_hat_t * np.sqrt(t - n))
             if s_n_t > max_s_n_t:
                 max_s_n_t = s_n_t
-                crit_val = b_alpha + np.log(t - n)
+                crit_val = np.sqrt(b_alpha + np.log(t - n))
         S_expected[t] = max_s_n_t
         crit_vals_expected[t] = crit_val
     np.testing.assert_allclose(
@@ -47,4 +47,4 @@ def test_trivial_properties_cumsumtest():
         y_input
     ), "The length of the critical values array is not equal to the input array."
     b_alpha = 4.6
-    assert np.all(crit_vals[1:] >= b_alpha), "The critical values are not greater than the constant b_alpha."
+    assert np.all(crit_vals[1:] >= np.sqrt(b_alpha)), "The critical values are not greater than the constant b_alpha."
