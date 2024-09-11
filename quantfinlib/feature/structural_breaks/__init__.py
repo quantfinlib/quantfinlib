@@ -1,0 +1,1 @@
+"""Structural breaks detection module."""
