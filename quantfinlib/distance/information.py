@@ -7,7 +7,7 @@ from typing import Optional, Tuple
 import numpy as np
 from scipy.stats import entropy
 
-from quantfinlib.util import validate_series_or_1Darray, SeriesOrArray
+from quantfinlib.util import SeriesOrArray, validate_series_or_1Darray
 
 
 def _get_nb_bins_from_xy(x: np.ndarray, y: Optional[np.ndarray] = None) -> int:
@@ -115,7 +115,7 @@ def mutual_info(x: SeriesOrArray, y: SeriesOrArray, bins: Optional[int] = None, 
     .. exec_code::
 
         import numpy as np
-        from quantfinlib.clustering.distance import mutual_info
+        from quantfinlib.distance.information import mutual_info
 
         np.random.seed(1234)
         x = np.random.normal(0, 1, 100)
@@ -139,9 +139,7 @@ def mutual_info(x: SeriesOrArray, y: SeriesOrArray, bins: Optional[int] = None, 
 
 
 @validate_series_or_1Darray("x", "y")
-def var_info(
-    x: SeriesOrArray, y: SeriesOrArray, bins: Optional[int] = None, norm: bool = True
-) -> float:
+def var_info(x: SeriesOrArray, y: SeriesOrArray, bins: Optional[int] = None, norm: bool = True) -> float:
     """Calculate variation of information between two variables.
 
     Implementation of variation of information adopted from "Machine Learning for Asset Managers by Lopez de Prado".
@@ -169,7 +167,7 @@ def var_info(
     .. exec_code::
 
         import numpy as np
-        from quantfinlib.clustering.distance import var_info
+        from quantfinlib.distance.information import var_info
 
         np.random.seed(1234)
         x = np.random.normal(0, 1, 100)
