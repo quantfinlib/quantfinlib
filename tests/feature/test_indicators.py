@@ -28,6 +28,10 @@ def test_numpy_io_support_1():
     result = test_func(np.array([1, 2, 3]), b=4)
     assert isinstance(result, np.ndarray)
     assert np.array_equal(result, np.array([5, 6, 7]))
+    # Test exception
+    with pytest.raises(ValueError) as e:
+        test_func([1, 2, 3])
+    assert str(e.value) == "All positional arguments must be either numpy arrays or pandas Series."
 
 
 def test_numpy_io_support_2():
@@ -53,6 +57,13 @@ def test_numpy_io_support_2():
     result = test_func(np.array([1, 2, 3]), np.array([4, 5, 6]), c=7)
     assert isinstance(result, np.ndarray)
     assert np.array_equal(result, np.array([12, 14, 16]))
+    # Test exception
+    with pytest.raises(ValueError) as e:
+        test_func([1, 2, 3], np.array([4, 5, 6]))
+    assert str(e.value) == "All positional arguments must be either numpy arrays or pandas Series."
+    with pytest.raises(ValueError) as e:
+        test_func(np.array([1, 2, 3]), 4)
+    assert str(e.value) == "All positional arguments must be either numpy arrays or pandas Series."
 
 
 @pytest.mark.parametrize("init, dtype", [(pd.Series, pd.Series), (np.array, np.ndarray)])
