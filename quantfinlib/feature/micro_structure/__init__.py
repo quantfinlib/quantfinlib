@@ -1,7 +1,10 @@
 """Micro-structure features module.
 
 This module contains functions to calculate micro-structure features 
-based on the book: Advances in Financial Machine Learning by Marcos Lopez de Prado.
+based on the book ```Advances in Financial Machine Learning``` by Marcos Lopez de Prado.
+and ```Volatility Modelling and Trading``` by Artur Sepp
+https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2810768
+
 
 The implemented features are:
 
@@ -24,4 +27,5 @@ Third generation: Sequential trade models
 References
 ----------
 https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3270269
+https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2810768
 """

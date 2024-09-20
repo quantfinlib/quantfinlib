@@ -1,4 +1,4 @@
-"""Implamentation of price sequences features."""
+"""Implamentation of micro_structure features from price sequences."""
 
 from functools import partial
 
@@ -57,6 +57,151 @@ def cowrin_schultz_spread(high: np.ndarray, low: np.ndarray, window: int) -> np.
     alpha = _get_alpha(beta=beta, gamma=gamma)
     spread = 2 * (np.exp(alpha) - 1) / (np.exp(alpha) + 1)
     return spread
+
+
+def garman_klass_volatility(
+    high: np.ndarray, low: np.ndarray, open: np.ndarray, close: np.ndarray, window: int
+) -> np.ndarray:
+    """
+    Calculate the Garman-Klass volatility.
+
+    Parameters
+    ----------
+    high : np.ndarray
+        The high prices.
+    low : np.ndarray
+        The low prices.
+    open : np.ndarray
+        The open prices.
+    close : np.ndarray
+        The close prices.
+    window : int
+        The window size.
+
+    Returns
+    -------
+    np.ndarray
+        The Garman-Klass volatility.
+
+    References
+    ----------
+    Volatility Modelling and Trading by Artur Sepp
+    https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2810768
+    """
+    returns_sq = 0.5 * np.log(high / low) ** 2
+    returns_close_open = (2 * np.log(2) - 1) * (np.log(close / open)) ** 2
+    sigma_sq = moving_average(x=returns_sq, window_size=window) - moving_average(
+        x=returns_close_open, window_size=window
+    )
+    return sigma_sq
+
+
+def rogers_satchell_volatility(
+    high: np.ndarray, low: np.ndarray, open: np.ndarray, close: np.ndarray, window: int
+) -> np.ndarray:
+    """
+    Calculate the Rogers-Satchell volatility.
+    p 20, Volatility Modelling and Trading
+
+    Parameters
+    ----------
+    high : np.ndarray
+        The high prices.
+    low : np.ndarray
+        The low prices.
+    open : np.ndarray
+        The open prices.
+    close : np.ndarray
+        The close prices.
+    window : int
+        The window size.
+
+    Returns
+    -------
+    np.ndarray
+        The Rogers-Satchell volatility.
+
+    References
+    ----------
+    Volatility Modelling and Trading by Artur Sepp
+    https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2810768
+    """
+    sigma_sq = moving_average(
+        x=np.log(high / close) * np.log(high / open) + np.log(low / close) * np.log(low / open), window_size=window
+    )
+    return sigma_sq
+
+
+def yang_zhang_volatility(
+    high: np.ndarray, low: np.ndarray, open: np.ndarray, close: np.ndarray, window: int
+) -> np.ndarray:
+    """
+    Calculate the Yang-Zhang volatility.
+
+    Parameters
+    ----------
+    high : np.ndarray
+        The high prices.
+    low : np.ndarray
+        The low prices.
+    open : np.ndarray
+        The open prices.
+    close : np.ndarray
+        The close prices.
+    window : int
+        The window size.
+
+    Returns
+    -------
+    np.ndarray
+        The Yang-Zhang volatility.
+
+    References
+    ----------
+    Volatility Modelling and Trading by Artur Sepp
+    https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2810768
+    """
+    coeff = 0.34 / (1.34 + (window + 1) / (window - 1))
+
+    open_prev_close_ret = np.log(open / close.shift(1))
+    close_prev_open_ret = np.log(close / open.shift(1))
+
+    sigma_overnight_sq = moving_average(x=open_prev_close_ret**2, window_size=window)
+    sigma_open_to_close_sq = moving_average(x=close_prev_open_ret**2, window_size=window)
+
+    sigma_rs_sq = rogers_satchell_volatility(high=high, low=low, close=close, open=open, window=window)
+
+    sigma_sq = sigma_overnight_sq + coeff * sigma_open_to_close_sq + (1 - coeff) * sigma_rs_sq
+    return sigma_sq
+
+
+def becker_parkinson_volatility(high: np.ndarray, low: np.ndarray, window: int) -> np.ndarray:
+    """Calculate the Becker-Parkinson volatility.
+
+    See page 285 of Advances in Financial Machine Learning by Marcos Lopez de Prado.
+    This volatility is useful in the corporate bond market, where there is no centralized order book, and
+    trades occur through bids wanted in competition (BWIC).
+
+    Parameters
+    ----------
+    high : np.ndarray
+        The high prices.
+    low : np.ndarray
+        The low prices.
+    close : np.ndarray
+        The close prices.
+    window : int
+        The window size.
+
+    Returns
+    -------
+    np.ndarray
+        The Becker-Parkinson volatility.
+    """
+    beta = _get_beta(high=high, low=low, window=window)
+    gamma = _get_gamma(high=high, low=low)
+    sigma = _get_sigma(beta=beta, gamma=gamma)
+    return sigma
 
 
 def _get_gamma(high: np.ndarray, low: np.ndarray) -> np.ndarray:
