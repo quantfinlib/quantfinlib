@@ -5,4 +5,6 @@ Example datasets
    :maxdepth: 1
    :titlesonly:
 
-   Example datasets <notebook_links/example_datasets.nblink>
+   Example VIX <notebook_links/example_vix.nblink>
+   Example rates <notebook_links/example_rates.nblink>
+   Example Equity indices <notebook_links/example_equity_indices.nblink>
