@@ -72,6 +72,8 @@ def test_rolling_mean(init, dtype):
     rm = rolling_mean(ts, window=3)
     assert isinstance(rm, dtype)
     np.testing.assert_array_equal(rm, [np.nan, np.nan, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0])
+    assert rolling_mean.__name__ == "rolling_mean"
+    assert rolling_mean.__doc__.strip().startswith("Calculate the rolling mean of a time series.")
 
 
 @pytest.mark.parametrize("init, dtype", [(pd.Series, pd.Series), (np.array, np.ndarray)])
