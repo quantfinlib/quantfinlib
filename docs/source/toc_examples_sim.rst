@@ -2,7 +2,7 @@ Simulating Random Price Paths
 =============================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :titlesonly:
 
-   A Simple Stock Price <notebook_links/random_walk.nblink>
+   A Simple Stock Price <notebook_links/sim/random_walk.nblink>

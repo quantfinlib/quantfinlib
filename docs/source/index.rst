@@ -9,6 +9,7 @@
 
    toc_examples_sim
    toc_example_datasets
+   toc_example_train_test_split
 
 
 .. toctree::
