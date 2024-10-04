@@ -1,14 +1,14 @@
 """Functions to calculate the Bollinger Bands, Keltner Channels, and Donchian Channels."""
 
+from typing import Union
+
 import numpy as np
 import pandas as pd
-
-from typing import Union
 
 from ._base import rolling_mean, rolling_std, rolling_max, rolling_min, average_true_range, ewm_mean, ewm_std
 
 
-_generic_docstring = """
+_GENERIC_DOCSTRING = """
     Attributes
     ----------
     ts : Union[pd.Series, np.ndarray]
@@ -41,13 +41,14 @@ class GenericBands:
     """
     Generic bands for time series data.
     """
+
     def __init__(
         self,
         ts: Union[pd.Series, np.ndarray],
         rolling_mean: Union[pd.Series, np.ndarray],
         rolling_std: Union[pd.Series, np.ndarray],
         multiplier: int,
-        basename: str = ""
+        basename: str = "",
     ):
         self.ts = ts
         self.rolling_mean = rolling_mean
@@ -65,53 +66,68 @@ class GenericBands:
     def upper(self) -> Union[pd.Series, np.ndarray]:
         """
         Calculate the upper band of the indicator.
-        Returns:
-            Union[pd.Series, np.ndarray]: The upper band values.
+
+        Returns
+        -------
+        Union[pd.Series, np.ndarray]
+            The upper band values.
         """
         return self._rename(self.rolling_mean + (self.rolling_std * self.multiplier), "Upper")
 
     def lower(self) -> Union[pd.Series, np.ndarray]:
         """
         Calculate the lower band of the indicator.
-        Returns:
-            Union[pd.Series, np.ndarray]: The lower band values.
+
+        Returns
+        -------
+        Union[pd.Series, np.ndarray]
+            The lower band values.
         """
         return self._rename(self.rolling_mean - (self.rolling_std * self.multiplier), "Lower")
 
     def middle(self) -> Union[pd.Series, np.ndarray]:
         """
         Calculate the middle band of the indicator.
-        Returns:
-            Union[pd.Series, np.ndarray]: The middle band values.
+
+        Returns
+        -------
+        Union[pd.Series, np.ndarray]
+            The middle band values.
         """
         return self._rename(self.rolling_mean, "Middle")
 
     def bandwidth(self) -> Union[pd.Series, np.ndarray]:
         """
         Calculate the bandwidth of the indicator.
-        Returns:
-            Union[pd.Series, np.ndarray]: The bandwidth values.
+
+        Returns
+        -------
+        Union[pd.Series, np.ndarray]
+            The bandwidth values.
         """
         return self._rename(2 * self.rolling_std * self.multiplier / self.middle(), "Bandwidth")
 
     def percent_b(self) -> Union[pd.Series, np.ndarray]:
         """
         Calculate the percent b of the indicator.
-        Returns:
-            Union[pd.Series, np.ndarray]: The percent b values.
+
+        Returns
+        -------
+        Union[pd.Series, np.ndarray]
+            The percent b values.
         """
         return self._rename((self.ts - self.lower()) / (2 * self.rolling_std * self.multiplier), "%B")
 
 
-GenericBands.__doc__ += _generic_docstring
+GenericBands.__doc__ += _GENERIC_DOCSTRING
 
 
 class BollingerBands(GenericBands):
     """
     Bollinger Bands for time series data.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     ts : Union[pd.Series, np.ndarray]
         The time series data.
     window : int, optional
@@ -119,30 +135,22 @@ class BollingerBands(GenericBands):
     multiplier : int, optional
         The multiplier for calculating the upper and lower bands, by default 2.
     """
-    def __init__(
-        self,
-        ts: Union[pd.Series, np.ndarray],
-        window: int = 20,
-        multiplier: int = 2
-    ):
+
+    def __init__(self, ts: Union[pd.Series, np.ndarray], window: int = 20, multiplier: int = 2):
         super().__init__(
-            ts,
-            rolling_mean(ts, window=window),
-            rolling_std(ts, window=window),
-            multiplier,
-            basename=" Bollinger"
+            ts, rolling_mean(ts, window=window), rolling_std(ts, window=window), multiplier, basename=" Bollinger"
         )
 
 
-BollingerBands.__doc__ += _generic_docstring
+BollingerBands.__doc__ += _GENERIC_DOCSTRING
 
 
 class EwmBollingerBands(GenericBands):
     """
     Exponential Weighted Moving Average Bollinger Bands for time series data.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     ts : Union[pd.Series, np.ndarray]
         The time series data.
     window : int, optional
@@ -150,30 +158,20 @@ class EwmBollingerBands(GenericBands):
     multiplier : int, optional
         The multiplier for calculating the upper and lower bands, by default 2.
     """
-    def __init__(
-        self,
-        ts: Union[pd.Series, np.ndarray],
-        window: int = 20,
-        multiplier: int = 2
-    ):
-        super().__init__(
-            ts,
-            ewm_mean(ts, span=window),
-            ewm_std(ts, span=window),
-            multiplier,
-            basename=" EwmBollinger"
-        )
+
+    def __init__(self, ts: Union[pd.Series, np.ndarray], window: int = 20, multiplier: int = 2):
+        super().__init__(ts, ewm_mean(ts, span=window), ewm_std(ts, span=window), multiplier, basename=" EwmBollinger")
 
 
-EwmBollingerBands.__doc__ += _generic_docstring
+EwmBollingerBands.__doc__ += _GENERIC_DOCSTRING
 
 
 class KeltnerBands(GenericBands):
     """
     Keltner Channels for time series data.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     high : Union[pd.Series, np.ndarray]
         The high prices.
     low : Union[pd.Series, np.ndarray]
@@ -187,6 +185,7 @@ class KeltnerBands(GenericBands):
     multiplier : int, optional
         The multiplier for calculating the upper and lower bands, by default 2.
     """
+
     def __init__(
         self,
         high: Union[pd.Series, np.ndarray],
@@ -194,45 +193,36 @@ class KeltnerBands(GenericBands):
         close: Union[pd.Series, np.ndarray],
         window_atr: int = 10,
         window: int = 20,
-        multiplier: int = 2
+        multiplier: int = 2,
     ):
         super().__init__(
             close,
             ewm_mean(close, span=window),
             average_true_range(high, low, close, window=window_atr),
             multiplier,
-            basename=" Keltner"
+            basename=" Keltner",
         )
 
 
-KeltnerBands.__doc__ += _generic_docstring
+KeltnerBands.__doc__ += _GENERIC_DOCSTRING
 
 
 class DonchianBands(GenericBands):
     """
     Donchian Channels for time series data.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     ts : Union[pd.Series, np.ndarray]
         The time series data.
     window : int, optional
         The window size for calculating the rolling maximum and minimum, by default 20.
     """
-    def __init__(
-        self,
-        ts: Union[pd.Series, np.ndarray],
-        window: int = 20
-    ):
+
+    def __init__(self, ts: Union[pd.Series, np.ndarray], window: int = 20):
         ub = rolling_max(ts, window=window)
         lb = rolling_min(ts, window=window)
-        super().__init__(
-            ts,
-            (ub + lb) / 2,
-            (ub - lb) / 2,
-            1,
-            basename=" Donchian"
-        )
+        super().__init__(ts, (ub + lb) / 2, (ub - lb) / 2, 1, basename=" Donchian")
 
 
-DonchianBands.__doc__ += _generic_docstring
+DonchianBands.__doc__ += _GENERIC_DOCSTRING

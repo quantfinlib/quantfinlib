@@ -1,26 +1,46 @@
 """Base indicator functions for time series analysis."""
 
 import functools
+import inspect
 import numpy as np
 import pandas as pd
-from typing import Union
 
 
 def numpy_io_support(func):
-    """Decorator to allow numpy arrays to be passed as input and output."""
+    """Make a decorator to allow numpy arrays or pandas Series as input/output."""
+
     @functools.wraps(func)
-    def wrapper(*args: Union[pd.Series, np.ndarray], **kwargs) -> Union[pd.Series, np.ndarray]:
-        count_np = sum(isinstance(arg, np.ndarray) for arg in args)
-        count_pd = sum(isinstance(arg, pd.Series) for arg in args)
-        if count_pd + count_np != len(args):
-            raise ValueError("All positional arguments must be either numpy arrays or pandas Series.")
-        if count_np == 0:
-            return func(*args, **kwargs)
-        if count_pd == 0:
-            return func(*[pd.Series(arg) for arg in args], **kwargs).values
-        idx = [s.index for s in args if isinstance(s, pd.Series)][0]
-        pd_args = [pd.Series(arg, index=idx) if isinstance(arg, np.ndarray) else arg for arg in args]
-        return func(*pd_args, **kwargs)
+    def wrapper(*args, **kwargs):
+        sig = inspect.signature(func)
+        bound_args = sig.bind_partial(*args, **kwargs)
+        bound_args.apply_defaults()
+        is_numpy_input = None
+        new_args = []
+        param_names = list(sig.parameters.keys())  # List of parameter names in the function signature
+        for i, arg in enumerate(args):
+            param_name = param_names[i]
+            expected_type = sig.parameters[param_name].annotation
+            if expected_type in [pd.Series, np.ndarray]:
+                if isinstance(arg, np.ndarray):
+                    if is_numpy_input is None:
+                        is_numpy_input = True
+                    elif is_numpy_input is False:
+                        raise ValueError("Cannot mix numpy arrays with pandas Series in input.")
+                    arg = pd.Series(arg)
+                elif isinstance(arg, pd.Series):
+                    if is_numpy_input is None:
+                        is_numpy_input = False
+                    elif is_numpy_input is True:
+                        raise ValueError("Cannot mix numpy arrays with pandas Series in input.")
+            new_args.append(arg)
+        for i, param_name in enumerate(param_names[: len(new_args)]):
+            if param_name in kwargs:
+                kwargs.pop(param_name)
+        result = func(*new_args, **kwargs)
+        if is_numpy_input:
+            return result.values
+        return result
+
     return wrapper
 
 
@@ -28,11 +48,18 @@ def numpy_io_support(func):
 def rolling_mean(ts: pd.Series, window: int = 20) -> pd.Series:
     """
     Calculate the rolling mean of a time series.
-    Parameters:
-        ts (pd.Series): The input time series.
-        window (int): The size of the rolling window. Default is 20.
-    Returns:
-        pd.Series: The rolling mean of the time series.
+
+    Parameters
+    ----------
+    ts : pd.Series
+        The input time series.
+    window : int, optional
+        The size of the rolling window. Default is 20.
+
+    Returns
+    -------
+    pd.Series
+        The rolling mean of the time series.
     """
     return ts.rolling(window=window).mean().rename(f"{window}D Mean")
 
@@ -41,11 +68,18 @@ def rolling_mean(ts: pd.Series, window: int = 20) -> pd.Series:
 def rolling_std(ts: pd.Series, window: int = 20) -> pd.Series:
     """
     Calculate the rolling standard deviation of a time series.
-    Parameters:
-        ts (pd.Series): The input time series.
-        window (int): The size of the rolling window. Default is 20.
-    Returns:
-        pd.Series: The rolling standard deviation of the time series.
+
+    Parameters
+    ----------
+    ts : pd.Series
+        The input time series.
+    window : int, optional
+        The size of the rolling window. Default is 20.
+
+    Returns
+    -------
+    pd.Series
+        The rolling standard deviation of the time series.
     """
     return ts.rolling(window=window).std().rename(f"{window}D Std")
 
@@ -54,11 +88,18 @@ def rolling_std(ts: pd.Series, window: int = 20) -> pd.Series:
 def rolling_max(ts: pd.Series, window: int = 20) -> pd.Series:
     """
     Calculate the rolling maximum of a time series.
-    Parameters:
-        ts (pd.Series): The input time series.
-        window (int): The size of the rolling window. Default is 20.
-    Returns:
-        pd.Series: The rolling maximum of the time series.
+
+    Parameters
+    ----------
+    ts : pd.Series
+        The input time series.
+    window : int, optional
+        The size of the rolling window. Default is 20.
+
+    Returns
+    -------
+    pd.Series
+        The rolling maximum of the time series.
     """
     return ts.rolling(window=window).max().rename(f"{window}D Max")
 
@@ -67,11 +108,18 @@ def rolling_max(ts: pd.Series, window: int = 20) -> pd.Series:
 def rolling_min(ts: pd.Series, window: int = 20) -> pd.Series:
     """
     Calculate the rolling minimum of a time series.
-    Parameters:
-        ts (pd.Series): The input time series.
-        window (int): The size of the rolling window. Default is 20.
-    Returns:
-        pd.Series: The rolling minimum of the time series.
+
+    Parameters
+    ----------
+    ts : pd.Series
+        The input time series.
+    window : int, optional
+        The size of the rolling window. Default is 20.
+
+    Returns
+    -------
+    pd.Series
+        The rolling minimum of the time series.
     """
     return ts.rolling(window=window).min().rename(f"{window}D Min")
 
@@ -80,11 +128,18 @@ def rolling_min(ts: pd.Series, window: int = 20) -> pd.Series:
 def ewm_mean(ts: pd.Series, span: int = 20) -> pd.Series:
     """
     Calculate the exponential weighted moving average of a time series.
-    Parameters:
-        ts (pd.Series): The input time series.
-        span (int): The span of the exponential window. Default is 20.
-    Returns:
-        pd.Series: The exponential weighted moving average of the time series.
+
+    Parameters
+    ----------
+    ts : pd.Series
+        The input time series.
+    span : int, optional
+        The span of the exponential window. Default is 20.
+
+    Returns
+    -------
+    pd.Series
+        The exponential weighted moving average of the time series.
     """
     return ts.ewm(span=span).mean().rename("EWM Mean")
 
@@ -93,11 +148,18 @@ def ewm_mean(ts: pd.Series, span: int = 20) -> pd.Series:
 def ewm_std(ts: pd.Series, span: int = 20) -> pd.Series:
     """
     Calculate the exponential weighted moving standard deviation of a time series.
-    Parameters:
-        ts (pd.Series): The input time series.
-        span (int): The span of the exponential window. Default is 20.
-    Returns:
-        pd.Series: The exponential weighted moving standard deviation of the time series.
+
+    Parameters
+    ----------
+    ts : pd.Series
+        The input time series.
+    span : int, optional
+        The span of the exponential window. Default is 20.
+
+    Returns
+    -------
+    pd.Series
+        The exponential weighted moving standard deviation of the time series.
     """
     return ts.ewm(span=span).std().rename("EWM Std")
 
@@ -106,13 +168,22 @@ def ewm_std(ts: pd.Series, span: int = 20) -> pd.Series:
 def average_true_range(high: pd.Series, low: pd.Series, close: pd.Series, window: int = 14) -> pd.Series:
     """
     Calculate the average true range of a stock.
-    Parameters:
-        high (pd.Series): The high prices of the stock.
-        low (pd.Series): The low prices of the stock.
-        close (pd.Series): The closing prices of the stock.
-        window (int): The number of periods to consider. Default is 14.
-    Returns:
-        pd.Series: The average true range of the stock.
+
+    Parameters
+    ----------
+    high : pd.Series
+        The high prices of the stock.
+    low : pd.Series
+        The low prices of the stock.
+    close : pd.Series
+        The closing prices of the stock.
+    window : int, optional
+        The number of periods to consider. Default is 14.
+
+    Returns
+    -------
+    pd.Series
+        The average true range of the stock.
     """
     tr1 = high - low
     tr2 = abs(high - close.shift())
@@ -125,11 +196,18 @@ def average_true_range(high: pd.Series, low: pd.Series, close: pd.Series, window
 def rolling_mom(ts: pd.Series, window: int = 20) -> pd.Series:
     """
     Calculate the rolling momentum of a time series.
-    Parameters:
-        ts (pd.Series): The input time series.
-        window (int): The size of the rolling window. Default is 20.
-    Returns:
-        pd.Series: The rolling momentum of the time series.
+
+    Parameters
+    ----------
+    ts : pd.Series
+        The input time series.
+    window : int, optional
+        The size of the rolling window. Default is 20.
+
+    Returns
+    -------
+    pd.Series
+        The rolling momentum of the time series.
     """
     return (ts.diff(window) / window).rename(f"{window}D Momentum")
 
@@ -138,10 +216,17 @@ def rolling_mom(ts: pd.Series, window: int = 20) -> pd.Series:
 def ewm_mom(ts: pd.Series, span: int = 20) -> pd.Series:
     """
     Calculate the exponential weighted moving momentum of a time series.
-    Parameters:
-        ts (pd.Series): The input time series.
-        span (int): The span of the exponential window. Default is 20.
-    Returns:
-        pd.Series: The exponential weighted moving momentum of the time series.
+
+    Parameters
+    ----------
+    ts : pd.Series
+        The input time series.
+    span : int, optional
+        The span of the exponential window. Default is 20.
+
+    Returns
+    -------
+    pd.Series
+        The exponential weighted moving momentum of the time series.
     """
     return ts.diff().ewm(span=span).mean().rename("EWM Momentum")

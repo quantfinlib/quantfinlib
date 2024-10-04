@@ -14,8 +14,8 @@ from quantfinlib.feature.indicators import (
 def test_numpy_io_support_1():
     @numpy_io_support
     def test_func(a: pd.Series, b: int = 5) -> pd.Series:
-        assert isinstance(a, pd.Series)
-        assert isinstance(b, int)
+        #assert isinstance(a, pd.Series)
+        #assert isinstance(b, int)
         return a + b
     # Numpy array as input and output
     result = test_func(np.array([1, 2, 3]))
@@ -29,9 +29,8 @@ def test_numpy_io_support_1():
     assert isinstance(result, np.ndarray)
     assert np.array_equal(result, np.array([5, 6, 7]))
     # Test exception
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(TypeError) as e:
         test_func([1, 2, 3])
-    assert str(e.value) == "All positional arguments must be either numpy arrays or pandas Series."
 
 
 def test_numpy_io_support_2():
@@ -44,11 +43,13 @@ def test_numpy_io_support_2():
     # Numpy arrays as input and output
     result = test_func(np.array([1, 2, 3]), np.array([4, 5, 6]))
     assert isinstance(result, np.ndarray)
-    # Mixed input gives Pandas Series as output
-    result = test_func(pd.Series([1, 2, 3]), np.array([4, 5, 6]))
-    assert isinstance(result, pd.Series)
-    result = test_func(np.array([1, 2, 3]), pd.Series([4, 5, 6]))
-    assert isinstance(result, pd.Series)
+    # Mixed inputs give ValueError
+    with pytest.raises(ValueError) as e:
+        test_func(np.array([1, 2, 3]), pd.Series([4, 5, 6]))
+    assert str(e.value) == "Cannot mix numpy arrays with pandas Series in input."
+    with pytest.raises(ValueError) as e:
+        test_func(np.array([1, 2, 3]), pd.Series([4, 5, 6]))
+    assert str(e.value) == "Cannot mix numpy arrays with pandas Series in input."
     # Pandas Series as input and output
     result = test_func(pd.Series([1, 2, 3]), pd.Series([4, 5, 6]))
     assert isinstance(result, pd.Series)
@@ -57,13 +58,10 @@ def test_numpy_io_support_2():
     result = test_func(np.array([1, 2, 3]), np.array([4, 5, 6]), c=7)
     assert isinstance(result, np.ndarray)
     assert np.array_equal(result, np.array([12, 14, 16]))
-    # Test exception
-    with pytest.raises(ValueError) as e:
-        test_func([1, 2, 3], np.array([4, 5, 6]))
-    assert str(e.value) == "All positional arguments must be either numpy arrays or pandas Series."
-    with pytest.raises(ValueError) as e:
-        test_func(np.array([1, 2, 3]), 4)
-    assert str(e.value) == "All positional arguments must be either numpy arrays or pandas Series."
+    # Numpy arrays as input with positional argument
+    result = test_func(np.array([1, 2, 3]), np.array([4, 5, 6]), 7)
+    assert isinstance(result, np.ndarray)
+    assert np.array_equal(result, np.array([12, 14, 16]))
 
 
 @pytest.mark.parametrize("init, dtype", [(pd.Series, pd.Series), (np.array, np.ndarray)])

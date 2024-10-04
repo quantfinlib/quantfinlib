@@ -1,7 +1,6 @@
 """Functions to calculate the Relative Strength Index (RSI) of a stock."""
 
 import pandas as pd
-
 from ._base import numpy_io_support
 
 
@@ -10,12 +9,17 @@ def rsi(ts: pd.Series, period: int = 14) -> pd.Series:
     """
     Calculate the Relative Strength Index (RSI) of a stock.
 
-    Args:
-        ts (pd.Series): Time series of stock prices.
-        period (int): Number of periods to consider for RSI calculation. Default is 14.
+    Parameters
+    ----------
+    ts : pd.Series
+        Time series of stock prices.
+    period : int, optional
+        Number of periods to consider for RSI calculation. Default is 14.
 
-    Returns:
-        pd.Series: The calculated RSI values.
+    Returns
+    -------
+    pd.Series
+        The calculated RSI values.
     """
     delta = ts.diff()
     up = delta.where(delta > 0, 0).rolling(window=period).mean()
@@ -28,12 +32,17 @@ def ewm_rsi(ts: pd.Series, period: int = 14) -> pd.Series:
     """
     Calculate the Relative Strength Index (RSI) using Exponential Weighted Moving Average (EWMA).
 
-    Args:
-        ts (pd.Series): Time series of stock prices.
-        period (int): Number of periods to consider for RSI calculation. Default is 14.
+    Parameters
+    ----------
+    ts : pd.Series
+        Time series of stock prices.
+    period : int, optional
+        Number of periods to consider for RSI calculation. Default is 14.
 
-    Returns:
-        pd.Series: The calculated EWMA RSI values.
+    Returns
+    -------
+    pd.Series
+        The calculated EWMA RSI values.
     """
     delta = ts.diff()
     up = delta.where(delta > 0, 0).ewm(span=period).mean()
