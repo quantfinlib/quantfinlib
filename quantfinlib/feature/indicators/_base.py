@@ -33,9 +33,6 @@ def numpy_io_support(func):
                     elif is_numpy_input is True:
                         raise ValueError("Cannot mix numpy arrays with pandas Series in input.")
             new_args.append(arg)
-        for i, param_name in enumerate(param_names[: len(new_args)]):
-            if param_name in kwargs:
-                kwargs.pop(param_name)
         result = func(*new_args, **kwargs)
         if is_numpy_input:
             return result.values
