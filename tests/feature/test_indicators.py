@@ -14,6 +14,8 @@ from quantfinlib.feature.indicators import (
 def test_numpy_io_support_1():
     @numpy_io_support
     def test_func(a: pd.Series, b: int = 5) -> pd.Series:
+        assert isinstance(a, pd.Series)
+        assert isinstance(b, int)
         return a + b
     # Numpy array as input and output
     result = test_func(np.array([1, 2, 3]))
@@ -29,20 +31,28 @@ def test_numpy_io_support_1():
     # Test exception
     with pytest.raises(TypeError) as e:
         test_func([1, 2, 3])
+    assert str(e.value) == "Argument 'a' must be either numpy array or pandas Series."
+    # Test positional argument as keyword argument
+    result = test_func(a=np.array([1, 2, 3]), b=4)
+    assert isinstance(result, np.ndarray)
+    assert np.array_equal(result, np.array([5, 6, 7]))
 
 
 def test_numpy_io_support_2():
     @numpy_io_support
     def test_func(a: pd.Series, b: pd.Series, c: int = 5) -> pd.Series:
+        assert isinstance(a, pd.Series)
+        assert isinstance(b, pd.Series)
+        assert isinstance(c, int)
         return a + b + c
     # Numpy arrays as input and output
     result = test_func(np.array([1, 2, 3]), np.array([4, 5, 6]))
     assert isinstance(result, np.ndarray)
-    # Mixed inputs give ValueError
-    with pytest.raises(ValueError) as e:
+    # Mixed inputs give TypeError
+    with pytest.raises(TypeError) as e:
         test_func(np.array([1, 2, 3]), pd.Series([4, 5, 6]))
     assert str(e.value) == "Cannot mix numpy arrays with pandas Series in input."
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(TypeError) as e:
         test_func(pd.Series([4, 5, 6]), np.array([1, 2, 3]))
     assert str(e.value) == "Cannot mix numpy arrays with pandas Series in input."
     # Pandas Series as input and output
@@ -62,6 +72,10 @@ def test_numpy_io_support_2():
 def test_numpy_io_support_3():
     @numpy_io_support
     def test_func(a: pd.Series, b: pd.Series, c: int = 5, d: int = 4) -> pd.Series:
+        assert isinstance(a, pd.Series)
+        assert isinstance(b, pd.Series)
+        assert isinstance(c, int)
+        assert isinstance(d, int)
         return a + b + c + d
     result = test_func(np.array([1, 2, 3]), np.array([4, 5, 6]), 7, 8)
     assert isinstance(result, np.ndarray)
@@ -75,7 +89,7 @@ def test_numpy_io_support_3():
     result = test_func(np.array([1, 2, 3]), b=np.array([4, 5, 6]), c=7, d=8)
     assert isinstance(result, np.ndarray)
     assert np.array_equal(result, np.array([20, 22, 24]))
-    
+
 
 @pytest.mark.parametrize("init, dtype", [(pd.Series, pd.Series), (np.array, np.ndarray)])
 def test_rolling_mean(init, dtype):
