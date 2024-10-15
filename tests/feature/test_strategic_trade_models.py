@@ -10,14 +10,10 @@ gbm = GeometricBrownianMotion(drift=0.05, vol=0.30)
 
 # Defining global variables for testing
 
-P_CLOSE = gbm.path_sample(x0=100, label_start="2020-01-01", label_freq="B", num_steps=252, num_paths=1)
+P_CLOSE = gbm.path_sample(x0=100, label_start="2020-01-01", label_freq="B", num_steps=252, num_paths=1, random_state=42)
 
 VOLUME = pd.Series(data=np.random.randint(100, 1000, len(P_CLOSE)), index=P_CLOSE.index)
 
-# BUY_VOLUME = pd.Series(
-#    data=np.random.rand(len(P_CLOSE)) * VOLUME.values,
-#    index=P_HIGH.index
-# )
 
 WINDOWS = [10, 25]
 INP_TYPE = [pd.Series, np.ndarray]

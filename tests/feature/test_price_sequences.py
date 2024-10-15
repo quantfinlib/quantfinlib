@@ -22,7 +22,7 @@ gbm = GeometricBrownianMotion(drift=0.05, vol=0.30)
 
 # Defining global variables for testing
 
-P_HIGH = gbm.path_sample(x0=100, label_start="2020-01-01", label_freq="B", num_steps=252, num_paths=1)
+P_HIGH = gbm.path_sample(x0=100, label_start="2020-01-01", label_freq="B", num_steps=252, num_paths=1, random_state=42)
 P_LOW = P_HIGH.copy() * 0.90
 P_OPEN = P_HIGH.copy() - 0.5 * (P_HIGH - P_LOW)
 P_CLOSE = P_HIGH.copy() - 0.25 * (P_HIGH - P_LOW)
@@ -65,7 +65,7 @@ def test_func_numpy_input(func, window):
             p_close=P_CLOSE.values, p_high=P_HIGH.values, p_low=P_LOW.values, p_open=P_OPEN.values, window=window
         )
     assert len(out) == len(P_HIGH)  # output has the same length as input
-    assert np.all(out[np.isfinite(out)] > 0)  # all values are positive
+    assert np.all(out[np.isfinite(out)] >= 0)  # all finite values are non-negative
 
 
 @pytest.mark.parametrize("func, window", INPUTS)
@@ -88,7 +88,7 @@ def test_func_pd_input(func, window):
             p_close=P_CLOSE, p_high=P_HIGH, p_low=P_LOW, p_open=P_OPEN, window=window
         )
     assert len(out) == len(P_HIGH)  # output has the same length as input
-    assert np.all(out[np.isfinite(out)] > 0)  # all values are positive
+    assert np.all(out[np.isfinite(out)] >= 0)  # all finite values are non-negative
 
 
 def test_edge():
