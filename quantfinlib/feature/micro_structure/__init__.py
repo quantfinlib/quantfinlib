@@ -1,31 +1,26 @@
-"""Micro-structure features module.
-
-This module contains functions to calculate micro-structure features 
-based on the book ```Advances in Financial Machine Learning``` by Marcos Lopez de Prado.
-and ```Volatility Modelling and Trading``` by Artur Sepp
-https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2810768
+"""Micro-structure features module."""
 
 
-The implemented features are:
+from quantfinlib.feature.micro_structure._price_sequences import (
+    get_becker_parkinson_volatility,
+    get_close_close_volatility,
+    get_cowrin_schultz_spread,
+    get_edge_spread,
+    get_garman_klass_volatility,
+    get_high_low_volatility,
+    get_rogers_satchell_volatility,
+    get_roll_measure,
+    get_roll_impact,
+    get_yang_zhang_volatility
+)
 
- First generation: Price sequences
-    The tick rule
-    The roll model
-    The high-low volatility estimator
-    The Corwin-Schulz bid-ask spread model
+from quantfinlib.feature.micro_structure._strategic_trade_models import (
+    get_amihud_lambda,
+    get_hasbrouck_lambda,
+    get_kyle_lambda
+)
 
-Second generation: Strategic trade models
-    Kyle's lambda
-    Amihud's lambda
-    Hasbrouck's lambda
-
-Third generation: Sequential trade models
-    Probability of information-based trading
-    Volume-synchronized probability of informed trading
-
-    
-References
-----------
-https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3270269
-https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2810768
-"""
+from quantfinlib.feature.micro_structure._sequential_trade_models import (
+    estimate_buy_volume,
+    get_vpin
+)
