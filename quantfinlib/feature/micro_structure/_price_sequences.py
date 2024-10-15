@@ -319,18 +319,18 @@ def _edge_spread(
     https://doi.org/10.1016/j.jfineco.2024.103916
     https://github.com/eguidotti/bidask
     """
-    o = np.log(p_open.values)
-    h = np.log(p_high.values)
-    l = np.log(p_low.values)
-    c = np.log(p_close.values)
-    m = (h + l) / 2.0
+    p_o = np.log(p_open.values)
+    p_h = np.log(p_high.values)
+    p_l = np.log(p_low.values)
+    p_c = np.log(p_close.values)
+    p_m = (p_h + p_l) / 2.0
 
-    h1, l1, c1, m1 = h[:-1], l[:-1], c[:-1], m[:-1]
-    o, h, l, c, m = o[1:], h[1:], l[1:], c[1:], m[1:]
+    h1, l1, c1, m1 = p_h[:-1], p_l[:-1], p_c[:-1], p_m[:-1]
+    p_o, p_h, p_l, p_c, p_m = p_o[1:], p_h[1:], p_l[1:], p_c[1:], p_m[1:]
 
-    tau = (h != l) | (l != c1)
-    phi1 = (o != h) & tau
-    phi2 = (o != l) & tau
+    tau = (p_h != p_l) | (p_l != c1)
+    phi1 = (p_o != p_h) & tau
+    phi2 = (p_o != p_l) & tau
     phi3 = (c1 != h1) & tau
     phi4 = (c1 != l1) & tau
 
@@ -341,11 +341,11 @@ def _edge_spread(
     if pt == 0 or po == 0 or pc == 0:
         return np.nan
 
-    r1 = m - o
-    r2 = o - m1
-    r3 = m - c1
+    r1 = p_m - p_o
+    r2 = p_o - m1
+    r3 = p_m - c1
     r4 = c1 - m1
-    r5 = o - c1
+    r5 = p_o - c1
 
     d1 = r1 - tau * r1.mean() / pt
     d3 = r3 - tau * r3.mean() / pt
