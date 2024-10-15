@@ -4,39 +4,32 @@ import functools
 import inspect
 import numpy as np
 import pandas as pd
+from typing import Union
 
 
 def numpy_io_support(func):
     """Make a decorator to allow numpy arrays or pandas Series as input/output."""
 
     @functools.wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Union[pd.Series, np.ndarray], **kwargs) -> Union[pd.Series, np.ndarray]:
         sig = inspect.signature(func)
-        bound_args = sig.bind_partial(*args, **kwargs)
+        exp_pd_args = [name for name, p in sig.parameters.items() if p.annotation == pd.Series]
+
+        bound_args = sig.bind(*args, **kwargs)
         bound_args.apply_defaults()
-        is_numpy_input = None
-        new_args = []
-        param_names = list(sig.parameters.keys())  # List of parameter names in the function signature
-        for i, arg in enumerate(args):
-            param_name = param_names[i]
-            expected_type = sig.parameters[param_name].annotation
-            if expected_type in [pd.Series, np.ndarray]:
-                if isinstance(arg, np.ndarray):
-                    if is_numpy_input is None:
-                        is_numpy_input = True
-                    elif is_numpy_input is False:
-                        raise ValueError("Cannot mix numpy arrays with pandas Series in input.")
-                    arg = pd.Series(arg)
-                elif isinstance(arg, pd.Series):
-                    if is_numpy_input is None:
-                        is_numpy_input = False
-                    elif is_numpy_input is True:
-                        raise ValueError("Cannot mix numpy arrays with pandas Series in input.")
-            new_args.append(arg)
-        result = func(*new_args, **kwargs)
-        if is_numpy_input:
-            return result.values
-        return result
+        np_args = {}
+        for name in exp_pd_args:
+            if isinstance(bound_args.arguments[name], np.ndarray):
+                np_args[name] = pd.Series(bound_args.arguments[name])
+            elif not isinstance(bound_args.arguments[name], pd.Series):
+                raise TypeError(f"Argument '{name}' must be either numpy array or pandas Series.")
+
+        if len(np_args) == 0:
+            return func(**bound_args.arguments)
+        elif len(np_args) == len(exp_pd_args):
+            return func(**{**bound_args.arguments, **np_args}).values
+        else:
+            raise TypeError("Cannot mix numpy arrays with pandas Series in input.")
 
     return wrapper
 
