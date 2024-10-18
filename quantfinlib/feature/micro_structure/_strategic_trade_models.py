@@ -90,9 +90,9 @@ def get_hasbrouck_lambda(p_close: pd.Series, volume: pd.Series, window: int = 20
     The Habrouck lambda is defined as:
 
     .. math::
-    
+
         \lambda_{t} = \frac{\Delta (\log(p_{t}))}{b_{t}\sqrt{p_{t}.v_{t}}}
-    
+
     where:
 
     - :math:`\Delta (\log(p_{t}))` is the log return at time :math:`t`
@@ -108,12 +108,12 @@ def get_hasbrouck_lambda(p_close: pd.Series, volume: pd.Series, window: int = 20
         The trade volume series.
     window : int, optional
         The window size for calculating the Habrouck lambda, by default 20.
-    
+
     Returns
     -------
     pd.Series
         The Habrouck lambda series.
-    
+
     References
     ----------
     page 289 of Advances in Financial Machine Learning by Marcos Lopez de Prado.

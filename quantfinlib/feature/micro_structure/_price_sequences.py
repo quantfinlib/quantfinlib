@@ -27,7 +27,7 @@ def get_close_close_volatility(p_close: pd.Series, window: int) -> pd.Series:
     ----------
     https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2810768.
     """
-    sigma_sq = (p_close / p_close.shift(1)).rolling(window=window).std() ** 2.0
+    sigma_sq = (p_close / p_close.shift(1)).rolling(window=window).var()
     return sigma_sq
 
 
@@ -395,7 +395,7 @@ def get_roll_measure(p_close: pd.Series, window: int) -> pd.Series:
     return roll
 
 
-def _roll_measure(p_close: pd.Series, window: int) -> pd.Series:  # pragma: no cover
+def _roll_measure(p_close: pd.Series, window: int) -> pd.Series:
     """Calculate the Roll measure."""
     logc = np.log(p_close)
     delta_logc = logc.diff()
@@ -408,7 +408,7 @@ def _roll_measure(p_close: pd.Series, window: int) -> pd.Series:  # pragma: no c
 def get_roll_impact(p_close: pd.Series, volume: pd.Series, window: int) -> pd.Series:
     """
     Calculate the Roll impact.
-    
+
     It is defined as roll measure divided by the dollar value traded over a certain period.
 
     Parameters
@@ -437,7 +437,7 @@ def get_roll_impact(p_close: pd.Series, volume: pd.Series, window: int) -> pd.Se
 # Helper functions for calulating the Cowrin-Schultz spread and Becker-Parkinson volatility.
 
 
-def _get_gamma(p_high: pd.Series, p_low: pd.Series) -> pd.Series:  # progma: no cover
+def _get_gamma(p_high: pd.Series, p_low: pd.Series) -> pd.Series:
     """See p. 285 of Advances in Financial Machine Learning by Marcos Lopez de Prado."""
     h2 = p_high.rolling(window=2).max()
     l2 = p_low.rolling(window=2).min()
@@ -445,7 +445,7 @@ def _get_gamma(p_high: pd.Series, p_low: pd.Series) -> pd.Series:  # progma: no 
     return gamma
 
 
-def _get_beta(p_high: pd.Series, p_low: pd.Series, window: int) -> pd.Series:  # progma: no cover
+def _get_beta(p_high: pd.Series, p_low: pd.Series, window: int) -> pd.Series:
     """See p. 285 of Advances in Financial Machine Learning by Marcos Lopez de Prado."""
     hl = np.log(p_high / p_low) ** 2.0
     beta = hl.rolling(window=2).sum()
@@ -453,7 +453,7 @@ def _get_beta(p_high: pd.Series, p_low: pd.Series, window: int) -> pd.Series:  #
     return beta
 
 
-def _get_alpha(beta: pd.Series, gamma: pd.Series) -> pd.Series:  # progma: no cover
+def _get_alpha(beta: pd.Series, gamma: pd.Series) -> pd.Series:
     """See p. 285 of Advances in Financial Machine Learning by Marcos Lopez de Prado."""
     den = 3 - 2.0 * 2**0.5
     alpha = (2**0.5 - 1) * (beta**0.5) / den
@@ -462,7 +462,7 @@ def _get_alpha(beta: pd.Series, gamma: pd.Series) -> pd.Series:  # progma: no co
     return alpha
 
 
-def _get_sigma(beta: pd.Series, gamma: pd.Series) -> pd.Series:  # progma: no cover
+def _get_sigma(beta: pd.Series, gamma: pd.Series) -> pd.Series:
     """See p. 286 of Advances in Financial Machine Learning by Marcos Lopez de Prado."""
     k2 = (8 / np.pi) ** 0.5
     den = 3 - 2 * 2**0.5
