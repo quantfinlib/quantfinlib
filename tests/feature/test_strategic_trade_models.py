@@ -10,9 +10,15 @@ gbm = GeometricBrownianMotion(drift=0.05, vol=0.30)
 
 # Defining global variables for testing
 
-P_CLOSE = gbm.path_sample(x0=100, label_start="2020-01-01", label_freq="B", num_steps=252, num_paths=1, random_state=42)
 
-VOLUME = pd.Series(data=np.random.randint(100, 1000, len(P_CLOSE)), index=P_CLOSE.index)
+
+
+@pytest.fixture(scope="module")
+def price_data():
+    gbm = GeometricBrownianMotion(drift=0.05, vol=0.30)
+    P_CLOSE = gbm.path_sample(x0=100, label_start="2020-01-01", label_freq="B", num_steps=252, num_paths=1, random_state=42)
+    VOLUME = pd.Series(data=np.random.randint(100, 1000, len(P_CLOSE)), index=P_CLOSE.index)
+    return P_CLOSE, VOLUME
 
 
 WINDOWS = [10, 25]
@@ -21,7 +27,8 @@ INPUTS = [(window, inp_type) for window in WINDOWS for inp_type in INP_TYPE]
 
 
 @pytest.mark.parametrize("window, inp_type", INPUTS)
-def test_kyle_lambda(window, inp_type):
+def test_kyle_lambda(price_data, window, inp_type):
+    P_CLOSE, VOLUME = price_data
     if inp_type == pd.Series:
         out = get_kyle_lambda(P_CLOSE, VOLUME, window=window)
         assert isinstance(out, pd.Series), "output is not a pandas Series"
@@ -33,7 +40,8 @@ def test_kyle_lambda(window, inp_type):
     return None
 
 
-def test_kyle_lambda_scaling_relations():
+def test_kyle_lambda_scaling_relations(price_data):
+    P_CLOSE, VOLUME = price_data
     out1 = get_kyle_lambda(P_CLOSE, VOLUME, window=10)
     out2 = get_kyle_lambda(P_CLOSE * 2.0, VOLUME, window=10)
     out3 = get_kyle_lambda(P_CLOSE, VOLUME * 2.0, window=10)
@@ -45,7 +53,8 @@ def test_kyle_lambda_scaling_relations():
 
 
 @pytest.mark.parametrize("window, inp_type", INPUTS)
-def test_amihud_lambda(window, inp_type):
+def test_amihud_lambda(price_data, window, inp_type):
+    P_CLOSE, VOLUME = price_data
     if inp_type == pd.Series:
         out = get_amihud_lambda(P_CLOSE, VOLUME, window=window)
         assert isinstance(out, pd.Series), "output is not a pandas Series"
@@ -57,7 +66,8 @@ def test_amihud_lambda(window, inp_type):
     return None
 
 
-def test_amihud_lambda_scaling_relations():
+def test_amihud_lambda_scaling_relations(price_data):
+    P_CLOSE, VOLUME = price_data
     out1 = get_amihud_lambda(P_CLOSE, VOLUME, window=10)
     out2 = get_amihud_lambda(P_CLOSE * 2.0, VOLUME, window=10)
     out3 = get_amihud_lambda(P_CLOSE, VOLUME * 2.0, window=10)
@@ -69,7 +79,8 @@ def test_amihud_lambda_scaling_relations():
 
 
 @pytest.mark.parametrize("window, inp_type", INPUTS)
-def test_hasbrouck_lambda(window, inp_type):
+def test_hasbrouck_lambda(price_data, window, inp_type):
+    P_CLOSE, VOLUME = price_data
     if inp_type == pd.Series:
         out = get_hasbrouck_lambda(P_CLOSE, VOLUME, window=window)
         assert isinstance(out, pd.Series), "output is not a pandas Series"
@@ -81,7 +92,8 @@ def test_hasbrouck_lambda(window, inp_type):
     return None
 
 
-def test_hasbrouck_lambda_scaling_relations():
+def test_hasbrouck_lambda_scaling_relations(price_data):
+    P_CLOSE, VOLUME = price_data
     out = get_hasbrouck_lambda(p_close=P_CLOSE, volume=VOLUME, window=10)
     out2 = get_hasbrouck_lambda(p_close=P_CLOSE * 2, volume=VOLUME, window=10)
     out3 = get_hasbrouck_lambda(P_CLOSE, VOLUME * 2, window=10)

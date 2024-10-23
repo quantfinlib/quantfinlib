@@ -18,15 +18,16 @@ import pytest
 
 from quantfinlib.sim._gbm import GeometricBrownianMotion
 
-gbm = GeometricBrownianMotion(drift=0.05, vol=0.30)
 
-# Defining global variables for testing
-
-P_HIGH = gbm.path_sample(x0=100, label_start="2020-01-01", label_freq="B", num_steps=252, num_paths=1, random_state=42)
-P_LOW = P_HIGH.copy() * 0.90
-P_OPEN = P_HIGH.copy() - 0.5 * (P_HIGH - P_LOW)
-P_CLOSE = P_HIGH.copy() - 0.25 * (P_HIGH - P_LOW)
-VOLUME = pd.Series(data=np.random.randint(100, 1000, len(P_HIGH)), index=P_HIGH.index)
+@pytest.fixture(scope="module")
+def price_data():
+    gbm = GeometricBrownianMotion(drift=0.05, vol=0.30)
+    P_HIGH = gbm.path_sample(x0=100, label_start="2020-01-01", label_freq="B", num_steps=252, num_paths=1, random_state=42)
+    P_LOW = P_HIGH.copy() * 0.90
+    P_OPEN = P_HIGH.copy() - 0.5 * (P_HIGH - P_LOW)
+    P_CLOSE = P_HIGH.copy() - 0.25 * (P_HIGH - P_LOW)
+    VOLUME = pd.Series(data=np.random.randint(100, 1000, len(P_HIGH)), index=P_HIGH.index)
+    return P_HIGH, P_LOW, P_OPEN, P_CLOSE, VOLUME
 
 
 FUNC = [
@@ -46,7 +47,8 @@ INPUTS = [(func, window) for func in FUNC for window in WINDOWS]
 
 
 @pytest.mark.parametrize("func, window", INPUTS)
-def test_func_numpy_input(func, window):
+def test_func_numpy_input(price_data, func, window):
+    P_HIGH, P_LOW, P_OPEN, P_CLOSE, VOLUME = price_data
     if func in [get_close_close_volatility]:
         out = func(P_CLOSE.values, window=window)
     if func in [get_high_low_volatility, get_cowrin_schultz_spread, get_becker_parkinson_volatility]:
@@ -69,7 +71,8 @@ def test_func_numpy_input(func, window):
 
 
 @pytest.mark.parametrize("func, window", INPUTS)
-def test_func_pd_input(func, window):
+def test_func_pd_input(price_data, func, window):
+    P_HIGH, P_LOW, P_OPEN, P_CLOSE, VOLUME = price_data
     if func in [get_close_close_volatility]:
         out = func(P_CLOSE, window=window)
     if func in [get_high_low_volatility, get_cowrin_schultz_spread, get_becker_parkinson_volatility]:
