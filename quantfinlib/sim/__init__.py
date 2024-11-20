@@ -17,9 +17,10 @@ This module contains routines for generating random price scenarions.
 
 from ._bm import BrownianMotion
 from ._gbm import GeometricBrownianMotion
+from ._quasibm import QuasiBrownianMotion
 from ._ou import OrnsteinUhlenbeck
 
-__all__ = [BrownianMotion, GeometricBrownianMotion, OrnsteinUhlenbeck]
+__all__ = [BrownianMotion, GeometricBrownianMotion, OrnsteinUhlenbeck, QuasiBrownianMotion]
 
 """
 todo:
