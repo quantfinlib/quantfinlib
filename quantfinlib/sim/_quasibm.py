@@ -79,6 +79,6 @@ class QuasiBrownianMotion(BrownianMotion):
             indicator[1:, i] = np.nan_to_num(self.tech_ind_func(bm_ans[:-1, i]))
 
         # Scale the signal volatility
-        signal_vol = self.f_signal_vol * self.vol
-        indicator = indicator * signal_vol * np.sqrt(dt) / (np.std(indicator, axis=0))
+        signal_vol = self.f_signal_vol * np.tile(self.vol, num_paths)
+        indicator = indicator * signal_vol * np.sqrt(dt) / (np.std(indicator[1:-1], axis=0, ddof=2))
         return bm_ans + np.cumsum(indicator, axis=0)
