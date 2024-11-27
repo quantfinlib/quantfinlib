@@ -2,18 +2,20 @@
 
 import logging
 from pathlib import Path
-
+import gzip
 import pandas as pd
 
 from quantfinlib.util import configure_logger, get_project_root, logger
 
-VIX_INDEX_LOCAL_PATH = get_project_root("quantfinlib/datasets/resources/VIX_ochl.pkl")
-MULTI_INDEX_LOCAL_PATH = get_project_root("quantfinlib/datasets/resources/multi_index_close.pkl")
-TREASURY_RATES_LOCAL_PATH = get_project_root("quantfinlib/datasets/resources/daily_treasury_rates.pkl")
+VIX_INDEX_LOCAL_PATH = get_project_root("quantfinlib/datasets/resources/vix_ohlc.csv.gz")
+MULTI_INDEX_LOCAL_PATH = get_project_root("quantfinlib/datasets/resources/multi_index_close.csv.gz")
+TREASURY_RATES_LOCAL_PATH = get_project_root("quantfinlib/datasets/resources/daily_treasury_rates.csv.gz")
 
 
-def _load_pickle_to_df(filename: Path) -> pd.DataFrame:
-    df = pd.read_pickle(filename, compression="gzip")
+def _load_csv_gz_to_df(filename: Path) -> pd.DataFrame:
+    with open(filename, "rb") as compressed_file:
+        compressed_file = gzip.open(compressed_file, mode="rt", encoding="utf-8")
+        df = pd.read_csv(compressed_file, index_col=0, parse_dates=True)
     return df
 
 
@@ -53,13 +55,10 @@ def load_vix() -> pd.DataFrame:
         raise FileNotFoundError(
             f"VIX dataset file '{VIX_INDEX_LOCAL_PATH.name}' does not exist at '{VIX_INDEX_LOCAL_PATH.parent}'"
         )
-    else:
-        logger.info(f"Reading VIX index data from {VIX_INDEX_LOCAL_PATH.name}...")
-        df = _load_pickle_to_df(VIX_INDEX_LOCAL_PATH)
-        df["DATE"] = pd.to_datetime(df["DATE"])
-        df.reset_index(drop=True, inplace=True)
-        df = df.set_index("DATE").sort_index()
-        logger.info(f"Loaded dataset with {df.shape[0]} rows and {df.shape[1]} columns. Latest date: {df.index.max()}")
+
+    logger.info(f"Reading VIX index data from {VIX_INDEX_LOCAL_PATH.name}...")
+    df = _load_csv_gz_to_df(VIX_INDEX_LOCAL_PATH)
+    logger.info(f"Loaded dataset with {df.shape[0]} rows and {df.shape[1]} columns. Latest date: {df.index.max()}")
     return df
 
 
@@ -95,37 +94,32 @@ def load_treasury_rates() -> pd.DataFrame:
             f"Daily Treasury rates dataset file {TREASURY_RATES_LOCAL_PATH.name} \
             does not exist at {TREASURY_RATES_LOCAL_PATH.parent}"
         )
-    else:
-        logger.info(f"Reading daily Treasury rates data from {TREASURY_RATES_LOCAL_PATH.name}...")
-        df = _load_pickle_to_df(TREASURY_RATES_LOCAL_PATH)
 
-        df = df.rename(
-            columns={
-                "Date": "DATE",
-                "1 Mo": "1m",
-                "2 Mo": "2m",
-                "3 Mo": "3m",
-                "4 Mo": "4m",
-                "6 Mo": "6m",
-                "1 Yr": "1y",
-                "2 Yr": "2y",
-                "3 Yr": "3y",
-                "5 Yr": "5y",
-                "7 Yr": "7y",
-                "10 Yr": "10y",
-                "20 Yr": "20y",
-                "30 Yr": "30y",
-            }
-        )
-
-        df["DATE"] = pd.to_datetime(df["DATE"])
-        df.reset_index(drop=True, inplace=True)
-        df = df.set_index("DATE").sort_index()
-        logger.info(
-            f"Loaded dataset with {df.shape[0]} rows and {df.shape[1]} columns. \
-            Latest date: {df.index.max()}"
-        )
-        return df
+    logger.info(f"Reading daily Treasury rates data from {TREASURY_RATES_LOCAL_PATH.name}...")
+    df = _load_csv_gz_to_df(TREASURY_RATES_LOCAL_PATH)
+    df = df.rename(
+        columns={
+            "Date": "DATE",
+            "1 Mo": "1m",
+            "2 Mo": "2m",
+            "3 Mo": "3m",
+            "4 Mo": "4m",
+            "6 Mo": "6m",
+            "1 Yr": "1y",
+            "2 Yr": "2y",
+            "3 Yr": "3y",
+            "5 Yr": "5y",
+            "7 Yr": "7y",
+            "10 Yr": "10y",
+            "20 Yr": "20y",
+            "30 Yr": "30y",
+        }
+    )
+    logger.info(
+        f"Loaded dataset with {df.shape[0]} rows and {df.shape[1]} columns. \
+        Latest date: {df.index.max()}"
+    )
+    return df
 
 
 def load_equity_indices() -> pd.DataFrame:
@@ -191,18 +185,13 @@ def load_equity_indices() -> pd.DataFrame:
             f"Multi-index dataset file '{MULTI_INDEX_LOCAL_PATH.name}' \
             does not exist at '{MULTI_INDEX_LOCAL_PATH.parent}'"
         )
-    else:
-        logger.info(f"Reading multi-index data from {MULTI_INDEX_LOCAL_PATH.name}...")
-        df = _load_pickle_to_df(MULTI_INDEX_LOCAL_PATH)
-        df["DATE"] = pd.to_datetime(df["DATE"])
-        df.reset_index(drop=True, inplace=True)
-        df = df.set_index("DATE").sort_index()
 
-        logger.info(
-            f"Loaded equity indices data with {df.shape[0]} rows and {df.shape[1]} columns. \
-            Latest date: {df.index.max()}"
-        )
-
+    logger.info(f"Reading multi-index data from {MULTI_INDEX_LOCAL_PATH.name}...")
+    df = _load_csv_gz_to_df(MULTI_INDEX_LOCAL_PATH)
+    logger.info(
+        f"Loaded equity indices data with {df.shape[0]} rows and {df.shape[1]} columns. \
+        Latest date: {df.index.max()}"
+    )
     return df
 
 
