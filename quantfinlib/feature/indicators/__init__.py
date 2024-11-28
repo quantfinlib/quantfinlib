@@ -30,7 +30,7 @@ This module contains functions for calculating various technical indicators from
 
 """
 
-from ._bands import BollingerBands, EwmBollingerBands, KeltnerBands, DonchianBands
+from ._bands import BollingerBands, EwmBollingerBands, GenericBands, KeltnerBands, DonchianBands
 from ._base import (
     rolling_mean, rolling_std, rolling_max, rolling_min, ewm_mean, ewm_std, average_true_range,
     rolling_mom, ewm_mom

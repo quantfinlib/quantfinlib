@@ -200,10 +200,9 @@ def test_rolling_mom(init, dtype):
 @pytest.mark.parametrize("init, dtype", [(pd.Series, pd.Series), (np.array, np.ndarray)])
 def test_ewm_mom(init, dtype):
     ts = init([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-    em = ewm_mom(ts, span=3)
+    em = ewm_mom(ts, span=3, min_periods=3)
     assert isinstance(em, dtype)
-    expected = [np.nan, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-    np.testing.assert_array_equal(em, expected)
+    np.testing.assert_array_equal(em, [np.nan] * 3 + [1.0] * 7)
 
 
 @pytest.mark.parametrize("init, dtype", [(pd.Series, pd.Series), (np.array, np.ndarray)])

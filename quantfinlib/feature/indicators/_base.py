@@ -203,7 +203,7 @@ def rolling_mom(ts: pd.Series, window: int = 20) -> pd.Series:
 
 
 @numpy_io_support
-def ewm_mom(ts: pd.Series, span: int = 20) -> pd.Series:
+def ewm_mom(ts: pd.Series, span: int = 20, min_periods: int = 0) -> pd.Series:
     """
     Calculate the exponential weighted moving momentum of a time series.
 
@@ -219,4 +219,4 @@ def ewm_mom(ts: pd.Series, span: int = 20) -> pd.Series:
     pd.Series
         The exponential weighted moving momentum of the time series.
     """
-    return ts.diff().ewm(span=span).mean().rename("EWM Momentum")
+    return ts.diff().ewm(span=span, min_periods=min_periods).mean().rename("EWM Momentum")
