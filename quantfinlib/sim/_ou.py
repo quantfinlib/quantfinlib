@@ -188,6 +188,12 @@ class OrnsteinUhlenbeck(SimBase, SimNllMixin):
         if self.cor is not None:
             self.num_parameters_ += len(self.mean) * (len(self.mean) - 1) / 2
 
+    def __repr__(self):
+        """Return a string representation of the OrnsteinUhlenbeck instance."""
+        return (
+            f"OrnsteinUhlenbeck(mean={self.mean}, mrr={self.mrr}, vol={self.vol}, cor={self.cor})"
+        )
+
     def _fit_np(self, x: np.ndarray, dt: float):
 
         SLOPE_TOL = 1e-8

@@ -59,4 +59,12 @@ def test_OrnsteinUhlenbeck_nll_1d():
 def test_OrnsteinUhlenbeck_nll_2d():
     b = OrnsteinUhlenbeck(mean=[0.05, 0.05], mrr=[1.0, 1.0], vol=[0.1, 0.1], cor=[[1, 0.4], [0.4, 1]])    
     p = b.path_sample(x0=[1, 1], dt=1/12, num_steps=10, num_paths=1)
-    nll = b.nll(p)    
+    nll = b.nll(p)
+
+
+def test_OrnstienUhlenbeck_repr():
+    b = OrnsteinUhlenbeck(mean=0.0, mrr=1.0, vol=0.1)
+    assert str(b) == f"OrnsteinUhlenbeck(mean=0.0, mrr=1.0, vol=0.1, cor=None)"
+
+    b = OrnsteinUhlenbeck(mean=[0.0, 0.0], mrr=[1.0, 1.0], vol=[0.1, 0.1], cor=[[1.0, 0.4], [0.4, 1.0]])
+    assert str(b) == f"OrnsteinUhlenbeck(mean=[0.0, 0.0], mrr=[1.0, 1.0], vol=[0.1, 0.1], cor=[[1.0, 0.4], [0.4, 1.0]])"

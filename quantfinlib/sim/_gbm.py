@@ -166,6 +166,12 @@ class GeometricBrownianMotion(SimBase, SimNllMixin):
         if self.cor is not None:
             self.num_parameters_ += len(self.drift) * (len(self.drift) - 1) / 2
 
+    def __repr__(self) -> str:
+        """Return a string representation of the GeometriCBrownianMotion instance."""
+        return (
+            f"GeometricBrownianMotion(drift={self.drift}, vol={self.vol}, cor={self.cor})"
+        )
+
     def _fit_np(self, x: np.ndarray, dt: float):
 
         # changes from one row to the next

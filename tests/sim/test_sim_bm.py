@@ -187,3 +187,10 @@ def test_BrownianMotion_bic_2d():
     b = BrownianMotion(drift=[0.05, 0.05], vol=[0.1, 0.1], cor=[[1, 0.4], [0.4, 1]])
     p = b.path_sample(x0=[1, 1], dt=1 / 12, num_steps=10, num_paths=1)
     _ = b.bic(p)
+
+
+def test_BrownianMotion_repr():
+    b = BrownianMotion(drift=0.05, vol=0.1)
+    assert str(b) == "BrownianMotion(drift=0.05, vol=0.1)"
+    b = BrownianMotion(drift=[0.05, 0.05], vol=[0.1, 0.1], cor=[[1, 0.4], [0.4, 1]])
+    assert str(b) == "BrownianMotion(drift=[0.05, 0.05], vol=[0.1, 0.1], cor=[[1, 0.4], [0.4, 1]])"

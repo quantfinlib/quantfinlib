@@ -70,3 +70,10 @@ def test_GeometricBrownianMotion_nll_2d():
     b = GeometricBrownianMotion(drift=[0.05, 0.05], vol=[0.1, 0.1], cor=[[1, 0.4], [0.4, 1]])    
     p = b.path_sample(x0=[1, 1], dt=1/12, num_steps=10, num_paths=1)
     nll = b.nll(p)
+
+
+def test_GeometricBrownianMotion_repr():
+    b = GeometricBrownianMotion()
+    assert str(b) == f"GeometricBrownianMotion(drift=0.0, vol=0.1)"
+    b = GeometricBrownianMotion(0.05)
+    assert str(b) == f"GeometricBrownianMotion(drift=0.05, vol=0.1)"
