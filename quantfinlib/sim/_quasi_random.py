@@ -21,6 +21,8 @@ from quantfinlib.sim._bm import BrownianMotion
 
 
 class BaseModel(Protocol):
+    vol: Union[float, np.ndarray]
+
     def _path_sample_np(
         self,
         x0: Union[float, np.ndarray],
