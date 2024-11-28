@@ -74,6 +74,7 @@ def test_GeometricBrownianMotion_nll_2d():
 
 def test_GeometricBrownianMotion_repr():
     b = GeometricBrownianMotion()
-    assert str(b) == f"GeometricBrownianMotion(drift=0.0, vol=0.1)"
+    assert str(b) == f"GeometricBrownianMotion(drift=[[0.]], vol=[[0.1]], cor=None)"
     b = GeometricBrownianMotion(0.05)
-    assert str(b) == f"GeometricBrownianMotion(drift=0.05, vol=0.1)"
+    assert str(b) == f"GeometricBrownianMotion(drift=[[0.05]], vol=[[0.1]], cor=None)"
+

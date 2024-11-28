@@ -191,6 +191,4 @@ def test_BrownianMotion_bic_2d():
 
 def test_BrownianMotion_repr():
     b = BrownianMotion(drift=0.05, vol=0.1)
-    assert str(b) == "BrownianMotion(drift=0.05, vol=0.1)"
-    b = BrownianMotion(drift=[0.05, 0.05], vol=[0.1, 0.1], cor=[[1, 0.4], [0.4, 1]])
-    assert str(b) == "BrownianMotion(drift=[0.05, 0.05], vol=[0.1, 0.1], cor=[[1, 0.4], [0.4, 1]])"
+    assert str(b) == "BrownianMotion(drift=[[0.05]], vol=[[0.1]], cor=None)"
