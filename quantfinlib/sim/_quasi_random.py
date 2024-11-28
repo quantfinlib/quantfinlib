@@ -31,7 +31,7 @@ class BaseModel(Protocol):
         num_paths: int,
         random_state: Optional[int] = None,
     ) -> np.ndarray:
-        pass
+        """Simulate random paths using the actual implementation in the derived class"""
 
 
 class QuasiRandom(SimBase):

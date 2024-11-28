@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import pytest
 from numpy.testing import assert_allclose
-from sklearn import base
 
 from quantfinlib.sim import BrownianMotion, GeometricBrownianMotion, OrnsteinUhlenbeck, QuasiRandom
 
@@ -29,7 +28,6 @@ def test_QuasiRandom_init():
     base_model = BrownianMotion(drift=[0.05, 0.05], vol=[0.1, 0.1], cor=[[1, 0.4], [0.4, 1]])
     b = QuasiRandom(tech_ind_testfunc, base_model=base_model)
     assert np.all(b.base_model.L_ == np.array([[1, 0], [0.4, np.sqrt(1 - 0.4**2)]]))
-
 
     base_model = GeometricBrownianMotion(drift=[0.05, 0.05], vol=[0.1, 0.1], cor=[[1, 0.4], [0.4, 1]])
     b = QuasiRandom(tech_ind_testfunc, base_model=base_model)
@@ -123,7 +121,7 @@ def test_QuasiRandom_path_sample_pd_mp():
 
 def test_QuasiRandom_path_sample_pd_mv():
     base_model = BrownianMotion(drift=[0.0, 0.0], vol=[0.01, 0.1], cor=[[1, 0.4], [0.4, 1]])
-    b = QuasiRandom(tech_ind_testfunc,  f_signal_vol=1.0, base_model=base_model)
+    b = QuasiRandom(tech_ind_testfunc, f_signal_vol=1.0, base_model=base_model)
     p = b.path_sample(x0=1, dt=1 / 12, num_steps=12, num_paths=1, random_state=42,
                       label_start='2020-01-01', label_freq='B')
     assert p.shape == (13, 2)
