@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "quantfinlib"
-version = "0.0.4"
+version = "0.0.5"
 description = "Fundamental package for quantitative finance with Python."
 
 authors = ["Thijs van den Berg, Andrejs Fedjajevs, Mohammadjavad Vakili, Nathan de Vries"]
