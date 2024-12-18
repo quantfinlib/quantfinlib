@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.abspath("../../"))
 
 project = "QuantFinLib"
 author = "Thijs van den Berg, Andrejs Fedjajevs, Mohammadjavad Vakili, Nathan de Vries"
-release = "0.0.5"
+release = "0.0.6"
 
 extensions = [
     # "autoapi.extension",
