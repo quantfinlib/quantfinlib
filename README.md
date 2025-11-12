@@ -17,6 +17,7 @@ $ pip install quantfinlib
 [![Build Status](https://github.com/quantfinlib/quantfinlib/actions/workflows/deploy.yml/badge.svg)](https://github.com/quantfinlib/quantfinlib/actions/workflows/deploy.yml)
 [![Coverage Status](https://coveralls.io/repos/github/quantfinlib/quantfinlib/badge.svg?branch=main)](https://coveralls.io/github/quantfinlib/quantfinlib?branch=main)
 [![Docs](https://readthedocs.org/projects/quantfinlib/badge/?version=latest)](https://quantfinlib.readthedocs.io/en/latest/)
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/quantfinlib?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/quantfinlib)
 
 
 QuantFinLib is a comprehensive Python library designed for quantitative finance. It offers a wide range
